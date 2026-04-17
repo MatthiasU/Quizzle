@@ -4,6 +4,22 @@ const {getUsers, createUser, deleteUser, updateUserRole, changePassword} = requi
 const fs = require('fs');
 const path = require('path');
 const {brandingFolder} = require('../utils/file');
+const {createProvider} = require('../utils/ai');
+
+app.post('/models', requireAdmin, async (req, res) => {
+    const {provider, apiKey, baseUrl} = req.body;
+    if (!provider) return res.status(400).json({message: 'Anbieter ist erforderlich.'});
+
+    const instance = createProvider({provider, apiKey, baseUrl});
+    if (!instance) return res.status(400).json({message: 'Ungültiger Anbieter.'});
+
+    try {
+        const models = await instance.listModels();
+        res.json({models});
+    } catch {
+        res.json({models: []});
+    }
+});
 
 app.get('/settings', requireAdmin, (req, res) => {
     const configPayload = JSON.parse(fs.readFileSync(path.join(brandingFolder, 'config.json'), 'utf8'));

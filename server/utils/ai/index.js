@@ -40,4 +40,10 @@ const getProvider = () => {
 
 const getSupportedProviders = () => Object.keys(PROVIDERS);
 
-module.exports = { getProvider, isConfigured, getAIConfig, getSupportedProviders };
+const createProvider = (config) => {
+    const ProviderClass = PROVIDERS[config.provider];
+    if (!ProviderClass) return null;
+    return new ProviderClass(config);
+};
+
+module.exports = { getProvider, isConfigured, getAIConfig, getSupportedProviders, createProvider };

@@ -48,6 +48,10 @@ Generate between 5 and 15 questions depending on how broad the topic is. Use you
         return prompt;
     }
 
+    async listModels() {
+        return [];
+    }
+
     async *generateStream(topic, questionCount) {
         throw new Error('generateStream must be implemented by provider');
     }

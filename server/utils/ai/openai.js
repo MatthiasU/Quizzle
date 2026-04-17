@@ -3,12 +3,24 @@ const AIProvider = require('./provider');
 class OpenAIProvider extends AIProvider {
     constructor(config) {
         super(config);
-        this.baseUrl = config.baseUrl || 'https://api.openai.com/v1';
         this.model = config.model || 'gpt-4o-mini';
     }
 
+    async listModels() {
+        const response = await fetch('https://api.openai.com/v1/models', {
+            headers: {'Authorization': `Bearer ${this.apiKey}`}
+        });
+        if (!response.ok) return [];
+        const data = await response.json();
+        const dominated = /\d{4}-\d{2}|preview|audio|realtime|search/;
+        return (data.data || [])
+            .map(m => m.id)
+            .filter(id => /^(gpt-|o[1-9]|chatgpt-)/.test(id) && !dominated.test(id))
+            .sort();
+    }
+
     async *generateStream(topic, questionCount) {
-        const response = await fetch(`${this.baseUrl}/chat/completions`, {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

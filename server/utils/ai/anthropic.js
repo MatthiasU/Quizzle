@@ -7,6 +7,20 @@ class AnthropicProvider extends AIProvider {
         this.model = config.model || 'claude-sonnet-4-20250514';
     }
 
+    async listModels() {
+        const response = await fetch(`${this.baseUrl}/models?limit=100`, {
+            headers: {
+                'x-api-key': this.apiKey,
+                'anthropic-version': '2023-06-01'
+            }
+        });
+        if (!response.ok) return [];
+        const data = await response.json();
+        return (data.data || [])
+            .map(m => m.id)
+            .sort();
+    }
+
     async *generateStream(topic, questionCount) {
         const response = await fetch(`${this.baseUrl}/messages`, {
             method: 'POST',

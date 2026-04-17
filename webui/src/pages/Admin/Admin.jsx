@@ -38,6 +38,8 @@ export const Admin = () => {
     const [aiApiKey, setAiApiKey] = useState('');
     const [aiModel, setAiModel] = useState('');
     const [aiBaseUrl, setAiBaseUrl] = useState('');
+    const [aiModels, setAiModels] = useState([]);
+    const [modelsLoading, setModelsLoading] = useState(false);
 
     const [brandName, setBrandName] = useState('');
     const [brandColor, setBrandColor] = useState('');
@@ -65,6 +67,26 @@ export const Admin = () => {
         loadSettings();
         loadUsers();
     }, [isAdmin, navigate]);
+
+    useEffect(() => {
+        if (!aiProvider) {
+            setAiModels([]);
+            return;
+        }
+        fetchModels(aiProvider, aiApiKey, aiBaseUrl);
+    }, [aiProvider, aiApiKey, aiBaseUrl]);
+
+    const fetchModels = async (provider, apiKey, baseUrl) => {
+        setModelsLoading(true);
+        try {
+            const data = await postRequest('/admin/models', {provider, apiKey, baseUrl});
+            setAiModels((data.models || []).map(m => ({value: m, label: m})));
+        } catch {
+            setAiModels([]);
+        } finally {
+            setModelsLoading(false);
+        }
+    };
 
     const loadSettings = async () => {
         try {
@@ -276,9 +298,15 @@ export const Admin = () => {
                                         )}
                                         <div className="form-group">
                                             <label>Modell</label>
-                                            <Input placeholder="z. B. gpt-4o" value={aiModel} onChange={(e) => setAiModel(e.target.value)}/>
+                                            <SelectBox
+                                                value={aiModel}
+                                                onChange={setAiModel}
+                                                options={aiModels}
+                                                placeholder={modelsLoading ? 'Modelle werden geladen...' : 'Modell wählen...'}
+                                                disabled={modelsLoading}
+                                            />
                                         </div>
-                                        {(aiProvider === 'ollama' || aiProvider === 'openai') && (
+                                        {aiProvider === 'ollama' && (
                                             <div className="form-group">
                                                 <label>Basis-URL</label>
                                                 <Input placeholder="http://localhost:11434" value={aiBaseUrl} onChange={(e) => setAiBaseUrl(e.target.value)}/>

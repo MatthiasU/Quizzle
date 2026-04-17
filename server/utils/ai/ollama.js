@@ -7,6 +7,13 @@ class OllamaProvider extends AIProvider {
         this.model = config.model || 'llama3';
     }
 
+    async listModels() {
+        const response = await fetch(`${this.baseUrl}/api/tags`);
+        if (!response.ok) return [];
+        const data = await response.json();
+        return (data.models || []).map(m => m.name).sort();
+    }
+
     async *generateStream(topic, questionCount) {
         const response = await fetch(`${this.baseUrl}/api/chat`, {
             method: 'POST',

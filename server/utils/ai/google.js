@@ -7,6 +7,17 @@ class GoogleProvider extends AIProvider {
         this.model = config.model || 'gemini-2.0-flash';
     }
 
+    async listModels() {
+        const response = await fetch(`${this.baseUrl}/models?key=${this.apiKey}`);
+        if (!response.ok) return [];
+        const data = await response.json();
+        return (data.models || [])
+            .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
+            .map(m => m.name.replace('models/', ''))
+            .filter(id => id.startsWith('gemini-') && !/\d{4}/.test(id))
+            .sort();
+    }
+
     async *generateStream(topic, questionCount) {
         const url = `${this.baseUrl}/models/${this.model}:streamGenerateContent?alt=sse&key=${this.apiKey}`;
 
