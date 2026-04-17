@@ -1,0 +1,104 @@
+@use "@/common/styles/colors" as *
+
+.ai-generate-container
+  position: relative
+
+  .action-button.ai-generate
+    border-color: color-mix(in srgb, #8B5CF6 30%, $border 70%)
+    background: color-mix(in srgb, #8B5CF6 8%, white 92%)
+
+    svg
+      color: #8B5CF6
+
+    &:hover
+      background: color-mix(in srgb, #8B5CF6 12%, white 88%)
+      border-color: color-mix(in srgb, #8B5CF6 50%, $border 50%)
+
+    &.generating
+      border-color: color-mix(in srgb, #8B5CF6 50%, $border 50%)
+      background: color-mix(in srgb, #8B5CF6 15%, white 85%)
+      animation: ai-pulse 2s ease-in-out infinite
+
+.ai-topic-popover
+  position: absolute
+  top: calc(100% + 0.5rem)
+  left: 50%
+  transform: translateX(-50%)
+  display: flex
+  gap: 0.4rem
+  padding: 0.4rem
+  background: $background
+  border: 1.5px solid color-mix(in srgb, #8B5CF6 25%, $border 75%)
+  border-radius: 0.8rem
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15), 0 4px 8px rgba(0, 0, 0, 0.08)
+  z-index: 100
+  white-space: nowrap
+
+  .ai-topic-input
+    width: 16rem
+    border: 1px solid $border
+    border-radius: 0.5rem
+    padding: 0.5rem 0.75rem
+    font-size: 0.85rem
+    font-weight: 500
+    outline: none
+    transition: border-color 0.2s
+    font-family: 'Inter', sans-serif
+
+    &:focus
+      border-color: #8B5CF6
+
+    &::placeholder
+      color: $gray
+
+  .ai-count-input
+    width: 4rem
+    border: 1px solid $border
+    border-radius: 0.5rem
+    padding: 0.5rem 0.5rem
+    font-size: 0.85rem
+    font-weight: 500
+    outline: none
+    transition: border-color 0.2s
+    font-family: 'Inter', sans-serif
+    text-align: center
+    -moz-appearance: textfield
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button
+      -webkit-appearance: none
+      margin: 0
+
+    &:focus
+      border-color: #8B5CF6
+
+    &::placeholder
+      color: $gray
+
+  .ai-topic-go
+    display: flex
+    align-items: center
+    justify-content: center
+    width: 2.2rem
+    height: 2.2rem
+    border: none
+    border-radius: 0.5rem
+    background: linear-gradient(135deg, #8B5CF6, #7C3AED)
+    color: white
+    cursor: pointer
+    transition: all 0.2s
+    flex-shrink: 0
+
+    &:hover:not(:disabled)
+      transform: scale(1.05)
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4)
+
+    &:disabled
+      opacity: 0.4
+      cursor: not-allowed
+
+@keyframes ai-pulse
+  0%, 100%
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.3)
+  50%
+    box-shadow: 0 0 0 6px rgba(139, 92, 246, 0)

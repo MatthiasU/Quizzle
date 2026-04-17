@@ -1,3 +1,9 @@
 {
-  "password": ""
+  "password": "",
+  "ai": {
+    "provider": "",
+    "apiKey": "",
+    "model": "",
+    "baseUrl": ""
+  }
 }

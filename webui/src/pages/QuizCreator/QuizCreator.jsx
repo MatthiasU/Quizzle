@@ -12,15 +12,16 @@ import {
     faExclamationTriangle,
     faFileDownload,
     faFileImport,
-    faGraduationCap
+    faGraduationCap,
 } from "@fortawesome/free-solid-svg-icons";
 import QuestionPreview from "@/pages/QuizCreator/components/QuestionPreview";
 import QuestionEditor from "@/pages/QuizCreator/components/QuestionEditor";
 import AddQuestion from "@/pages/QuizCreator/components/AddQuestion";
 import QuestionSettings from "@/pages/QuizCreator/components/QuestionSettings";
+import AITopicPopover from "@/pages/QuizCreator/components/AITopicPopover";
 import PasswordDialog from "@/common/components/PasswordDialog";
 import toast from "react-hot-toast";
-import {putRequest} from "@/common/utils/RequestUtil.js";
+import {putRequest, jsonRequest} from "@/common/utils/RequestUtil.js";
 import {useInputValidation, validationRules} from "@/common/hooks/useInputValidation";
 import {prepareQuizData, prepareQuizDataForExport, cleanupQuestionImages, cleanupSingleQuestionImages} from "@/common/utils/QuizDataUtil.js";
 import {createFileInput, importQuizzleFile, downloadQuizzleFile} from "@/common/utils/FileOperationsUtil.js";
@@ -28,6 +29,7 @@ import {QuizValidationUtil} from "@/common/utils/QuizValidationUtil.js";
 import {QUESTION_TYPES} from "@/common/constants/QuestionTypes.js";
 import {usePasswordAuthentication} from "@/common/hooks/usePasswordAuthentication.js";
 import {DEFAULT_QUESTION_TYPE} from "@/common/constants/QuestionTypes.js";
+import {useAIGeneration} from "@/common/hooks/useAIGeneration.jsx";
 
 export const QuizCreator = () => {
     const {setCirclePosition} = useOutletContext();
@@ -45,6 +47,7 @@ export const QuizCreator = () => {
     } = usePasswordAuthentication();
 
     const [errorToastId, setErrorToastId] = useState(null);
+    const [aiAvailable, setAIAvailable] = useState(false);
     const [questions, setQuestions] = useState(() => {
         const stored = localStorage.getItem("qq_questions");
         if (stored) {
@@ -75,6 +78,7 @@ export const QuizCreator = () => {
         return [{uuid: generateUuid(), title: "", type: DEFAULT_QUESTION_TYPE, answers: []}];
     });
     const [activeQuestion, setActiveQuestion] = useState(questions[0].uuid);
+    const {generating: aiGenerating, generate: aiGenerate, stop: aiStop} = useAIGeneration({setQuestions, setActiveQuestion});
 
     const deleteQuestion = async (uuid) => {
         const questionToDelete = questions.find(q => q.uuid === uuid);
@@ -219,6 +223,12 @@ export const QuizCreator = () => {
     }, []);
 
     useEffect(() => {
+        jsonRequest("/ai/status").then(data => {
+            setAIAvailable(data?.available === true);
+        }).catch(() => setAIAvailable(false));
+    }, []);
+
+    useEffect(() => {
         try {
             localStorage.setItem("qq_title", titleValidation.value);
             localStorage.setItem("qq_questions", JSON.stringify(questions));
@@ -258,6 +268,14 @@ export const QuizCreator = () => {
                         maxLength={validationRules.quizTitle.maxLength}
                     />
                     <div className="quiz-action-area">
+                        {aiAvailable && (
+                            <AITopicPopover
+                                generating={aiGenerating}
+                                onGenerate={aiGenerate}
+                                onStop={aiStop}
+                            />
+                        )}
+
                         <div className="action-group">
                             <div 
                                 className="action-button import" 

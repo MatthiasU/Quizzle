@@ -20,6 +20,7 @@ app.use(express.json({limit: '100mb'}));
 app.use("/api/branding", require("./routes/branding"));
 app.use("/api/quizzes", require("./routes/quizzes"));
 app.use("/api/practice", require("./routes/practice"));
+app.use("/api/ai", require("./routes/ai"));
 
 io.on('connection', (socket) => require("./socket")(io, socket));
 
