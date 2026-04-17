@@ -11,12 +11,11 @@
   "version": "2.3.2",
   "main": "index.js",
   "devDependencies": {
-    "concurrently": "^9.2.1",
-    "nodemon": "^3.1.0"
+    "concurrently": "^9.2.1"
   },
   "scripts": {
     "start": "bun server/index.js",
-    "dev:server": "nodemon server/index.js",
+    "dev:server": "bun --watch --ignore=data/** server/index.js",
     "dev:client": "cd webui && bun run dev",
     "dev": "concurrently \"bun run dev:server\" \"bun run dev:client\""
   },
