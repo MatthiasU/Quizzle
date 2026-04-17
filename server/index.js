@@ -17,6 +17,8 @@ startCleanupTask();
 
 app.use(express.json({limit: '100mb'}));
 
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/admin", require("./routes/admin"));
 app.use("/api/branding", require("./routes/branding"));
 app.use("/api/quizzes", require("./routes/quizzes"));
 app.use("/api/practice", require("./routes/practice"));

@@ -3,13 +3,14 @@ import {useContext, useEffect, useRef, useState} from "react";
 import "./styles.sass";
 import {motion} from "framer-motion";
 import Button from "@/common/components/Button";
-import {faShareFromSquare, faSwatchbook, faChartBar} from "@fortawesome/free-solid-svg-icons";
+import {faShareFromSquare, faSwatchbook, faChartBar, faGear, faRightToBracket, faRightFromBracket} from "@fortawesome/free-solid-svg-icons";
 import {useNavigate, useOutletContext} from "react-router-dom";
 import {socket, ensureSocketConnection, joinRoomWithSession, addReconnectionCallback, removeReconnectionCallback} from "@/common/utils/SocketUtil.js";
 import CodeInput from "@/pages/Home/components/CodeInput";
 import CharacterSelection from "@/pages/Home/components/CharacterSelection";
 import ResultsDialog from "@/pages/Home/components/ResultsDialog";
 import {QuizContext} from "@/common/contexts/Quiz";
+import {AuthContext} from "@/common/contexts/Auth";
 import QrScanner from "qr-scanner";
 import toast from "react-hot-toast";
 import {jsonRequest} from "@/common/utils/RequestUtil.js";
@@ -17,6 +18,7 @@ import {jsonRequest} from "@/common/utils/RequestUtil.js";
 export const Home = () => {
     const {titleImg, imprint, privacy, version} = useContext(BrandingContext);
     const {setRoomCode, setUsername, setPracticeUserData} = useContext(QuizContext);
+    const {isAuthenticated, isAdmin, requireAuth, logout} = useContext(AuthContext);
     const {setCirclePosition} = useOutletContext();
     const [code, setCode] = useState(window.location.search.includes("code=") ? window.location.search.split("=")[1] : null);
     const [scannerShown, setScannerShown] = useState(false);
@@ -155,13 +157,9 @@ export const Home = () => {
         });
     }
 
-    const handleResultsSuccess = (practiceCode, password) => {
+    const handleResultsSuccess = (practiceCode) => {
         setCirclePosition("-30rem 0 0 -30rem");
-        setTimeout(() => {
-            navigate(`/results/${practiceCode}`, {
-                state: {password}
-            });
-        }, 500);
+        setTimeout(() => navigate(`/results/${practiceCode}`), 500);
     };
 
     const navigate = useNavigate();
@@ -258,6 +256,27 @@ export const Home = () => {
                                 setCirclePosition("-30rem 0 0 -30rem");
                                 setTimeout(() => navigate("/load"), 500);
                             }}/>
+                    {isAdmin && (
+                        <Button text="Admin" icon={faGear} padding={"0.8rem 2.5rem"} type="secondary"
+                                disabled={code !== null}
+                                onClick={() => {
+                                    setCirclePosition("-30rem 0 0 -30rem");
+                                    setTimeout(() => navigate("/admin"), 500);
+                                }}/>
+                    )}
+                    {!isAuthenticated && (
+                        <Button text="Anmelden" icon={faRightToBracket} padding={"0.8rem 2.5rem"} type="secondary"
+                                disabled={code !== null}
+                                onClick={() => requireAuth(() => {})}/>
+                    )}
+                    {isAuthenticated && (
+                        <Button text="Abmelden" icon={faRightFromBracket} padding={"0.8rem 2.5rem"} type="secondary"
+                                disabled={code !== null}
+                                onClick={() => {
+                                    logout();
+                                    toast.success("Abgemeldet.");
+                                }}/>
+                    )}
                 </div>
             </motion.div>
 

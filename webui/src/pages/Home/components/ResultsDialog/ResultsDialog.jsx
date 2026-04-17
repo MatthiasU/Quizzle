@@ -1,62 +1,37 @@
-import {useState, useContext, useEffect} from "react";
-import PasswordDialog from "@/common/components/PasswordDialog";
+import {useContext, useEffect} from "react";
 import {postRequest} from "@/common/utils/RequestUtil.js";
-import {BrandingContext} from "@/common/contexts/Branding";
+import {AuthContext} from "@/common/contexts/Auth";
 import toast from "react-hot-toast";
 
 export const ResultsDialog = ({isOpen, onClose, practiceCode, onSuccess}) => {
-    const [isLoading, setIsLoading] = useState(false);
-    const {passwordProtected} = useContext(BrandingContext);
+    const {isAuthenticated, requireAuth} = useContext(AuthContext);
 
     useEffect(() => {
-        if (isOpen && !passwordProtected) {
-            handleDirectAccess();
-        }
-    }, [isOpen, passwordProtected]);
+        if (!isOpen) return;
 
-    const handleDirectAccess = async () => {
-        setIsLoading(true);
-        try {
-            await postRequest(`/practice/${practiceCode}/results`, {});
-            onClose();
-            onSuccess(practiceCode, "");
-        } catch (error) {
-            console.error('Error loading results:', error);
-            if (error.message && error.message.includes('404')) {
-                toast.error('Übungsquiz nicht gefunden');
-            } else {
-                toast.error('Fehler beim Laden der Ergebnisse');
+        const access = async () => {
+            try {
+                await postRequest(`/practice/${practiceCode}/results`, {});
+                onClose();
+                onSuccess(practiceCode);
+            } catch (error) {
+                if (error.message?.includes('404')) {
+                    toast.error('Übungsquiz nicht gefunden');
+                } else if (error.message?.includes('401')) {
+                    toast.error('Anmeldung erforderlich');
+                } else {
+                    toast.error('Fehler beim Laden der Ergebnisse');
+                }
             }
-        } finally {
-            setIsLoading(false);
-        }
-    };
+        };
 
-    const handlePasswordSubmit = async (password) => {
-        setIsLoading(true);
-        try {
-            await postRequest(`/practice/${practiceCode}/results`, {password});
+        if (isAuthenticated) {
+            access();
+        } else {
+            requireAuth(access);
             onClose();
-            onSuccess(practiceCode, password);
-        } catch (error) {
-            console.error('Error validating password:', error);
-            throw error;
-        } finally {
-            setIsLoading(false);
         }
-    };
+    }, [isOpen]);
 
-    const handleClose = () => {
-        if (!isLoading) onClose();
-    };
-
-    if (!passwordProtected) return null;
-
-    return (
-        <PasswordDialog
-            isOpen={isOpen}
-            onClose={handleClose}
-            onConfirm={handlePasswordSubmit}
-        />
-    );
+    return null;
 };

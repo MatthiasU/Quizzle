@@ -36,7 +36,7 @@ export const SelectBox = ({value, onChange, options, placeholder = "Auswählen..
     const selectedOption = getSelectedOption();
 
     return (
-        <div className={`select-box ${disabled ? 'disabled' : ''}`} ref={selectRef}>
+        <div className={`select-box ${disabled ? 'disabled' : ''} ${isOpen ? 'open' : ''}`} ref={selectRef}>
             <div
                 className={`select-trigger ${isOpen ? 'open' : ''}`}
                 onClick={() => !disabled && setIsOpen(!isOpen)}

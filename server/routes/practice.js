@@ -5,8 +5,8 @@ const pako = require("pako");
 const path = require("path");
 const fs = require("fs").promises;
 const {generatePracticeCode, isAlphabeticCode} = require("../utils/random");
-const {brandingFolder} = require("../utils/file");
 const app = require('express').Router();
+const {requireAuth} = require("../middleware/auth");
 
 const practiceQuizzesDir = path.join(process.cwd(), 'data', 'practice-quizzes');
 
@@ -21,12 +21,6 @@ const ensurePracticeQuizzesDir = async () => {
 const createLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 5,
-});
-
-const passwordLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 10,
-    message: {message: "Too many password attempts"}
 });
 
 const practiceQuizExists = async (code) => {
@@ -50,23 +44,9 @@ const isPracticeQuizExpired = async (code) => {
     }
 };
 
-app.put("/", createLimiter, async (req, res) => {
+app.put("/", createLimiter, requireAuth, async (req, res) => {
     try {
         if (validateSchema(res, quizUpload, req.body)) return;
-
-        const {password} = req.headers;
-        const configPayload = require(path.join(brandingFolder, "config.json"));
-        const correctPassword = configPayload.password;
-
-        if (correctPassword) {
-            if (!password) {
-                return res.status(400).json({message: "Teacher password is required for practice quizzes"});
-            }
-
-            if (password !== correctPassword) {
-                return res.status(401).json({message: "Invalid teacher password"});
-            }
-        }
 
         await ensurePracticeQuizzesDir();
 
@@ -343,10 +323,9 @@ app.post('/:code/submit-answer', async (req, res) => {
     }
 });
 
-app.post('/:code/results', passwordLimiter, async (req, res) => {
+app.post('/:code/results', requireAuth, async (req, res) => {
     try {
         const code = req.params.code.replace(/[^A-Z]/gi, '').toUpperCase();
-        const {password} = req.body;
 
         if (!isAlphabeticCode(code)) {
             return res.status(400).json({message: "Invalid practice code format"});
@@ -359,19 +338,6 @@ app.post('/:code/results', passwordLimiter, async (req, res) => {
         const metaPath = path.join(practiceQuizzesDir, code, 'meta.json');
         const metaContent = await fs.readFile(metaPath, 'utf8');
         const meta = JSON.parse(metaContent);
-
-        const configPayload = require(path.join(brandingFolder, "config.json"));
-        const correctPassword = configPayload.password;
-
-        if (correctPassword) {
-            if (!password) {
-                return res.status(400).json({message: "Password is required"});
-            }
-            
-            if (password !== correctPassword) {
-                return res.status(401).json({message: "Invalid teacher password"});
-            }
-        }
 
         const resultsDir = path.join(practiceQuizzesDir, code, 'results');
         const resultFiles = await fs.readdir(resultsDir);

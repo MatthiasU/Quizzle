@@ -5,8 +5,9 @@ const pako = require("pako");
 const path = require("path");
 const fs = require("fs");
 const app = require('express').Router();
-const {quizzesFolder, brandingFolder} = require("../utils/file");
+const {quizzesFolder} = require("../utils/file");
 const {generateQuizId} = require("../utils/random");
+const {requireAuth} = require("../middleware/auth");
 
 const uploadFile = async (content) => {
     let random = generateQuizId();
@@ -39,12 +40,6 @@ const limiter = rateLimit({
     limit: 10,
 });
 
-const passwordLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 5,
-    message: { message: "Too many password attempts" }
-});
-
 app.get('/:quizId', (req, res) => {
     const escaped = req.params.quizId.replace(/[^a-z0-9]/gi, '');
 
@@ -58,42 +53,8 @@ app.get('/:quizId', (req, res) => {
     });
 });
 
-app.post("/validate-password", passwordLimiter, (req, res) => {
-    const { password } = req.body;
-    const configPayload = require(path.join(brandingFolder, "config.json"));
-    const correctPassword = configPayload.password;
-    
-    if (!correctPassword) {
-        return res.status(400).json({ message: "Password protection not enabled" });
-    }
-    
-    if (!password) {
-        return res.status(400).json({ message: "Password is required" });
-    }
-    
-    if (password === correctPassword) {
-        res.json({ valid: true });
-    } else {
-        res.status(401).json({ valid: false, message: "Invalid password" });
-    }
-});
-
-app.put("/", limiter, async (req, res) => {
+app.put("/", limiter, requireAuth, async (req, res) => {
     if (validateSchema(res, quizUpload, req.body)) return;
-
-    const configPayload = require(path.join(brandingFolder, "config.json"));
-    const passwordProtection = configPayload.password;
-    if (passwordProtection) {
-        const password = req.headers['x-quiz-password'];
-        
-        if (!password) {
-            return res.status(401).json({ message: "Password is required" });
-        }
-        
-        if (password !== passwordProtection) {
-            return res.status(401).json({ message: "Invalid password" });
-        }
-    }
 
     const quizId = await uploadFile(req.body);
     res.json({quizId});

@@ -8,4 +8,4 @@ module.exports.config = Joi.object({
         model: Joi.string().optional().allow(''),
         baseUrl: Joi.string().uri().optional().allow('')
     }).optional()
-});
+}).options({allowUnknown: true});

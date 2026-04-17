@@ -1,5 +1,5 @@
 import {useState, useEffect, useContext} from "react";
-import {useParams, useNavigate, useLocation} from "react-router-dom";
+import {useParams, useNavigate} from "react-router-dom";
 import {BrandingContext} from "@/common/contexts/Branding";
 import {motion} from "framer-motion";
 import Button from "@/common/components/Button";
@@ -17,8 +17,7 @@ import toast from "react-hot-toast";
 export const PracticeResults = () => {
     const {code} = useParams();
     const navigate = useNavigate();
-    const location = useLocation();
-    const {titleImg, passwordProtected} = useContext(BrandingContext);
+    const {titleImg} = useContext(BrandingContext);
 
     const [results, setResults] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -27,27 +26,23 @@ export const PracticeResults = () => {
     const [activeView, setActiveView] = useState('analytics');
 
     useEffect(() => {
-        loadResultsWithPassword(location.state?.password || "");
-    }, [location.state]);
+        loadResults();
+    }, []);
 
-    const loadResultsWithPassword = async (pwd) => {
+    const loadResults = async () => {
         setLoading(true);
         try {
-            const requestBody = passwordProtected ? {password: pwd} : {};
-            const response = await postRequest(`/practice/${code}/results`, requestBody);
+            const response = await postRequest(`/practice/${code}/results`, {});
             setResults(response);
         } catch (error) {
-            console.error('Error loading results:', error);
-            if (error.message && error.message.includes('401')) {
-                toast.error('Ungültiges Passwort.');
-                navigate('/');
-            } else if (error.message && error.message.includes('404')) {
+            if (error.message?.includes('401')) {
+                toast.error('Anmeldung erforderlich.');
+            } else if (error.message?.includes('404')) {
                 toast.error('Übungsquiz nicht gefunden.');
-                navigate('/');
             } else {
                 toast.error('Fehler beim Laden der Ergebnisse.');
-                navigate('/');
             }
+            navigate('/');
         } finally {
             setLoading(false);
         }

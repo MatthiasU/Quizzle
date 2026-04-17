@@ -19,7 +19,6 @@ import QuestionEditor from "@/pages/QuizCreator/components/QuestionEditor";
 import AddQuestion from "@/pages/QuizCreator/components/AddQuestion";
 import QuestionSettings from "@/pages/QuizCreator/components/QuestionSettings";
 import AITopicPopover from "@/pages/QuizCreator/components/AITopicPopover";
-import PasswordDialog from "@/common/components/PasswordDialog";
 import toast from "react-hot-toast";
 import {putRequest, jsonRequest} from "@/common/utils/RequestUtil.js";
 import {useInputValidation, validationRules} from "@/common/hooks/useInputValidation";
@@ -27,24 +26,15 @@ import {prepareQuizData, prepareQuizDataForExport, cleanupQuestionImages, cleanu
 import {createFileInput, importQuizzleFile, downloadQuizzleFile} from "@/common/utils/FileOperationsUtil.js";
 import {QuizValidationUtil} from "@/common/utils/QuizValidationUtil.js";
 import {QUESTION_TYPES} from "@/common/constants/QuestionTypes.js";
-import {usePasswordAuthentication} from "@/common/hooks/usePasswordAuthentication.js";
 import {DEFAULT_QUESTION_TYPE} from "@/common/constants/QuestionTypes.js";
 import {useAIGeneration} from "@/common/hooks/useAIGeneration.jsx";
+import {AuthContext} from "@/common/contexts/Auth";
 
 export const QuizCreator = () => {
     const {setCirclePosition} = useOutletContext();
     const {logoImg} = useContext(BrandingContext);
     const titleValidation = useInputValidation(localStorage.getItem("qq_title") || "", validationRules.quizTitle);
-    const {
-        isAuthenticated,
-        passwordProtected,
-        showPasswordDialog,
-        requireAuthentication,
-        handlePasswordSubmit,
-        closePasswordDialog,
-        getAuthHeaders,
-        getAuthData
-    } = usePasswordAuthentication();
+    const {isAuthenticated, requireAuth} = useContext(AuthContext);
 
     const [errorToastId, setErrorToastId] = useState(null);
     const [aiAvailable, setAIAvailable] = useState(false);
@@ -141,7 +131,7 @@ export const QuizCreator = () => {
     }
 
     const handleUploadClick = () => {
-        requireAuthentication(uploadQuiz, 'upload');
+        requireAuth(uploadQuiz);
     };
 
     const handlePracticeUploadClick = () => {
@@ -150,14 +140,13 @@ export const QuizCreator = () => {
             return;
         }
         if (!validateQuestions()) return;
-        requireAuthentication(publishPracticeQuiz, 'practice');
+        requireAuth(publishPracticeQuiz);
     };
 
     const publishPracticeQuiz = async () => {
         const quizData = await prepareQuizData(questions, titleValidation.value, true);
         try {
-            const authData = getAuthData();
-            const response = await putRequest("/practice", quizData, authData);
+            const response = await putRequest("/practice", quizData);
             if (response.practiceCode) {
                 toast.success("Übungsquiz erfolgreich erstellt!");
                 toast.success(`Übungscode: ${response.practiceCode}`, {duration: 10000});
@@ -177,9 +166,8 @@ export const QuizCreator = () => {
         if (!validateQuestions()) return;
 
         const quizData = await prepareQuizData(questions, titleValidation.value, true);
-        const headers = getAuthHeaders();
 
-        putRequest("/quizzes", quizData, headers).then((r) => {
+        putRequest("/quizzes", quizData).then((r) => {
             if (r.quizId === undefined) throw {ce: "Dein Quiz übersteigt die Speicherkapazität des Servers. Bitte lade es lokal herunter."};
             toast.success("Quiz erfolgreich hochgeladen.");
             toast.success("Quiz-ID: " + r.quizId, {duration: 10000});
@@ -295,16 +283,16 @@ export const QuizCreator = () => {
                         
                         <div className="action-group">
                             <div 
-                                className={`action-button upload ${passwordProtected && !isAuthenticated ? 'locked' : ''}`}
+                                className={`action-button upload ${!isAuthenticated ? 'locked' : ''}`}
                                 onClick={handleUploadClick}
-                                title={passwordProtected && !isAuthenticated ? "Passwort erforderlich" : "Als Live-Quiz hochladen"}
+                                title={!isAuthenticated ? "Anmeldung erforderlich" : "Als Live-Quiz hochladen"}
                             >
                                 <FontAwesomeIcon icon={faCloudUpload} />
                             </div>
                             <div 
-                                className={`action-button practice ${passwordProtected && !isAuthenticated ? 'locked' : ''}`}
+                                className={`action-button practice ${!isAuthenticated ? 'locked' : ''}`}
                                 onClick={handlePracticeUploadClick}
-                                title={passwordProtected && !isAuthenticated ? "Passwort erforderlich" : "Als Übungsquiz veröffentlichen"}
+                                title={!isAuthenticated ? "Anmeldung erforderlich" : "Als Übungsquiz veröffentlichen"}
                             >
                                 <FontAwesomeIcon icon={faGraduationCap} />
                             </div>
@@ -354,12 +342,6 @@ export const QuizCreator = () => {
                     
                 <QuestionSettings key={`settings-${activeQuestion}`} question={questions.find(q => q.uuid === activeQuestion)} onChange={onChange} />
             </div>
-
-            <PasswordDialog
-                isOpen={showPasswordDialog}
-                onClose={closePasswordDialog}
-                onConfirm={handlePasswordSubmit}
-            />
         </div>
     )
 }

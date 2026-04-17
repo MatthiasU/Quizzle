@@ -1,0 +1,53 @@
+@use "@/common/styles/colors" as *
+
+.login-dialog
+  max-width: 360px
+
+  .dialog-header
+    padding: 1.5rem 1.5rem 0.75rem 1.5rem
+
+  .dialog-content
+    padding: 0.5rem 1.5rem 1.25rem 1.5rem
+    text-align: center
+
+  .dialog-actions
+    padding: 0 1.5rem 1.5rem 1.5rem
+
+.login-dialog-title
+  display: flex
+  align-items: center
+  justify-content: center
+  gap: 0.6rem
+
+.login-dialog-title-icon
+  color: $primary
+  font-size: 1.1rem
+  filter: drop-shadow(0 2px 4px rgba(101, 71, 238, 0.2))
+
+.login-dialog-content
+  display: flex
+  flex-direction: column
+  align-items: center
+  gap: 1rem
+
+.login-dialog-text
+  color: $gray
+  font-size: 0.9rem
+  font-weight: 500
+  line-height: 1.4
+  margin: 0
+
+  strong
+    color: $primary
+    font-weight: 700
+
+.login-input-wrapper
+  width: 100%
+  display: flex
+  flex-direction: column
+  gap: 0.6rem
+
+  .custom-input
+    font-size: 16px
+    padding: 0.65rem 1rem
+    border-radius: 0.6rem

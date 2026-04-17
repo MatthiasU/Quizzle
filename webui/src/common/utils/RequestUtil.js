@@ -1,49 +1,42 @@
-// Run a plain request with all default values
 export const request = async (path, method = "GET", body = {}, headers = {}) => {
-    return await fetch("/api" + path, {
-        headers: {"content-type": "application/json", ...headers}, method,
-        body: method !== "GET" ? JSON.stringify(body) : undefined
-    });
+    const options = {
+        headers: {"content-type": "application/json", ...headers},
+        method
+    };
+    if (method !== "GET" && method !== "DELETE") {
+        options.body = JSON.stringify(body);
+    }
+    return await fetch("/api" + path, options);
 }
 
-// Run a GET request and get the json of the response
 export const jsonRequest = async (path, headers = {}) => {
-    try {
-        const resp = await request(path, "GET", null, headers);
-        return await resp.json();
-    } catch (e) {
-        throw e;
-    }
+    const resp = await request(path, "GET", null, headers);
+    return await resp.json();
 }
 
-// Run a POST request and post some values
 export const postRequest = async (path, body = {}, headers = {}) => {
-    try {
-        const resp = await request(path, "POST", body, headers);
-        
-        if (!resp.ok) {
-            const errorData = await resp.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP error! status: ${resp.status}`);
-        }
-        
-        return await resp.json();
-    } catch (e) {
-        throw e;
+    const resp = await request(path, "POST", body, headers);
+    if (!resp.ok) {
+        const errorData = await resp.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${resp.status}`);
     }
+    return await resp.json();
 }
 
-// Run a PUT request and post some values
 export const putRequest = async (path, body = {}, headers = {}) => {
-    try {
-        const resp = await request(path, "PUT", body, headers);
-        
-        if (!resp.ok) {
-            const errorData = await resp.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP error! status: ${resp.status}`);
-        }
-        
-        return await resp.json();
-    } catch (e) {
-        throw e;
+    const resp = await request(path, "PUT", body, headers);
+    if (!resp.ok) {
+        const errorData = await resp.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${resp.status}`);
     }
+    return await resp.json();
+}
+
+export const deleteRequest = async (path, headers = {}) => {
+    const resp = await request(path, "DELETE", {}, headers);
+    if (!resp.ok) {
+        const errorData = await resp.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${resp.status}`);
+    }
+    return await resp.json();
 }

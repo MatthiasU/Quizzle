@@ -2,6 +2,7 @@ const rateLimit = require('express-rate-limit');
 const app = require('express').Router();
 const { isConfigured, getProvider, getSupportedProviders } = require('../utils/ai');
 const { generateUuid } = require('../utils/random');
+const { requireAuth } = require('../middleware/auth');
 
 const limiter = rateLimit({
     windowMs: 1 * 60 * 1000,
@@ -16,7 +17,7 @@ app.get('/status', (req, res) => {
     });
 });
 
-app.post('/generate', limiter, async (req, res) => {
+app.post('/generate', requireAuth, limiter, async (req, res) => {
     if (!isConfigured()) {
         return res.status(503).json({ message: "KI ist nicht konfiguriert." });
     }

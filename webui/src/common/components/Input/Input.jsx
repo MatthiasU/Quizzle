@@ -1,6 +1,6 @@
 import "./styles.sass";
 
-export const Input = ({placeholder, onChange, value, textAlign, error, warning, maxLength, onBlur, disabled}) => {
+export const Input = ({placeholder, onChange, value, textAlign, error, warning, maxLength, onBlur, onKeyDown, disabled, type}) => {
     const handleChange = (e) => {
         const newValue = e.target.value;
         if (maxLength && newValue.length > maxLength) return;
@@ -19,13 +19,14 @@ export const Input = ({placeholder, onChange, value, textAlign, error, warning, 
         <div className="input-wrapper">
             <input
                 className={getClassName()}
-                type="text"
+                type={type || "text"}
                 placeholder={placeholder}
                 autoComplete="off"
                 data-form-type="other"
                 value={value}
                 onChange={handleChange}
                 onBlur={onBlur}
+                onKeyDown={onKeyDown}
                 disabled={disabled}
                 style={{textAlign: textAlign}}
                 maxLength={maxLength}
