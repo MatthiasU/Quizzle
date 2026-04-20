@@ -3,6 +3,7 @@ import {generateUuid} from "@/common/utils/UuidUtil.js";
 import toast from "react-hot-toast";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faWandMagicSparkles} from "@fortawesome/free-solid-svg-icons";
+import {imageCache} from "@/common/utils/ImageCacheUtil.js";
 
 export const useAIGeneration = ({setQuestions, setActiveQuestion}) => {
     const [generating, setGenerating] = useState(false);
@@ -105,6 +106,24 @@ export const useAIGeneration = ({setQuestions, setActiveQuestion}) => {
                                 id: toastId,
                                 icon: <FontAwesomeIcon icon={faWandMagicSparkles} style={{color: '#8B5CF6'}}/>
                             });
+                        } else if (event.type === 'image') {
+                            const {uuid, b64_image} = event;
+                            if (uuid && b64_image) {
+                                try {
+                                    const byteString = atob(b64_image.split(',')[1]);
+                                    const mimeType = b64_image.split(',')[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+                                    const ab = new Uint8Array(byteString.length);
+                                    for (let i = 0; i < byteString.length; i++) ab[i] = byteString.charCodeAt(i);
+                                    const file = new File([ab], 'ai-image.jpg', {type: mimeType});
+                                    imageCache.storeImage(uuid, file).then(imageId => {
+                                        setQuestions(prev => prev.map(q =>
+                                            q.uuid === uuid ? {...q, imageId} : q
+                                        ));
+                                    });
+                                } catch (e) {
+                                    console.warn('Failed to store AI image:', e);
+                                }
+                            }
                         } else if (event.type === 'error') {
                             throw new Error(event.message);
                         }

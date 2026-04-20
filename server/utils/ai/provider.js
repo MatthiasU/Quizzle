@@ -30,8 +30,15 @@ Respond with a JSON array where each element is a question object:
 {
   "title": "Question text here?",
   "type": "multiple-choice|true-false|text|sequence|slider",
+  "imageQuery": "short English image search term",
   "answers": [...]
 }
+
+The "imageQuery" field is REQUIRED for every question. It will be used to search a stock photo library (Unsplash). Provide 2-4 English keywords that would find a visually compelling, relevant photo for this question. Focus on the subject matter, not the question itself. Examples:
+- Question about the Eiffel Tower → "eiffel tower paris"
+- Question about photosynthesis → "green leaves sunlight"
+- Question about World War 2 → "world war 2 historical"
+- Question about a famous painter → "painting art gallery"
 
 For multiple-choice answers: [{"type": "text", "content": "Answer", "is_correct": true/false}, ...]
 For true-false answers: [{"type": "text", "content": "Wahr", "is_correct": true}, {"type": "text", "content": "Falsch", "is_correct": false}]
