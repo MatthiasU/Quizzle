@@ -1,10 +1,12 @@
+@use "@/common/styles/colors" as *
+
 .double-points-overlay
   position: fixed
   top: 0
   left: 0
   width: 100vw
   height: 100vh
-  background: rgba(0, 0, 0, 0.9)
+  background: $blue
   z-index: 9999
   display: flex
   align-items: center
@@ -17,48 +19,41 @@
   padding: 2rem
 
 .double-points-icon
-  font-size: 4rem
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  width: 5rem
+  height: 5rem
+  border-radius: 50%
+  background: rgba(255, 255, 255, 0.15)
+  font-size: 2.5rem
   color: #FFD700
   margin-bottom: 1.5rem
-  filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.8))
-  animation: pulse 2s infinite
 
 .double-points-title
   font-size: 3.5rem
-  font-weight: bold
+  font-weight: 900
   margin: 0 0 1rem 0
-  background: linear-gradient(45deg, #FFD700, #FFA500, #FF6B6B)
-  -webkit-background-clip: text
-  -webkit-text-fill-color: transparent
-  background-clip: text
-  filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5))
-  text-shadow: 0 0 30px rgba(255, 215, 0, 0.8)
+  color: #FFFFFF
 
 .double-points-subtitle
   font-size: 1.5rem
-  color: #ffffff
+  color: rgba(255, 255, 255, 0.85)
   margin: 0
-  opacity: 0.9
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5)
+  font-weight: 600
 
 @media (max-width: 768px)
   .double-points-icon
-    font-size: 3rem
+    width: 4rem
+    height: 4rem
+    font-size: 2rem
     margin-bottom: 1rem
-    
+
   .double-points-title
     font-size: 2.5rem
-  
+
   .double-points-subtitle
     font-size: 1.2rem
-  
+
   .double-points-content
     padding: 1rem
-
-@keyframes pulse
-  0%
-    transform: scale(1)
-  50%
-    transform: scale(1.2)
-  100%
-    transform: scale(1)
