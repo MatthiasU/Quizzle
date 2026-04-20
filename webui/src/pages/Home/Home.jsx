@@ -20,7 +20,10 @@ export const Home = () => {
     const {setRoomCode, setUsername, setPracticeUserData} = useContext(QuizContext);
     const {isAuthenticated, isAdmin, requireAuth, logout} = useContext(AuthContext);
     const {setCirclePosition} = useOutletContext();
-    const [code, setCode] = useState(window.location.search.includes("code=") ? window.location.search.split("=")[1] : null);
+    const [code, setCode] = useState(() => {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("code") || null;
+    });
     const [scannerShown, setScannerShown] = useState(false);
     const [isPracticeMode, setIsPracticeMode] = useState(false);
     const [showResultsDialog, setShowResultsDialog] = useState(false);
@@ -70,6 +73,13 @@ export const Home = () => {
     const [errorClass, setErrorClass] = useState("");
     const [loading, setLoading] = useState(false);
 
+    const showError = (message) => {
+        setCode(null);
+        toast.error(message);
+        setErrorClass("room-error");
+        setTimeout(() => setErrorClass(""), 300);
+    };
+
     const checkRoom = (code) => {
         if (isAlphabeticCode(code)) {
             setLoading(true);
@@ -80,19 +90,13 @@ export const Home = () => {
                         setCode(code.toUpperCase());
                         setIsPracticeMode(true);
                     } else {
-                        setCode(null);
-                        toast.error(data.message || "Übungsquiz nicht gefunden");
-                        setErrorClass("room-error");
-                        setTimeout(() => setErrorClass(""), 300);
+                        showError(data.message || "Übungsquiz nicht gefunden");
                     }
                 })
                 .catch(error => {
                     setLoading(false);
                     console.error('Error checking practice quiz:', error);
-                    setCode(null);
-                    toast.error("Fehler beim Überprüfen des Übungsquiz");
-                    setErrorClass("room-error");
-                    setTimeout(() => setErrorClass(""), 300);
+                    showError("Fehler beim Überprüfen des Übungsquiz");
                 });
             return;
         }
@@ -104,23 +108,14 @@ export const Home = () => {
                         setCode(parseInt(code));
                         setIsPracticeMode(false);
                     } else {
-                        setCode(null);
-                        toast.error(response?.error || "Raum nicht gefunden");
-                        setErrorClass("room-error");
-                        setTimeout(() => setErrorClass(""), 300);
+                        showError(response?.error || "Raum nicht gefunden");
                     }
                 });
             }).catch(() => {
-                setCode(null);
-                toast.error("Verbindungsfehler");
-                setErrorClass("room-error");
-                setTimeout(() => setErrorClass(""), 300);
+                showError("Verbindungsfehler");
             });
         } else {
-            setCode(null);
-            toast.error("Ungültiger Code");
-            setErrorClass("room-error");
-            setTimeout(() => setErrorClass(""), 300);
+            showError("Ungültiger Code");
         }
     }
 
@@ -179,7 +174,6 @@ export const Home = () => {
 
     useEffect(() => {
         const handleConnect = () => {
-            // Connection restored, no need to clear error messages since we're using toasts
         };
 
         const handleDisconnect = () => {

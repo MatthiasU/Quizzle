@@ -154,16 +154,20 @@ export const MediaDialog = ({isOpen, onClose, onSelect}) => {
                 >
                     <motion.div
                         className="media-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Medien einfügen"
                         initial={{opacity: 0, scale: 0.9, y: -20}}
                         animate={{opacity: 1, scale: 1, y: 0}}
                         exit={{opacity: 0, scale: 0.9, y: -20}}
                         transition={{duration: 0.2, ease: "easeOut"}}
                         onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.key === 'Escape' && onClose()}
                     >
                         <div className="media-dialog-header">
                             <h3>Medien einfügen</h3>
-                            <button className="media-dialog-close" onClick={onClose}>
-                                <FontAwesomeIcon icon={faTimes}/>
+                            <button type="button" className="media-dialog-close" onClick={onClose} aria-label="Dialog schließen">
+                                <FontAwesomeIcon icon={faTimes} aria-hidden="true"/>
                             </button>
                         </div>
 
@@ -171,6 +175,7 @@ export const MediaDialog = ({isOpen, onClose, onSelect}) => {
                             <div className="media-dialog-sidebar">
                                 {availableTabs.map((tab) => (
                                     <button
+                                        type="button"
                                         key={tab.id}
                                         className={`media-tab ${activeTab === tab.id ? "active" : ""}`}
                                         onClick={() => {
@@ -179,8 +184,9 @@ export const MediaDialog = ({isOpen, onClose, onSelect}) => {
                                             setResults([]);
                                             setError(null);
                                         }}
+                                        aria-pressed={activeTab === tab.id}
                                     >
-                                        <FontAwesomeIcon icon={tab.icon}/>
+                                        <FontAwesomeIcon icon={tab.icon} aria-hidden="true"/>
                                         <span>{tab.label}</span>
                                     </button>
                                 ))}

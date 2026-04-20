@@ -39,13 +39,15 @@ export const CharacterSelection = ({code, submit, isPracticeMode = false}) => {
 
     return (
         <div className="character-selection">
-            <div
+            <button
+                type="button"
                 className="character-display"
                 onClick={() => setShowModal(true)}
+                aria-label={`Charakter: ${selectedCharacter.name}. Klicken zum Ändern`}
             >
                 <div className="character-emoji">{selectedCharacter.emoji}</div>
                 <span>{selectedCharacter.name}</span>
-            </div>
+            </button>
 
             <Input
                 placeholder="Dein Name"
@@ -91,16 +93,20 @@ export const CharacterSelection = ({code, submit, isPracticeMode = false}) => {
                                 </button>
                             </div>
 
-                            <div className="character-grid">
+                            <div className="character-grid" role="radiogroup" aria-label="Charakter auswählen">
                                 {CHARACTERS.map((character) => (
-                                    <div
+                                    <button
+                                        type="button"
                                         key={character.id}
                                         className={`character-option ${selectedCharacter?.id === character.id ? 'selected' : ''}`}
                                         onClick={() => selectCharacter(character)}
+                                        role="radio"
+                                        aria-checked={selectedCharacter?.id === character.id}
+                                        aria-label={character.name}
                                     >
                                         <div className="character-emoji">{character.emoji}</div>
                                         <div className="character-name">{character.name}</div>
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         </motion.div>

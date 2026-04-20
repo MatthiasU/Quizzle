@@ -3,6 +3,7 @@ import {useState, useEffect, useCallback} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPaperPlane, faGripVertical, faSort, faRotateLeft} from "@fortawesome/free-solid-svg-icons";
 import {Reorder, AnimatePresence, motion} from "framer-motion";
+import AnswerContent from "@/common/components/AnswerContent";
 
 const useIsTouchDevice = () => {
     const [isTouch, setIsTouch] = useState(false);
@@ -111,16 +112,12 @@ export const SequenceClient = ({question, onSubmit}) => {
 
     const renderDesktopItem = (answer, index) => (
         <>
-            <div className="drag-handle">
+            <div className="drag-handle" aria-hidden="true">
                 <FontAwesomeIcon icon={faGripVertical} />
             </div>
             <div className="sequence-number">{index + 1}</div>
             <div className="sequence-content">
-                {answer.type === "image" ? (
-                    <img src={answer.content} alt={`Answer ${index + 1}`} className="sequence-answer-image" />
-                ) : (
-                    <span className="sequence-answer-text">{answer.content}</span>
-                )}
+                <AnswerContent answer={answer} index={index} className="sequence-answer" />
             </div>
         </>
     );
@@ -136,18 +133,17 @@ export const SequenceClient = ({question, onSubmit}) => {
                 key={answer.displayId}
                 className={`tap-item tap-color-${colorClass} ${isPicked ? "picked" : ""}`}
                 onClick={() => handleTapItem(answer.displayId)}
+                role="option"
+                aria-selected={isPicked}
+                aria-label={answer.type === "image" ? `Antwort ${index + 1}` : answer.content}
                 layout
                 transition={{type: "spring", stiffness: 400, damping: 30}}
             >
-                <div className="tap-badge">
+                <div className="tap-badge" aria-hidden="true">
                     {isPicked ? pickIndex + 1 : ""}
                 </div>
                 <div className="tap-content">
-                    {answer.type === "image" ? (
-                        <img src={answer.content} alt="Answer" className="tap-answer-image" />
-                    ) : (
-                        <span className="tap-answer-text">{answer.content}</span>
-                    )}
+                    <AnswerContent answer={answer} index={index} className="tap-answer" />
                 </div>
             </motion.div>
         );

@@ -48,6 +48,7 @@ export const Root = () => {
 
     return (
         <>
+            <a href="#main-content" className="skip-to-content">Zum Inhalt springen</a>
             <Background positionCircle={circlePosition}/>
             <Toaster position="bottom-right" toastOptions={{duration: 4000}} />
             <LoginDialog
@@ -55,7 +56,7 @@ export const Root = () => {
                 onClose={closeLoginDialog}
                 onSuccess={handleLoginSuccess}
             />
-            <main>
+            <main id="main-content">
                 <Outlet context={{setCirclePosition}}/>
             </main>
         </>

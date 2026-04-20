@@ -1,11 +1,41 @@
 @use "colors" as *
 
+*
+  &:focus-visible
+    outline: 2px solid $blue
+    outline-offset: 2px
+
 body, html
   margin: 0
   background-color: transparent
   color: $text
   font-family: "Inter", sans-serif
   font-weight: 700
+
+.skip-to-content
+  position: absolute
+  left: -9999px
+  top: 0
+  z-index: 10000
+  padding: 0.5rem 1rem
+  background: $blue
+  color: white
+  font-weight: 600
+  text-decoration: none
+  border-radius: 0 0 4px 0
+  &:focus
+    left: 0
+
+.sr-only
+  position: absolute
+  width: 1px
+  height: 1px
+  padding: 0
+  margin: -1px
+  overflow: hidden
+  clip: rect(0, 0, 0, 0)
+  white-space: nowrap
+  border: 0
 
 ::-webkit-scrollbar
   width: 5px

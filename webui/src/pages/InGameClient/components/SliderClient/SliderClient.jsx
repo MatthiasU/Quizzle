@@ -50,16 +50,15 @@ export const SliderClient = ({question, onSubmit}) => {
         dragging.current = false;
     }, []);
 
-    const handleSubmit = () => {
+    const handleSubmit = useCallback(() => {
         if (!submitted) {
             setSubmitted(true);
             onSubmit(value);
         }
-    };
+    }, [submitted, value, onSubmit]);
 
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (submitted) return;
             if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
                 e.preventDefault();
                 setValue(prev => Math.max(config.min, Math.round((prev - step) / step) * step));
@@ -74,7 +73,7 @@ export const SliderClient = ({question, onSubmit}) => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [submitted, config.min, config.max, step]);
+    }, [handleSubmit, config.min, config.max, step]);
 
     const valuePct = range > 0 ? ((value - config.min) / range) * 100 : 50;
 
@@ -113,11 +112,13 @@ export const SliderClient = ({question, onSubmit}) => {
             </div>
 
             <button
+                type="button"
                 onClick={handleSubmit}
                 disabled={submitted}
                 className={`submit-slider-answer ${!submitted ? 'submit-shown' : ''}`}
+                aria-label="Antwort absenden"
             >
-                <FontAwesomeIcon icon={faPaperPlane} />
+                <FontAwesomeIcon icon={faPaperPlane} aria-hidden="true" />
                 <span>Antwort senden</span>
             </button>
         </div>

@@ -12,7 +12,7 @@ export const TextInputClient = ({onSubmit, maxLength = 200}) => {
         }
     };
 
-    const handleKeyPress = (e) => {
+    const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             handleSubmit();
@@ -25,21 +25,24 @@ export const TextInputClient = ({onSubmit, maxLength = 200}) => {
                 <textarea
                     value={textAnswer}
                     onChange={(e) => setTextAnswer(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyDown}
                     placeholder="Geben Sie Ihre Antwort ein..."
                     maxLength={maxLength}
                     className="text-answer-input"
+                    aria-label="Antwort eingeben"
                 />
-                <div className="character-count">
+                <div className="character-count" aria-live="polite">
                     {textAnswer.length}/{maxLength}
                 </div>
             </div>
             <button 
+                type="button"
                 onClick={handleSubmit}
                 disabled={textAnswer.trim() === ""}
                 className={`submit-text-answer ${textAnswer.trim() !== "" ? "submit-shown" : ""}`}
+                aria-label="Antwort absenden"
             >
-                <FontAwesomeIcon icon={faPaperPlane} />
+                <FontAwesomeIcon icon={faPaperPlane} aria-hidden="true" />
             </button>
         </div>
     );

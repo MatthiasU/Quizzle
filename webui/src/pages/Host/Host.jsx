@@ -8,7 +8,7 @@ import {BrandingContext} from "@/common/contexts/Branding";
 import {motion} from "framer-motion";
 import Button from "@/common/components/Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faGamepad, faUser, faVolumeMute, faVolumeUp, faLock, faLockOpen} from "@fortawesome/free-solid-svg-icons";
+import {faGamepad, faUser, faVolumeMute, faVolumeUp, faLock, faLockOpen, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {socket} from "@/common/utils/SocketUtil.js";
 import {getCharacterEmoji} from "@/common/data/characters";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
@@ -186,13 +186,20 @@ export const Host = () => {
                             className={`player ${player.disconnected ? 'disconnected' : ''}`}
                             initial={{scale: 0}}
                             animate={{scale: 1}}
-                            onClick={() => kickPlayer(player)}
                         >
                             <div className="player-character">{getCharacterEmoji(player.character)}</div>
                             <h3>{player.name}</h3>
                             {player.disconnected && (
-                                <div className="disconnected-indicator"></div>
+                                <div className="disconnected-indicator" aria-label="Getrennt"></div>
                             )}
+                            <button
+                                type="button"
+                                className="kick-button"
+                                onClick={() => kickPlayer(player)}
+                                aria-label={`${player.name} entfernen`}
+                            >
+                                <FontAwesomeIcon icon={faTimes} aria-hidden="true" />
+                            </button>
                         </motion.div>
                     ))}
                 </div>

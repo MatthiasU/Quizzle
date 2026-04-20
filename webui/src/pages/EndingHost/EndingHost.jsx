@@ -70,14 +70,16 @@ export const EndingHost = () => {
         <div className="ending-page">
             <SoundRenderer/>
 
-            <div className="view-toggle">
+            <div className="view-toggle" role="tablist" aria-label="Ansicht wechseln">
                 {viewTabs.map(tab => (
                     <button
                         key={tab.id}
                         className={`toggle-button ${activeView === tab.id ? 'active' : ''}`}
                         onClick={() => setActiveView(tab.id)}
+                        role="tab"
+                        aria-selected={activeView === tab.id}
                     >
-                        <FontAwesomeIcon icon={tab.icon}/>
+                        <FontAwesomeIcon icon={tab.icon} aria-hidden="true"/>
                         <span>{tab.title}</span>
                     </button>
                 ))}

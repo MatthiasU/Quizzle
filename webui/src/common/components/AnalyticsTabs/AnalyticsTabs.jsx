@@ -41,20 +41,24 @@ const AnalyticsTabs = ({ analyticsData, quizData, isLiveQuiz = false }) => {
 
     return (
         <div className="analytics-tabs">
-            <div className="tab-navigation">
+            <div className="tab-navigation" role="tablist" aria-label="Analytics Tabs">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
                         className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
                         onClick={() => setActiveTab(tab.id)}
+                        role="tab"
+                        aria-selected={activeTab === tab.id}
+                        aria-controls={`tabpanel-${tab.id}`}
+                        id={`tab-${tab.id}`}
                     >
-                        <FontAwesomeIcon icon={tab.icon} />
+                        <FontAwesomeIcon icon={tab.icon} aria-hidden="true" />
                         <span>{tab.title}</span>
                     </button>
                 ))}
             </div>
 
-            <div className="tab-content">
+            <div className="tab-content" role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
                 {ActiveComponent && (
                     <ActiveComponent 
                         analyticsData={analyticsData} 
