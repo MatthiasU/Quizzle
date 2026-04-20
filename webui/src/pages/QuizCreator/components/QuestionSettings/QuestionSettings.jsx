@@ -1,9 +1,10 @@
 import "./styles.sass";
 import SelectBox from "@/common/components/SelectBox";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faClock, faInfinity, faCoins} from "@fortawesome/free-solid-svg-icons";
+import {faClock, faInfinity, faCoins, faSliders} from "@fortawesome/free-solid-svg-icons";
 import {useState, useEffect} from "react";
 import {motion} from "framer-motion";
+import {QUESTION_TYPES, SLIDER_MARGIN_CONFIG} from "@/common/constants/QuestionTypes.js";
 
 export const QuestionSettings = ({question, onChange, onCommit, defaultTimer = 60}) => {
     const [selectedTimer, setSelectedTimer] = useState(() => {
@@ -120,6 +121,23 @@ export const QuestionSettings = ({question, onChange, onCommit, defaultTimer = 6
         commit({...question, pointMultiplier: multiplierValue});
     };
 
+    const handleAnswerMarginChange = (value) => {
+        const commit = onCommit || onChange;
+        const answers = question.answers || [{correctValue: 50, min: 0, max: 100, step: 1, answerMargin: 'medium'}];
+        const updatedAnswers = [{...answers[0], answerMargin: value}];
+        commit({...question, answers: updatedAnswers});
+    };
+
+    const answerMarginOptions = Object.entries(SLIDER_MARGIN_CONFIG).map(([key, config]) => ({
+        value: key,
+        label: config.label,
+        description: config.description,
+        icon: faSliders
+    }));
+
+    const isSliderType = question?.type === QUESTION_TYPES.SLIDER;
+    const currentAnswerMargin = question?.answers?.[0]?.answerMargin || 'medium';
+
     if (!question) return null;
 
     return (
@@ -150,6 +168,17 @@ export const QuestionSettings = ({question, onChange, onCommit, defaultTimer = 6
 
                 <SelectBox value={selectedPointMultiplier} onChange={handlePointMultiplierChange} options={pointMultiplierOptions} placeholder="Punkteverteilung auswählen..."/>
             </div>
+
+            {isSliderType && (
+                <div className="setting-group">
+                    <div className="setting-label">
+                        <FontAwesomeIcon icon={faSliders}/>
+                        <span>Antwort-Marge</span>
+                    </div>
+
+                    <SelectBox value={currentAnswerMargin} onChange={handleAnswerMarginChange} options={answerMarginOptions} placeholder="Antwort-Marge auswählen..."/>
+                </div>
+            )}
         </motion.div>
     );
 };

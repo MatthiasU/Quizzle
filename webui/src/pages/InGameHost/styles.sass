@@ -160,4 +160,44 @@
     opacity: 0.4
   40%
     transform: scale(1)
+
+.slider-host-preview
+  display: flex
+  align-items: center
+  justify-content: center
+  gap: 1rem
+  margin-top: 2rem
+  width: 80%
+  max-width: 700px
+  margin-left: auto
+  margin-right: auto
+
+  .edge-label
+    font-size: 1.2rem
+    font-weight: 700
+    color: $gray
+    min-width: 50px
+    text-align: center
+    flex-shrink: 0
+
+  .tick-track
+    flex: 1
+    display: flex
+    align-items: flex-end
+    justify-content: space-between
+    height: 44px
+
+    .tick
+      width: 3px
+      height: 28px
+      background: $border
+      border-radius: 2px
+      flex-shrink: 0
+      animation: tickPulse 2s ease-in-out infinite
+      animation-delay: calc(var(--i, 0) * 0.05s)
+
+@keyframes tickPulse
+  0%, 100%
+    opacity: 0.4
+  50%
     opacity: 1

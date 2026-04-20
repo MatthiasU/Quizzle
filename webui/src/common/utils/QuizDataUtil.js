@@ -20,6 +20,14 @@ export const prepareQuizData = async (questions, title, includeImageData = false
 
         if (cleanQuestion.type === QUESTION_TYPES.TEXT) {
             cleanQuestion.answers = rest.answers.map(a => ({content: a.content.trim()}));
+        } else if (cleanQuestion.type === QUESTION_TYPES.SLIDER) {
+            cleanQuestion.answers = rest.answers.map(a => ({
+                correctValue: a.correctValue,
+                min: a.min,
+                max: a.max,
+                step: a.step,
+                answerMargin: a.answerMargin
+            }));
         } else if (cleanQuestion.type === QUESTION_TYPES.SEQUENCE) {
             cleanQuestion.answers = rest.answers.map(a => ({
                 content: a.content.trim(),

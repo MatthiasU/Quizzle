@@ -1,0 +1,116 @@
+@use "@/common/styles/colors" as *
+
+.slider-answers
+    display: flex
+    flex-direction: column
+    align-items: center
+    gap: 1rem
+    width: 100%
+    padding: 1rem 0
+
+.slider-value-input
+    display: flex
+    flex-direction: column
+    align-items: center
+    gap: 0.2rem
+
+    input
+        width: 120px
+        padding: 0.5rem 0.6rem
+        border: 2px solid $border
+        border-radius: 12px
+        font-size: 1.8rem
+        font-weight: 800
+        color: $text
+        text-align: center
+        outline: none
+        background: white
+        transition: border-color 0.2s ease
+        box-sizing: border-box
+
+        &:focus
+            border-color: $blue
+
+        &::-webkit-inner-spin-button,
+        &::-webkit-outer-spin-button
+            -webkit-appearance: none
+            margin: 0
+
+        &[type=number]
+            -moz-appearance: textfield
+
+.slider-value-label
+    font-size: 0.75rem
+    font-weight: 600
+    color: $gray
+
+.slider-track-row
+    display: flex
+    align-items: center
+    gap: 0.5rem
+    width: 100%
+
+.edge-input
+    display: flex
+    flex-direction: column
+    align-items: center
+    gap: 0.15rem
+    flex-shrink: 0
+
+    .edge-label
+        font-size: 0.65rem
+        font-weight: 700
+        color: $gray
+        text-transform: uppercase
+        letter-spacing: 0.04em
+
+    input
+        width: 68px
+        padding: 0.35rem 0.3rem
+        border: 2px solid $border
+        border-radius: 8px
+        font-size: 0.9rem
+        font-weight: 700
+        color: $text
+        text-align: center
+        outline: none
+        background: white
+        transition: border-color 0.2s ease
+        box-sizing: border-box
+
+        &:focus
+            border-color: $blue
+
+        &::-webkit-inner-spin-button,
+        &::-webkit-outer-spin-button
+            -webkit-appearance: none
+            margin: 0
+
+        &[type=number]
+            -moz-appearance: textfield
+
+.track-wrapper
+    flex: 1
+    min-width: 0
+    overflow: hidden
+
+.tick-track
+    display: flex
+    align-items: flex-end
+    justify-content: space-between
+    height: 44px
+    cursor: pointer
+    touch-action: none
+    user-select: none
+
+.tick
+    width: 3px
+    height: 28px
+    background: $border
+    border-radius: 2px
+    flex-shrink: 0
+    transition: background 0.15s ease, height 0.15s ease
+
+    &--active
+        background: $blue
+        height: 36px

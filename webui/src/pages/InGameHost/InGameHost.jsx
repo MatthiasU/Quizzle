@@ -88,15 +88,15 @@ export const InGameHost = () => {
                 setTimeout(() => {
                     setShowDoublePointsAnimation(false);
 
-                    socket.emit("SHOW_QUESTION", newQuestionCopy, (success) => {
-                        if (!success) toast.error("Fehler beim Anzeigen der Frage");
+                    socket.emit("SHOW_QUESTION", newQuestionCopy, (res) => {
+                        if (!res?.success) toast.error(res?.error || "Fehler beim Anzeigen der Frage");
                     });
                     
                     startQuestionSequence();
                 }, 3000);
             } else {
-                socket.emit("SHOW_QUESTION", newQuestionCopy, (success) => {
-                    if (!success) toast.error("Fehler beim Anzeigen der Frage");
+                socket.emit("SHOW_QUESTION", newQuestionCopy, (res) => {
+                    if (!res?.success) toast.error(res?.error || "Fehler beim Anzeigen der Frage");
                 });
                 
                 startQuestionSequence();
@@ -223,10 +223,25 @@ export const InGameHost = () => {
                             <Question title={currentQuestion.title} image={currentQuestion.b64_image}/>
                         </div>
 
-                        {questionAnimationState === 'answers-ready' && currentQuestion.type !== QUESTION_TYPES.TEXT && currentQuestion.type !== QUESTION_TYPES.SEQUENCE && (
+                        {questionAnimationState === 'answers-ready' && currentQuestion.type !== QUESTION_TYPES.TEXT && currentQuestion.type !== QUESTION_TYPES.SEQUENCE && currentQuestion.type !== QUESTION_TYPES.SLIDER && (
                             <div className={`answer-list ${questionAnimationState}`}>
                                 {currentQuestion.answers.map((answer, index) => <Answer key={index} answer={answer}
                                                                                         index={index}/>)}
+                            </div>
+                        )}
+
+                        {questionAnimationState === 'answers-ready' && currentQuestion.type === QUESTION_TYPES.SLIDER && (
+                            <div className={`text-question-indicator ${questionAnimationState}`}>
+                                <h2>Spieler bewegen den Schieberegler...</h2>
+                                <div className="slider-host-preview">
+                                    <span className="edge-label">{currentQuestion.answers?.[0]?.min ?? 0}</span>
+                                    <div className="tick-track">
+                                        {Array.from({length: 41}, (_, i) => (
+                                            <div key={i} className="tick" />
+                                        ))}
+                                    </div>
+                                    <span className="edge-label">{currentQuestion.answers?.[0]?.max ?? 100}</span>
+                                </div>
                             </div>
                         )}
 

@@ -1,0 +1,1 @@
+export {SliderAnswers as default} from "./SliderAnswers.jsx";

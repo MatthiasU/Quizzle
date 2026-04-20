@@ -1,3 +1,38 @@
+const SLIDER_MARGIN_FACTORS = {
+    none: 0,
+    low: 0.05,
+    medium: 0.1,
+    high: 0.2,
+    maximum: 0.4
+};
+
+const evaluateSliderAnswer = (userValue, question) => {
+    const config = question.answers[0] || question.answers;
+    const correctValue = config.correctValue;
+    const range = config.max - config.min;
+    const marginFactor = SLIDER_MARGIN_FACTORS[config.answerMargin || 'medium'] || 0.1;
+    const margin = range * marginFactor;
+    const distance = Math.abs(userValue - correctValue);
+
+    if (distance === 0) return { isCorrect: true, score: 1, distance: 0 };
+
+    if (config.answerMargin === 'maximum') {
+        const score = Math.max(0, 1 - (distance / range));
+        return { isCorrect: score >= 0.6, score, distance };
+    }
+
+    if (config.answerMargin === 'none') {
+        return { isCorrect: false, score: 0, distance };
+    }
+
+    if (distance <= margin) {
+        const score = 1 - (distance / margin) * 0.5;
+        return { isCorrect: true, score, distance };
+    }
+
+    return { isCorrect: false, score: 0, distance };
+};
+
 const isSequenceCompletelyCorrect = (userOrder, correctOrder) => {
     if (userOrder.length !== correctOrder.length) return false;
     for (let i = 0; i < userOrder.length; i++) {
@@ -82,6 +117,10 @@ const calculatePoints = (correctAnswers, startTime, pointMultiplier) => {
 };
 
 const calculateLiveScore = (question, playerAnswer) => {
+    if (question.type === 'slider') {
+        return evaluateSliderAnswer(playerAnswer, question).score;
+    }
+
     if (question.type === 'text') {
         const userAnswer = playerAnswer.toLowerCase().trim();
         const correct = question.answers.map(a => a.content.toLowerCase().trim());
@@ -107,6 +146,7 @@ module.exports = {
     evaluateSequenceAnswer,
     evaluateTextAnswer,
     evaluateChoiceAnswer,
+    evaluateSliderAnswer,
     calculatePoints,
     calculateLiveScore
 };

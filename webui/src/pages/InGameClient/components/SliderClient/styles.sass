@@ -1,0 +1,97 @@
+@use "@/common/styles/colors" as *
+
+.slider-client
+    display: flex
+    flex-direction: column
+    align-items: center
+    gap: 1.5rem
+    padding: 1.5rem
+    width: 100%
+    max-width: 500px
+    margin: 0 auto
+
+.slider-value-badge
+    background: $blue
+    color: white
+    border-radius: 16px
+    padding: 0.8rem 2rem
+    box-shadow: 0 4px 16px rgba(101, 71, 238, 0.3)
+
+    .value-number
+        font-size: 2.5rem
+        font-weight: 800
+        line-height: 1
+
+.slider-track-row
+    display: flex
+    align-items: center
+    gap: 0.75rem
+    width: 100%
+
+.edge-label
+    font-size: 1rem
+    font-weight: 700
+    color: $gray
+    min-width: 40px
+    text-align: center
+    flex-shrink: 0
+
+.track-wrapper
+    flex: 1
+    min-width: 0
+    overflow: hidden
+
+.tick-track
+    display: flex
+    align-items: flex-end
+    justify-content: space-between
+    height: 44px
+    cursor: pointer
+    touch-action: none
+    user-select: none
+
+    &--disabled
+        cursor: not-allowed
+        opacity: 0.6
+
+.tick
+    width: 3px
+    height: 28px
+    background: $border
+    border-radius: 2px
+    flex-shrink: 0
+    transition: background 0.15s ease, height 0.15s ease
+
+    &--active
+        background: $blue
+        height: 36px
+
+.submit-slider-answer
+    display: flex
+    align-items: center
+    gap: 0.6rem
+    padding: 1rem 2rem
+    border-radius: 14px
+    border: none
+    background: $blue
+    color: white
+    font-size: 1.1rem
+    font-weight: 700
+    cursor: pointer
+    transition: all 0.2s ease
+    opacity: 0
+    transform: translateY(10px)
+
+    &.submit-shown
+        opacity: 1
+        transform: translateY(0)
+
+    &:hover:not(:disabled)
+        background: darken(#6547EE, 10%)
+        transform: translateY(-2px)
+        box-shadow: 0 4px 16px rgba(101, 71, 238, 0.4)
+
+    &:disabled
+        opacity: 0.5
+        cursor: not-allowed
+        transform: none

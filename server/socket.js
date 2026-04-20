@@ -425,6 +425,7 @@ module.exports = (io, socket) => {
             pointMultiplier: data.pointMultiplier,
             answers: data.type === 'text' ? data.answers : 
                      data.type === 'sequence' ? data.answers.length :
+                     data.type === 'slider' ? data.answers :
                      stripAnswerContent(data.answers),
             isCompleted: false,
             answersReady: false

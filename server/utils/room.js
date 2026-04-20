@@ -20,6 +20,13 @@ const buildQuestionPayload = (question, room) => {
     } else if (question.type === 'sequence') {
         const historyEntry = room.questionHistory[room.questionHistory.length - 1];
         questionData.answers = historyEntry?.shuffledAnswers || question.answers;
+    } else if (question.type === 'slider') {
+        const config = Array.isArray(question.answers) ? question.answers[0] : question.answers;
+        questionData.sliderConfig = {
+            min: config.min,
+            max: config.max,
+            step: config.step || 1
+        };
     } else {
         questionData.answers = Array.isArray(question.answers)
             ? question.answers.length
@@ -32,6 +39,18 @@ const buildQuestionPayload = (question, room) => {
 const generateAnswerData = (currentQuestion, currentAnswers, room) => {
     if (currentQuestion.type === 'text') {
         return { answers: currentQuestion.answers.map(a => a.content) };
+    }
+
+    if (currentQuestion.type === 'slider') {
+        const config = Array.isArray(currentQuestion.answers) ? currentQuestion.answers[0] : currentQuestion.answers;
+        const playerValues = Object.values(currentAnswers).filter(v => typeof v === 'number');
+        return {
+            correctValue: config.correctValue,
+            min: config.min,
+            max: config.max,
+            answerMargin: config.answerMargin || 'medium',
+            playerValues
+        };
     }
 
     if (currentQuestion.type === 'sequence') {

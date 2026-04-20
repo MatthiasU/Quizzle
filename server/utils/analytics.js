@@ -1,8 +1,15 @@
-const { evaluateSequenceAnswer, evaluateTextAnswer, evaluateChoiceAnswer } = require('./scoring');
+const { evaluateSequenceAnswer, evaluateTextAnswer, evaluateChoiceAnswer, evaluateSliderAnswer } = require('./scoring');
 
 const classifyAnswer = (answer, question) => {
     if (question.type === 'text') {
         return evaluateTextAnswer(answer, question.answers) ? 'correct' : 'incorrect';
+    }
+
+    if (question.type === 'slider') {
+        const result = evaluateSliderAnswer(answer, question);
+        if (result.isCorrect && result.score >= 0.9) return 'correct';
+        if (result.isCorrect) return 'partial';
+        return 'incorrect';
     }
 
     if (question.type === 'sequence') {

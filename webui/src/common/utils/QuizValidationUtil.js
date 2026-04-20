@@ -33,6 +33,7 @@ export class QuizValidationUtil {
             case QUESTION_TYPES.TEXT: return this.validateTextAnswers(answers);
             case QUESTION_TYPES.TRUE_FALSE: return this.validateTrueFalseAnswers(answers);
             case QUESTION_TYPES.SEQUENCE: return this.validateSequenceAnswers(answers);
+            case QUESTION_TYPES.SLIDER: return this.validateSliderAnswers(answers);
             case QUESTION_TYPES.MULTIPLE_CHOICE:
             default: return this.validateMultipleChoiceAnswers(answers);
         }
@@ -62,11 +63,23 @@ export class QuizValidationUtil {
         return { isValid: true };
     }
 
+    static validateSliderAnswers(answers) {
+        if (!answers || answers.length !== 1) return { isValid: false, error: "Schieberegler-Fragen müssen genau eine Antwort-Konfiguration haben." };
+        const config = answers[0];
+        if (config.correctValue === undefined || config.correctValue === null) return { isValid: false, error: "Schieberegler-Fragen müssen einen korrekten Wert haben." };
+        if (config.min === undefined || config.max === undefined) return { isValid: false, error: "Schieberegler-Fragen müssen einen Min- und Max-Wert haben." };
+        if (config.min >= config.max) return { isValid: false, error: "Der Minimalwert muss kleiner als der Maximalwert sein." };
+        if (config.correctValue < config.min || config.correctValue > config.max) return { isValid: false, error: "Der korrekte Wert muss zwischen Min und Max liegen." };
+        if (config.step !== undefined && config.step <= 0) return { isValid: false, error: "Der Schrittwert muss größer als 0 sein." };
+        return { isValid: true };
+    }
+
     static getMinAnswersErrorMessage(questionType, minAnswers) {
         switch (questionType) {
             case QUESTION_TYPES.TEXT: return "Text-Fragen müssen mindestens eine akzeptierte Antwort haben.";
             case QUESTION_TYPES.TRUE_FALSE: return "Wahr/Falsch-Fragen müssen genau zwei Antworten haben.";
             case QUESTION_TYPES.SEQUENCE: return "Reihenfolge-Fragen müssen mindestens zwei Antworten haben.";
+            case QUESTION_TYPES.SLIDER: return "Schieberegler-Fragen müssen eine Konfiguration haben.";
             case QUESTION_TYPES.MULTIPLE_CHOICE:
             default: return "Multiple-Choice-Fragen müssen mindestens zwei Antworten haben.";
         }
@@ -77,6 +90,7 @@ export class QuizValidationUtil {
             case QUESTION_TYPES.TEXT: return `Text-Fragen dürfen maximal ${maxAnswers} akzeptierte Antworten haben.`;
             case QUESTION_TYPES.TRUE_FALSE: return "Wahr/Falsch-Fragen müssen genau zwei Antworten haben.";
             case QUESTION_TYPES.SEQUENCE: return `Reihenfolge-Fragen dürfen maximal ${maxAnswers} Antworten haben.`;
+            case QUESTION_TYPES.SLIDER: return "Schieberegler-Fragen dürfen nur eine Konfiguration haben.";
             case QUESTION_TYPES.MULTIPLE_CHOICE:
             default: return `Multiple-Choice-Fragen dürfen maximal ${maxAnswers} Antworten haben.`;
         }
@@ -109,6 +123,11 @@ export class QuizValidationUtil {
             } else if (questionType === QUESTION_TYPES.SEQUENCE) {
                 if (!question.answers || question.answers.length < 2 || question.answers.length > 8) return false;
                 if (question.answers.some(a => !a.content || a.content.trim() === "")) return false;
+            } else if (questionType === QUESTION_TYPES.SLIDER) {
+                if (!question.answers || question.answers.length !== 1) return false;
+                const cfg = question.answers[0];
+                if (cfg.correctValue == null || cfg.min == null || cfg.max == null) return false;
+                if (cfg.min >= cfg.max || cfg.correctValue < cfg.min || cfg.correctValue > cfg.max) return false;
             } else {
                 return false;
             }

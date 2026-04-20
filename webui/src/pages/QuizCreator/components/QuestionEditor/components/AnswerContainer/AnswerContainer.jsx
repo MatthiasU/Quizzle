@@ -3,6 +3,7 @@ import Answer from "./components/Answer";
 import {TrueFalseAnswers} from "./components/TrueFalseAnswers";
 import {TextAnswers} from "./components/TextAnswers";
 import SequenceAnswers from "./components/SequenceAnswers";
+import SliderAnswers from "./components/SliderAnswers";
 import {QUESTION_TYPES, DEFAULT_QUESTION_TYPE} from "@/common/constants/QuestionTypes.js";
 
 export const AnswerContainer = ({onChange, question}) => {
@@ -48,6 +49,14 @@ export const AnswerContainer = ({onChange, question}) => {
         return (
             <div className="answer-container full-layout">
                 <SequenceAnswers answers={question.answers || []} onChange={updateAnswers}/>
+            </div>
+        );
+    }
+
+    if (questionType === QUESTION_TYPES.SLIDER) {
+        return (
+            <div className="answer-container full-layout">
+                <SliderAnswers answers={question.answers || [{correctValue: 50, min: 0, max: 100, step: 1, answerMargin: 'medium'}]} onChange={updateAnswers}/>
             </div>
         );
     }

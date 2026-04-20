@@ -7,7 +7,7 @@ const {generatePracticeCode, isAlphabeticCode} = require("../utils/random");
 const app = require('express').Router();
 const {requireAuth} = require("../middleware/auth");
 const {decompressQuiz, compressQuiz, resolveQuestionType, shuffleSequenceAnswers, stripAnswerCorrectness} = require("../utils/quiz");
-const {evaluateTextAnswer, evaluateSequenceAnswer, evaluateChoiceAnswer} = require("../utils/scoring");
+const {evaluateTextAnswer, evaluateSequenceAnswer, evaluateChoiceAnswer, evaluateSliderAnswer} = require("../utils/scoring");
 
 const practiceQuizzesDir = path.join(process.cwd(), 'data', 'practice-quizzes');
 
@@ -142,6 +142,18 @@ app.get('/:code', async (req, res) => {
 
                 if (question.type === 'text') {
                     practiceQuestion.answers = [];
+                } else if (question.type === 'slider') {
+                    const config = question.answers[0];
+                    practiceQuestion.answers = [{
+                        min: config.min,
+                        max: config.max,
+                        step: config.step || 1
+                    }];
+                    practiceQuestion.sliderConfig = {
+                        min: config.min,
+                        max: config.max,
+                        step: config.step || 1
+                    };
                 } else if (question.type === 'sequence') {
                     practiceQuestion.answers = shuffleSequenceAnswers(
                         question.answers.map(a => ({content: a.content, type: a.type || 'text'}))
@@ -185,20 +197,44 @@ app.post('/:code/submit-answer', async (req, res) => {
 
         let answerResult;
         let correctAnswer;
+        let normalizedAnswer = answer;
+        let answerScore = 0;
 
         if (question.type === 'text') {
             answerResult = evaluateTextAnswer(answer, question.answers) ? 'correct' : 'incorrect';
             correctAnswer = question.answers[0]?.content;
+            answerScore = answerResult === 'correct' ? 1 : 0;
+        } else if (question.type === 'slider') {
+            const sliderAnswer = Number(answer);
+            if (!Number.isFinite(sliderAnswer)) {
+                return res.status(400).json({message: "Slider answer must be a number"});
+            }
+
+            const sliderResult = evaluateSliderAnswer(sliderAnswer, question);
+            if (sliderResult.isCorrect && sliderResult.score >= 0.9) answerResult = 'correct';
+            else if (sliderResult.isCorrect) answerResult = 'partial';
+            else answerResult = 'incorrect';
+
+            correctAnswer = {
+                correctValue: question.answers[0]?.correctValue,
+                min: question.answers[0]?.min,
+                max: question.answers[0]?.max,
+                answerMargin: question.answers[0]?.answerMargin || 'medium'
+            };
+            normalizedAnswer = sliderAnswer;
+            answerScore = sliderResult.score;
         } else if (question.type === 'sequence') {
             const seqResult = evaluateSequenceAnswer(answer, question);
             if (seqResult.isCorrect) answerResult = 'correct';
             else if (seqResult.isPartial) answerResult = 'partial';
             else answerResult = 'incorrect';
             correctAnswer = question.answers.map(a => a.content);
+            answerScore = answerResult === 'correct' ? 1 : answerResult === 'partial' ? 0.5 : 0;
         } else {
             const choiceResult = evaluateChoiceAnswer(answer, question.answers);
             answerResult = choiceResult.result;
             correctAnswer = choiceResult.correctIndices;
+            answerScore = answerResult === 'correct' ? 1 : answerResult === 'partial' ? 0.5 : 0;
         }
 
         const resultsDir = path.join(practiceQuizzesDir, code, 'results');
@@ -229,11 +265,13 @@ app.post('/:code/submit-answer', async (req, res) => {
         }
 
         result.answers.push({
-            result: answerResult, userAnswer: answer,
-            correctAnswer: correctAnswer
+            result: answerResult,
+            userAnswer: normalizedAnswer,
+            correctAnswer,
+            score: Math.round(answerScore * 1000) / 1000
         });
 
-        result.score = result.answers.filter(a => a.result === 'correct').length;
+        result.score = Math.round(result.answers.reduce((sum, entry) => sum + (entry.score || 0), 0) * 100) / 100;
 
         result.timestamp = new Date().toISOString();
 

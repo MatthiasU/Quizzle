@@ -384,6 +384,108 @@
                       &.incorrect
                         color: $red
 
+                .slider-answer
+                  display: flex
+                  flex-direction: column
+                  gap: 0.5rem
+
+                  .answer-line
+                    display: flex
+                    align-items: center
+                    gap: 0.5rem
+                    margin-bottom: 0.25rem
+                    padding: 0.5rem 0.75rem
+                    background: rgba($background, 0.8)
+                    border-radius: 0.4rem
+                    border: 1px solid $border
+
+                    .answer-label
+                      color: $gray
+                      font-size: 0.85rem
+                      font-weight: 600
+                      min-width: 70px
+
+                    .answer-value
+                      font-family: 'JetBrains Mono', monospace
+                      padding: 0.25rem 0.5rem
+                      border-radius: 0.3rem
+                      font-size: 0.9rem
+                      font-weight: 600
+                      flex: 1
+
+                      &.correct
+                        background: rgba($green, 0.15)
+                        color: #0f5132
+                        border: 1px solid rgba($green, 0.3)
+
+                      &.incorrect
+                        background: rgba($red, 0.15)
+                        color: #842029
+                        border: 1px solid rgba($red, 0.3)
+
+                    .answer-icon
+                      font-size: 1rem
+
+                      &.correct
+                        color: $green
+
+                      &.partial
+                        color: $orange
+
+                      &.incorrect
+                        color: $red
+
+                  .slider-visual
+                    margin-top: 0.25rem
+
+                    .slider-track
+                      position: relative
+                      height: 12px
+                      border-radius: 999px
+                      background: rgba($border, 0.9)
+                      border: 1px solid rgba($border, 0.7)
+                      overflow: hidden
+
+                      .accepted-zone
+                        position: absolute
+                        top: 0
+                        bottom: 0
+                        background: rgba($primary, 0.22)
+
+                      .correct-marker, .user-marker
+                        position: absolute
+                        top: 50%
+                        width: 14px
+                        height: 14px
+                        border-radius: 50%
+                        transform: translate(-50%, -50%)
+                        border: 2px solid $background
+                        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2)
+
+                      .correct-marker
+                        background: $green
+                        z-index: 3
+
+                      .user-marker
+                        z-index: 2
+
+                        &.correct
+                          background: $green
+
+                        &.partial
+                          background: $orange
+
+                        &.incorrect
+                          background: $red
+
+                    .slider-scale
+                      display: flex
+                      justify-content: space-between
+                      margin-top: 0.35rem
+                      font-size: 0.78rem
+                      font-weight: 600
+                      color: $gray
+
                 .mc-answer
                   display: flex
                   flex-direction: column

@@ -53,10 +53,14 @@ export const QuizCreator = () => {
                 const parsed = JSON.parse(stored);
                 const questions = parsed.map(q => {
                     const { b64_image, ...cleanQuestion } = q;
+                    const questionType = cleanQuestion.type || DEFAULT_QUESTION_TYPE;
 
                     if (cleanQuestion.answers) {
                         cleanQuestion.answers = cleanQuestion.answers.map(answer => {
                             const { b64_image: answerB64, ...cleanAnswer } = answer;
+                            if (questionType === QUESTION_TYPES.SLIDER) {
+                                return cleanAnswer;
+                            }
                             return {
                                 ...cleanAnswer,
                                 type: cleanAnswer.type || QUESTION_TYPES.TEXT
@@ -66,7 +70,7 @@ export const QuizCreator = () => {
                     
                     return {
                         ...cleanQuestion,
-                        type: cleanQuestion.type || DEFAULT_QUESTION_TYPE
+                        type: questionType
                     };
                 });
                 let settings = DEFAULT_QUIZ_SETTINGS;

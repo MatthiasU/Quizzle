@@ -8,9 +8,10 @@ import {faCheck, faCheckCircle, faMinus, faPaperPlane, faX, faWifi, faExclamatio
 import {TrueFalseClient} from "./components/TrueFalseClient";
 import {TextInputClient} from "./components/TextInputClient";
 import {SequenceClient} from "./components/SequenceClient";
+import SliderClient from "./components/SliderClient";
 import {jsonRequest, postRequest} from "@/common/utils/RequestUtil.js";
 import {generateUuid} from "@/common/utils/UuidUtil.js";
-import {QUESTION_TYPES} from "@/common/constants/QuestionTypes.js";
+import {QUESTION_TYPES, SLIDER_MARGIN_CONFIG} from "@/common/constants/QuestionTypes.js";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import toast from "react-hot-toast";
 
@@ -33,6 +34,7 @@ export const InGameClient = () => {
     const [answers, setAnswers] = useState([]);
     const [lastQuestionType, setLastQuestionType] = useState(null);
     const [userSubmittedAnswer, setUserSubmittedAnswer] = useState(null);
+    const [sliderAnswerData, setSliderAnswerData] = useState(null);
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [isReconnecting, setIsReconnecting] = useState(false);
     const [answersReady, setAnswersReady] = useState(false);
@@ -73,6 +75,7 @@ export const InGameClient = () => {
 
         const onQuestion = (question) => {
             setAnswers([]);
+            setSliderAnswerData(null);
             setSelection([]);
             setUserSubmittedAnswer(null);
             setCurrentQuestion(question);
@@ -100,7 +103,12 @@ export const InGameClient = () => {
         }
 
         const onAnswer = (answer) => {
-            setAnswers(answer?.answers);
+            if (answer?.correctValue !== undefined) {
+                setSliderAnswerData(answer);
+                setAnswers([]);
+            } else {
+                setAnswers(answer?.answers || []);
+            }
             setCurrentQuestion(null);
         }
 
@@ -317,6 +325,39 @@ export const InGameClient = () => {
         });
     };
 
+    const getSliderResultStatus = (submittedValue, sliderAnswerData) => {
+        if (!sliderAnswerData || sliderAnswerData.correctValue === undefined) return 0;
+
+        const userValue = Number(submittedValue);
+        const correctValue = Number(sliderAnswerData.correctValue);
+        const min = Number(sliderAnswerData.min);
+        const max = Number(sliderAnswerData.max);
+
+        if (!Number.isFinite(userValue) || !Number.isFinite(correctValue)) return 0;
+
+        const range = max - min;
+        const distance = Math.abs(userValue - correctValue);
+        const marginKey = sliderAnswerData.answerMargin || 'medium';
+        const marginFactor = SLIDER_MARGIN_CONFIG[marginKey]?.factor ?? 0.1;
+
+        if (distance === 0) return 1;
+        if (marginKey === 'none') return -1;
+        if (range <= 0) return -1;
+
+        if (marginKey === 'maximum') {
+            const score = Math.max(0, 1 - (distance / range));
+            if (score >= 0.9) return 1;
+            if (score >= 0.6) return 0;
+            return -1;
+        }
+
+        const margin = range * marginFactor;
+        if (margin <= 0 || distance > margin) return -1;
+
+        const score = 1 - (distance / margin) * 0.5;
+        return score >= 0.9 ? 1 : 0;
+    };
+
     const renderQuestionTypeContent = (question) => {
         switch (question.type) {
             case QUESTION_TYPES.TRUE_FALSE:
@@ -337,6 +378,13 @@ export const InGameClient = () => {
                 return (
                     <div className="ingame-content sequence-layout">
                         <SequenceClient question={question} onSubmit={submitAnswer} />
+                    </div>
+                );
+
+            case QUESTION_TYPES.SLIDER:
+                return (
+                    <div className="ingame-content slider-layout">
+                        <SliderClient question={question} onSubmit={submitAnswer} />
                     </div>
                 );
                 
@@ -436,6 +484,17 @@ export const InGameClient = () => {
                 }
                 setCurrentQuestion(null);
             });
+        } else if (currentQuestion.type === QUESTION_TYPES.SLIDER) {
+            setSelection([answers]);
+            setUserSubmittedAnswer(answers);
+            setLastQuestionType(QUESTION_TYPES.SLIDER);
+            socket.emit("SUBMIT_ANSWER", {answers}, (response) => {
+                if (!response.success) {
+                    toast.error(response.error || "Fehler beim Senden der Antwort");
+                    return;
+                }
+                setCurrentQuestion(null);
+            });
         } else if (currentQuestion.type === QUESTION_TYPES.SEQUENCE) {
             setSelection(answers);
             setUserSubmittedAnswer(answers);
@@ -473,6 +532,11 @@ export const InGameClient = () => {
                 ) ? 1 : -1;
             }
             return -1;
+        }
+
+        if (questionType === QUESTION_TYPES.SLIDER) {
+            const userVal = userSubmittedAnswer ?? selection[0];
+            return getSliderResultStatus(userVal, sliderAnswerData);
         }
 
         if (questionType === QUESTION_TYPES.SEQUENCE) {
@@ -554,7 +618,7 @@ export const InGameClient = () => {
         if (isPracticeMode) {
             return showingPracticeResult;
         }
-        return currentQuestion === null && answers.length > 0;
+        return currentQuestion === null && (answers.length > 0 || sliderAnswerData !== null);
     };
 
     return (
@@ -605,7 +669,7 @@ export const InGameClient = () => {
                 </div>
             )}
 
-            {!isPracticeMode && currentQuestion === null && answers.length === 0 && (
+            {!isPracticeMode && currentQuestion === null && answers.length === 0 && sliderAnswerData === null && (
                 <div className="loading-container">
                     <div className="lds-hourglass"></div>
                 </div>

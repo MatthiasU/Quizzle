@@ -3,7 +3,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faImage, faUpload} from "@fortawesome/free-solid-svg-icons";
 import {useEffect, useState} from "react";
 import {imageCache} from "@/common/utils/ImageCacheUtil.js";
-import {MediaDialog} from "@/common/components/MediaDialog";
+import MediaDialog from "@/common/components/MediaDialog";
 
 export const ImagePresenter = ({question, onChange}) => {
     const [isDragging, setIsDragging] = useState(false);

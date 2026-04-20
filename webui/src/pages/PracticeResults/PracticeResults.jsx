@@ -10,7 +10,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUser, faCheck, faTimes, faMinus, faChartBar, faDownload, faHome} from "@fortawesome/free-solid-svg-icons";
 import AnalyticsTabs from "@/common/components/AnalyticsTabs";
 import {exportPracticeResultsToExcel} from "@/common/utils/ExcelExport";
-import {QUESTION_TYPES} from "@/common/constants/QuestionTypes.js";
+import {QUESTION_TYPES, SLIDER_MARGIN_CONFIG} from "@/common/constants/QuestionTypes.js";
 import "./styles.sass";
 import toast from "react-hot-toast";
 
@@ -210,6 +210,79 @@ export const PracticeResults = () => {
                         <div className="answer-line">
                             <span className="answer-label">Richtig:</span>
                             <span className="answer-value correct">{correctAnswer}</span>
+                        </div>
+                    )}
+                </div>
+            );
+        } else if (question.type === QUESTION_TYPES.SLIDER) {
+            const sliderConfig = question.answers?.[0] || {};
+            const userValue = Number(answer);
+            const correctValue = Number(sliderConfig.correctValue);
+            const min = Number(sliderConfig.min);
+            const max = Number(sliderConfig.max);
+            const range = max - min;
+            const marginKey = sliderConfig.answerMargin || 'medium';
+            const marginFactor = SLIDER_MARGIN_CONFIG[marginKey]?.factor ?? 0.1;
+            const computedMargin = range > 0 ? range * marginFactor : 0;
+            const acceptedMin = Math.max(min, correctValue - computedMargin);
+            const acceptedMax = Math.min(max, correctValue + computedMargin);
+            const userPercent = Number.isFinite(userValue) && range > 0 ? ((userValue - min) / range) * 100 : 0;
+            const correctPercent = Number.isFinite(correctValue) && range > 0 ? ((correctValue - min) / range) * 100 : 0;
+            const acceptedMinPercent = Number.isFinite(acceptedMin) && range > 0 ? ((acceptedMin - min) / range) * 100 : 0;
+            const acceptedMaxPercent = Number.isFinite(acceptedMax) && range > 0 ? ((acceptedMax - min) / range) * 100 : 100;
+
+            return (
+                <div className="slider-answer">
+                    <div className="answer-line">
+                        <span className="answer-label">Antwort:</span>
+                        <span className={`answer-value ${result === 'incorrect' ? 'incorrect' : 'correct'}`}>
+                            {Number.isFinite(userValue) ? userValue : '-'}
+                        </span>
+                        <FontAwesomeIcon
+                            icon={result === 'correct' ? faCheck : result === 'partial' ? faMinus : faTimes}
+                            className={`answer-icon ${result === 'correct' ? 'correct' : result === 'partial' ? 'partial' : 'incorrect'}`}
+                        />
+                    </div>
+
+                    <div className="answer-line">
+                        <span className="answer-label">Richtig:</span>
+                        <span className="answer-value correct">{Number.isFinite(correctValue) ? correctValue : '-'}</span>
+                    </div>
+
+                    {marginKey !== 'none' && Number.isFinite(acceptedMin) && Number.isFinite(acceptedMax) && (
+                        <div className="answer-line">
+                            <span className="answer-label">Marge:</span>
+                            <span className="answer-value">
+                                {acceptedMin.toFixed(2).replace(/\.00$/, '')} bis {acceptedMax.toFixed(2).replace(/\.00$/, '')}
+                            </span>
+                        </div>
+                    )}
+
+                    {Number.isFinite(min) && Number.isFinite(max) && range > 0 && (
+                        <div className="slider-visual">
+                            <div className="slider-track">
+                                {marginKey !== 'none' && (
+                                    <div
+                                        className="accepted-zone"
+                                        style={{
+                                            left: `${Math.max(0, Math.min(100, acceptedMinPercent))}%`,
+                                            width: `${Math.max(0, Math.min(100, acceptedMaxPercent - acceptedMinPercent))}%`
+                                        }}
+                                    />
+                                )}
+                                <div
+                                    className="correct-marker"
+                                    style={{left: `${Math.max(0, Math.min(100, correctPercent))}%`}}
+                                />
+                                <div
+                                    className={`user-marker ${result}`}
+                                    style={{left: `${Math.max(0, Math.min(100, userPercent))}%`}}
+                                />
+                            </div>
+                            <div className="slider-scale">
+                                <span>{min}</span>
+                                <span>{max}</span>
+                            </div>
                         </div>
                     )}
                 </div>
