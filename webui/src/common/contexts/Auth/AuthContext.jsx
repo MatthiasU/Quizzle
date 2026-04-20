@@ -1,5 +1,5 @@
 import {createContext, useCallback, useContext, useEffect, useState} from "react";
-import {postRequest, jsonRequest} from "@/common/utils/RequestUtil.js";
+import {postRequest, jsonRequest, setUnauthorizedHandler} from "@/common/utils/RequestUtil.js";
 
 export const AuthContext = createContext({});
 
@@ -27,6 +27,11 @@ export const AuthProvider = ({children}) => {
     useEffect(() => {
         checkSession();
     }, [checkSession]);
+
+    useEffect(() => {
+        setUnauthorizedHandler(() => setUser(null));
+        return () => setUnauthorizedHandler(null);
+    }, []);
 
     const login = async (username, password) => {
         const data = await postRequest("/auth/login", {username, password});

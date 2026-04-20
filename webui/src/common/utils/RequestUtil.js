@@ -1,3 +1,9 @@
+let onUnauthorized = null;
+
+export const setUnauthorizedHandler = (handler) => {
+    onUnauthorized = handler;
+};
+
 export const request = async (path, method = "GET", body = {}, headers = {}) => {
     const options = {
         headers: {"content-type": "application/json", ...headers},
@@ -6,7 +12,11 @@ export const request = async (path, method = "GET", body = {}, headers = {}) => 
     if (method !== "GET" && method !== "DELETE") {
         options.body = JSON.stringify(body);
     }
-    return await fetch("/api" + path, options);
+    const resp = await fetch("/api" + path, options);
+    if (resp.status === 401 && onUnauthorized && path !== "/auth/me" && path !== "/auth/login") {
+        onUnauthorized();
+    }
+    return resp;
 }
 
 export const jsonRequest = async (path, headers = {}) => {
