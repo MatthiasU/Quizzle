@@ -163,41 +163,42 @@
 
 .slider-host-preview
   display: flex
-  align-items: center
   justify-content: center
-  gap: 1rem
   margin-top: 2rem
-  width: 80%
-  max-width: 700px
-  margin-left: auto
-  margin-right: auto
 
-  .edge-label
-    font-size: 1.2rem
-    font-weight: 700
-    color: $gray
-    min-width: 50px
-    text-align: center
-    flex-shrink: 0
-
-  .tick-track
-    flex: 1
+  .slider-range-bar
     display: flex
-    align-items: flex-end
-    justify-content: space-between
-    height: 44px
+    align-items: center
+    gap: 2rem
+    width: 80%
+    max-width: 700px
 
-    .tick
-      width: 3px
-      height: 28px
+    .range-label
+      font-size: 1.4rem
+      font-weight: 700
+      color: $gray
+      min-width: 60px
+      text-align: center
+
+    .range-track
+      flex: 1
+      height: 14px
       background: $border
-      border-radius: 2px
-      flex-shrink: 0
-      animation: tickPulse 2s ease-in-out infinite
-      animation-delay: calc(var(--i, 0) * 0.05s)
+      border-radius: 7px
+      position: relative
+      overflow: hidden
 
-@keyframes tickPulse
+      .range-fill
+        position: absolute
+        height: 100%
+        width: 100%
+        background: linear-gradient(90deg, rgba(101, 71, 238, 0.3), rgba(101, 71, 238, 0.6))
+        border-radius: 8px
+        animation: sliderPulse 2s ease-in-out infinite
+
+@keyframes sliderPulse
   0%, 100%
     opacity: 0.4
   50%
+    opacity: 1
     opacity: 1

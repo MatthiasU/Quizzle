@@ -1,134 +1,80 @@
 @use "@/common/styles/colors" as *
 
-.countdown-timer
+.countdown-bar
   position: fixed
-  top: 2rem
-  left: 2rem
+  top: 0
+  left: 0
+  right: 0
   z-index: 200
   user-select: none
+  display: flex
+  align-items: center
 
-  .timer-card
-    background: $background
-    border: 1px solid $border
-    border-radius: 1rem
-    padding: 1.25rem
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05)
-    min-width: 140px
-    transition: all 0.3s ease
-
-    &:hover
-      transform: translateY(-2px)
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)
-
-  .timer-header
-    display: flex
-    align-items: center
-    gap: 0.75rem
-    margin-bottom: 1rem
-
-  .timer-icon-container
-    width: 2.5rem
-    height: 2.5rem
-    border-radius: 0.75rem
-    display: flex
-    align-items: center
-    justify-content: center
-    background: linear-gradient(135deg, color-mix(in srgb, $primary 100%, white 20%), color-mix(in srgb, $primary 100%, black 10%))
-
-    .timer-icon
-      color: $background
-      font-size: 1rem
-      font-weight: 600
-
-  .timer-progress-container
+  .bar-track
     flex: 1
-    height: 6px
-    background: color-mix(in srgb, $border 100%, white 50%)
-    border-radius: 3px
-    overflow: hidden
+    height: 14px
+    background: rgba(0, 0, 0, 0.08)
 
-    .timer-progress-bar
-      height: 100%
-      background: linear-gradient(90deg, $primary, color-mix(in srgb, $primary 80%, white 20%))
-      border-radius: 3px
+  .bar-fill
+    height: 100%
+    background: linear-gradient(135deg, color-mix(in srgb, $primary 100%, white 20%), color-mix(in srgb, $primary 100%, black 10%))
+    border-radius: 0 6px 6px 0
+    will-change: width
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 6px rgba(0, 0, 0, 0.15)
 
-  .timer-content
-    text-align: center
+  .bar-time
+    position: absolute
+    top: 22px
+    left: 2rem
+    background: rgba(255, 255, 255, 0.9)
+    backdrop-filter: blur(10px)
+    border-radius: 0.6rem
+    padding: 0.5rem 1rem
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08)
 
-  .timer-time
-    font-size: 1.5rem
+  .bar-number
+    font-size: 1.4rem
     font-weight: 700
     color: $text
-    line-height: 1.2
-    margin-bottom: 0.25rem
+    line-height: 1
 
-  .timer-label
-    font-size: 0.75rem
-    font-weight: 600
-    color: $gray
-    text-transform: uppercase
-    letter-spacing: 0.5px
-
-.countdown-timer.warning
-  .timer-card
-    background: color-mix(in srgb, $orange 5%, $background 95%)
-
-  .timer-icon-container
+.countdown-bar.warning
+  .bar-fill
     background: linear-gradient(135deg, color-mix(in srgb, $orange 100%, white 20%), color-mix(in srgb, $orange 100%, black 10%))
 
-  .timer-progress-bar
-    background: linear-gradient(90deg, $orange, color-mix(in srgb, $orange 80%, white 20%))
-
-  .timer-time
+  .bar-number
     color: $orange
 
-  .timer-label
-    color: color-mix(in srgb, $orange 100%, black 20%)
-
-.countdown-timer.critical
-  animation: criticalPulse 0.8s ease-in-out infinite alternate
-
-  .timer-card
-    background: color-mix(in srgb, $red 5%, $background 95%)
-    box-shadow: 0 4px 12px color-mix(in srgb, $red 30%, transparent 70%)
-
-  .timer-icon-container
+.countdown-bar.critical
+  .bar-fill
     background: linear-gradient(135deg, color-mix(in srgb, $red 100%, white 20%), color-mix(in srgb, $red 100%, black 10%))
 
-  .timer-progress-bar
-    background: linear-gradient(90deg, $red, color-mix(in srgb, $red 80%, white 20%))
-
-  .timer-time
+  .bar-number
     color: $red
-    font-weight: 800
+    animation: barShake 0.4s ease-in-out infinite
 
-  .timer-label
-    color: color-mix(in srgb, $red 100%, black 20%)
+  .bar-track
+    animation: barFlash 1s ease-in-out infinite
 
-@keyframes criticalPulse
-  0%
-    transform: scale(1)
-  100%
-    transform: scale(1.02)
+@keyframes barShake
+  0%, 100%
+    transform: translateX(0)
+  25%
+    transform: translateX(-1px)
+  75%
+    transform: translateX(1px)
+
+@keyframes barFlash
+  0%, 100%
+    background: rgba(0, 0, 0, 0.08)
+  50%
+    background: rgba(236, 85, 85, 0.12)
 
 @media screen and (max-width: 915px)
-  .countdown-timer
-    top: 1rem
-    left: 1rem
+  .countdown-bar
+    .bar-time
+      left: 1rem
+      padding: 0.3rem 0.6rem
 
-    .timer-card
-      padding: 1rem
-      min-width: 120px
-
-    .timer-icon-container
-      width: 2rem
-      height: 2rem
-
-      .timer-icon
-        font-size: 0.9rem
-
-    .timer-time
-      font-size: 1.25rem
-
-    .timer-label
-      font-size: 0.7rem
+    .bar-number
+      font-size: 0.95rem

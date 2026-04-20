@@ -234,13 +234,13 @@ export const InGameHost = () => {
                             <div className={`text-question-indicator ${questionAnimationState}`}>
                                 <h2>Spieler bewegen den Schieberegler...</h2>
                                 <div className="slider-host-preview">
-                                    <span className="edge-label">{currentQuestion.answers?.[0]?.min ?? 0}</span>
-                                    <div className="tick-track">
-                                        {Array.from({length: 41}, (_, i) => (
-                                            <div key={i} className="tick" />
-                                        ))}
+                                    <div className="slider-range-bar">
+                                        <span className="range-label">{currentQuestion.answers?.[0]?.min ?? 0}</span>
+                                        <div className="range-track">
+                                            <div className="range-fill" />
+                                        </div>
+                                        <span className="range-label">{currentQuestion.answers?.[0]?.max ?? 100}</span>
                                     </div>
-                                    <span className="edge-label">{currentQuestion.answers?.[0]?.max ?? 100}</span>
                                 </div>
                             </div>
                         )}

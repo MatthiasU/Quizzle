@@ -49,16 +49,6 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
         const max = answerData.max;
         const playerValues = answerData.playerValues || [];
         const range = max - min;
-        const TICK_COUNT = 40;
-
-        const correctPct = range > 0 ? ((correctValue - min) / range) * 100 : 50;
-
-        const ticks = [];
-        for (let i = 0; i <= TICK_COUNT; i++) {
-            const tickVal = min + (range / TICK_COUNT) * i;
-            const isCorrect = tickVal <= correctValue;
-            ticks.push(<div key={i} className={`tick${isCorrect ? ' tick--correct' : ''}`} />);
-        }
 
         return (
             <div className="answer-results">
@@ -71,38 +61,34 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
 
                 <div className="slider-results">
                     <div className="slider-results-track">
-                        <span className="edge-label">{min}</span>
-                        <div className="track-wrapper">
-                            <div className="tick-track">
-                                {ticks}
-                            </div>
+                        <div className="slider-track-bg">
                             <motion.div
                                 className="slider-correct-marker"
-                                style={{left: `${correctPct}%`}}
-                                initial={{scale: 0, opacity: 0}}
-                                animate={{scale: 1, opacity: 1}}
+                                style={{left: `${((correctValue - min) / range) * 100}%`}}
+                                initial={{scale: 0, x: "-50%", y: "-50%"}}
+                                animate={{scale: 1, x: "-50%", y: "-50%"}}
                                 transition={{duration: 0.5, delay: 0.3, type: "spring", stiffness: 200}}
                             >
                                 <div className="marker-label">{correctValue}</div>
                                 <div className="marker-dot correct" />
                             </motion.div>
-                            {playerValues.map((value, index) => {
-                                const pct = range > 0 ? ((value - min) / range) * 100 : 50;
-                                return (
-                                    <motion.div
-                                        key={index}
-                                        className="slider-player-marker"
-                                        style={{left: `${pct}%`}}
-                                        initial={{scale: 0, opacity: 0}}
-                                        animate={{scale: 1, opacity: 0.7}}
-                                        transition={{duration: 0.3, delay: 0.6 + index * 0.1}}
-                                    >
-                                        <div className="marker-dot player" />
-                                    </motion.div>
-                                );
-                            })}
+                            {playerValues.map((value, index) => (
+                                <motion.div
+                                    key={index}
+                                    className="slider-player-marker"
+                                    style={{left: `${((value - min) / range) * 100}%`}}
+                                    initial={{scale: 0, opacity: 0, x: "-50%", y: "-50%"}}
+                                    animate={{scale: 1, opacity: 0.7, x: "-50%", y: "-50%"}}
+                                    transition={{duration: 0.3, delay: 0.6 + index * 0.1}}
+                                >
+                                    <div className="marker-dot player" />
+                                </motion.div>
+                            ))}
                         </div>
-                        <span className="edge-label">{max}</span>
+                        <div className="slider-labels">
+                            <span>{min}</span>
+                            <span>{max}</span>
+                        </div>
                     </div>
                 </div>
             </div>

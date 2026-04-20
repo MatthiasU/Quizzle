@@ -17,6 +17,7 @@ const evaluateSliderAnswer = (userValue, question) => {
     if (distance === 0) return { isCorrect: true, score: 1, distance: 0 };
 
     if (config.answerMargin === 'maximum') {
+        // Maximum mode: closer = more points, full range considered
         const score = Math.max(0, 1 - (distance / range));
         return { isCorrect: score >= 0.6, score, distance };
     }
@@ -26,6 +27,7 @@ const evaluateSliderAnswer = (userValue, question) => {
     }
 
     if (distance <= margin) {
+        // Within margin: score based on proximity, minimum 0.5
         const score = 1 - (distance / margin) * 0.5;
         return { isCorrect: true, score, distance };
     }

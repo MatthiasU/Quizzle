@@ -1,14 +1,11 @@
 import "./styles.sass";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faClock, faExclamationTriangle, faHourglassHalf} from "@fortawesome/free-solid-svg-icons";
 import {useState, useEffect, useRef} from "react";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import {motion, AnimatePresence} from "framer-motion";
 
 export const CountdownTimer = ({duration, onTimeUp, isActive = true}) => {
     const [timeLeft, setTimeLeft] = useState(duration);
-    const [isWarning, setIsWarning] = useState(false);
-    const [isCritical, setIsCritical] = useState(false);
+    const [phase, setPhase] = useState('normal');
     const [isVisible, setIsVisible] = useState(false);
     const intervalRef = useRef(null);
     const soundManager = useSoundManager();
@@ -16,8 +13,7 @@ export const CountdownTimer = ({duration, onTimeUp, isActive = true}) => {
 
     useEffect(() => {
         setTimeLeft(duration);
-        setIsWarning(false);
-        setIsCritical(false);
+        setPhase('normal');
         setIsVisible(true);
     }, [duration]);
 
@@ -41,18 +37,15 @@ export const CountdownTimer = ({duration, onTimeUp, isActive = true}) => {
                         lastTickRef.current = newTime;
                     }
                 }
-                
-                if (newTime <= 30 && newTime > 10) {
-                    setIsWarning(true);
-                    setIsCritical(false);
-                } else if (newTime <= 10 && newTime > 0) {
-                    setIsWarning(false);
-                    setIsCritical(true);
+
+                if (newTime <= 10 && newTime > 0) {
+                    setPhase('critical');
+                } else if (newTime <= 30) {
+                    setPhase('warning');
                 } else {
-                    setIsWarning(false);
-                    setIsCritical(false);
+                    setPhase('normal');
                 }
-                
+
                 if (newTime <= 0) {
                     clearInterval(intervalRef.current);
                     intervalRef.current = null;
@@ -61,7 +54,7 @@ export const CountdownTimer = ({duration, onTimeUp, isActive = true}) => {
                     onTimeUp();
                     return 0;
                 }
-                
+
                 return newTime;
             });
         }, 1000);
@@ -82,21 +75,7 @@ export const CountdownTimer = ({duration, onTimeUp, isActive = true}) => {
         return secs.toString();
     };
 
-    const getProgressPercentage = () => {
-        return duration > 0 ? ((duration - timeLeft) / duration) * 100 : 0;
-    };
-
-    const getTimerIcon = () => {
-        if (isCritical) return faExclamationTriangle;
-        if (isWarning) return faHourglassHalf;
-        return faClock;
-    };
-
-    const getTimerColor = () => {
-        if (isCritical) return 'critical';
-        if (isWarning) return 'warning';
-        return 'normal';
-    };
+    const percentage = duration > 0 ? (timeLeft / duration) * 100 : 0;
 
     if (duration <= 0 || !isVisible) {
         return null;
@@ -104,43 +83,22 @@ export const CountdownTimer = ({duration, onTimeUp, isActive = true}) => {
 
     return (
         <AnimatePresence>
-            <motion.div 
-                className={`countdown-timer ${getTimerColor()}`}
-                initial={{ scale: 0, opacity: 0, y: -20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0, opacity: 0, y: -20 }}
-                transition={{ 
-                    duration: 0.5, 
-                    ease: "easeOut",
-                    type: "spring",
-                    stiffness: 200,
-                    damping: 20
-                }}
+            <motion.div
+                className={`countdown-bar ${phase}`}
+                initial={{opacity: 0, y: -8}}
+                animate={{opacity: 1, y: 0}}
+                exit={{opacity: 0, y: -8}}
+                transition={{duration: 0.3, ease: "easeOut"}}
             >
-                <div className="timer-card">
-                    <div className="timer-header">
-                        <div className="timer-icon-container">
-                            <FontAwesomeIcon icon={getTimerIcon()} className="timer-icon" />
-                        </div>
-                        <div className="timer-progress-container">
-                            <div 
-                                className="timer-progress-bar"
-                                style={{ 
-                                    width: `${getProgressPercentage()}%`,
-                                    transition: 'width 0.5s ease-out'
-                                }}
-                            />
-                        </div>
-                    </div>
-                    
-                    <div className="timer-content">
-                        <div className="timer-time">
-                            {formatTime(timeLeft)}s
-                        </div>
-                        <div className="timer-label">
-                            {isCritical ? 'Schnell!' : 'Zeit'}
-                        </div>
-                    </div>
+                <div className="bar-track">
+                    <motion.div
+                        className="bar-fill"
+                        animate={{width: `${percentage}%`}}
+                        transition={{duration: 1, ease: "linear"}}
+                    />
+                </div>
+                <div className="bar-time">
+                    <span className="bar-number">{formatTime(timeLeft)}</span>
                 </div>
             </motion.div>
         </AnimatePresence>

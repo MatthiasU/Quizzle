@@ -14,7 +14,6 @@ import {generateUuid} from "@/common/utils/UuidUtil.js";
 import {QUESTION_TYPES, SLIDER_MARGIN_CONFIG} from "@/common/constants/QuestionTypes.js";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import toast from "react-hot-toast";
-import AnswerContent from "@/common/components/AnswerContent";
 
 export const InGameClient = () => {
     const navigate = useNavigate();
@@ -389,66 +388,53 @@ export const InGameClient = () => {
                     </div>
                 );
                 
-            case QUESTION_TYPES.MULTIPLE_CHOICE: {
-                const correctCount = isPracticeMode
-                    ? question.answers.filter(a => a.is_correct).length
-                    : 1;
-                const isMultiSelect = correctCount > 1;
-
+            case 'single':
+            case QUESTION_TYPES.MULTIPLE_CHOICE:
                 if (isPracticeMode) {
-                    if (isMultiSelect) {
-                        return (
-                            <div className="ingame-content grid-layout">
-                                {question.answers.map((answer, index) => (
-                                    <button key={index} type="button"
-                                         className={`ingame-answer ${selection[index] ? 'ingame-answer-selected' : ''}`}
-                                         onClick={() => handleMultipleChoiceSelection(index)}
-                                         aria-pressed={!!selection[index]}
-                                         aria-label={answer.type === "image" ? `Antwort ${index + 1}` : answer.content}>
-                                        <AnswerContent answer={answer} index={index} className="practice-answer" />
-                                    </button>
-                                ))}
-                                <div className="submit-container">
-                                    <button type="button"
-                                            onClick={() => submitAnswer(selection.map((value, index) => value ? index : null).filter(value => value !== null))} 
-                                            className={"submit-answers" + (selection.some(value => value) ? " submit-shown" : "")}
-                                            aria-label="Antworten absenden">
-                                        <FontAwesomeIcon icon={faPaperPlane} aria-hidden="true"/>
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    }
                     return (
                         <div className="ingame-content grid-layout">
                             {question.answers.map((answer, index) => (
-                                <button key={index} type="button" className="ingame-answer" onClick={() => submitAnswer([index])}
-                                     aria-label={answer.type === "image" ? `Antwort ${index + 1}` : answer.content}>
-                                    <AnswerContent answer={answer} index={index} className="practice-answer" />
-                                </button>
+                                <div key={index} className="ingame-answer" onClick={() => submitAnswer([index])}>
+                                    {answer.type === "image" ? (
+                                        <img src={answer.content} alt={`Answer ${index + 1}`} className="practice-answer-image" />
+                                    ) : (
+                                        <span className="practice-answer-text">{answer.content}</span>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     );
                 }
-
-                if (isMultiSelect) {
+                return (
+                    <div className="ingame-content grid-layout">
+                        {Array.from({length: question.answers}, (_, index) => (
+                            <div key={index} className="ingame-answer" onClick={() => submitAnswer([index])}>
+                                <FontAwesomeIcon icon={faCheckCircle} className={"ingame-icon"}/>
+                            </div>
+                        ))}
+                    </div>
+                );
+                
+            case QUESTION_TYPES.MULTIPLE_CHOICE:
+            case 'multiple':
+                if (isPracticeMode) {
                     return (
                         <div className="ingame-content grid-layout">
-                            {Array.from({length: question.answers}, (_, index) => (
-                                <button key={index} type="button"
+                            {question.answers.map((answer, index) => (
+                                <div key={index} 
                                      className={`ingame-answer ${selection[index] ? 'ingame-answer-selected' : ''}`}
-                                     onClick={() => handleMultipleChoiceSelection(index)}
-                                     aria-pressed={!!selection[index]}
-                                     aria-label={`Antwort ${index + 1}`}>
-                                    <FontAwesomeIcon icon={faCheckCircle} className={"ingame-icon" + (selection[index] ? " ingame-icon-selected" : "")} aria-hidden="true"/>
-                                </button>
+                                     onClick={() => handleMultipleChoiceSelection(index)}>
+                                    {answer.type === "image" ? (
+                                        <img src={answer.content} alt={`Answer ${index + 1}`} className="practice-answer-image" />
+                                    ) : (
+                                        <span className="practice-answer-text">{answer.content}</span>
+                                    )}
+                                </div>
                             ))}
                             <div className="submit-container">
-                                <button type="button"
-                                        onClick={() => submitAnswer(selection.map((value, index) => value ? index : null).filter(value => value !== null))} 
-                                        className={"submit-answers" + (selection.some(value => value) ? " submit-shown" : "")}
-                                        aria-label="Antworten absenden">
-                                    <FontAwesomeIcon icon={faPaperPlane} aria-hidden="true"/>
+                                <button onClick={() => submitAnswer(selection.map((value, index) => value ? index : null).filter(value => value !== null))} 
+                                        className={"submit-answers" + (selection.some(value => value) ? " submit-shown" : "")}>
+                                    <FontAwesomeIcon icon={faPaperPlane}/>
                                 </button>
                             </div>
                         </div>
@@ -457,17 +443,23 @@ export const InGameClient = () => {
                 return (
                     <div className="ingame-content grid-layout">
                         {Array.from({length: question.answers}, (_, index) => (
-                            <button key={index} type="button" className="ingame-answer" onClick={() => submitAnswer([index])}
-                                 aria-label={`Antwort ${index + 1}`}>
-                                <FontAwesomeIcon icon={faCheckCircle} className={"ingame-icon"} aria-hidden="true"/>
-                            </button>
+                            <div key={index} 
+                                 className={`ingame-answer ${selection[index] ? 'ingame-answer-selected' : ''}`}
+                                 onClick={() => handleMultipleChoiceSelection(index)}>
+                                <FontAwesomeIcon icon={faCheckCircle} className={"ingame-icon" + (selection[index] ? " ingame-icon-selected" : "")}/>
+                            </div>
                         ))}
+                        <div className="submit-container">
+                            <button onClick={() => submitAnswer(selection.map((value, index) => value ? index : null).filter(value => value !== null))} 
+                                    className={"submit-answers" + (selection.some(value => value) ? " submit-shown" : "")}>
+                                <FontAwesomeIcon icon={faPaperPlane}/>
+                            </button>
+                        </div>
                     </div>
                 );
-            }
                 
             default:
-                return <div role="alert">Unbekannter Fragetyp: {question.type}</div>;
+                return <div>Unbekannter Fragetyp: {question.type}</div>;
         }
     };
 
@@ -481,7 +473,10 @@ export const InGameClient = () => {
             return;
         }
 
-        const emitAnswer = () => {
+        if (currentQuestion.type === QUESTION_TYPES.TEXT) {
+            setSelection([answers]);
+            setUserSubmittedAnswer(answers);
+            setLastQuestionType(QUESTION_TYPES.TEXT);
             socket.emit("SUBMIT_ANSWER", {answers}, (response) => {
                 if (!response.success) {
                     toast.error(response.error || "Fehler beim Senden der Antwort");
@@ -489,25 +484,39 @@ export const InGameClient = () => {
                 }
                 setCurrentQuestion(null);
             });
-        };
-
-        const type = currentQuestion.type;
-
-        if (type === QUESTION_TYPES.TEXT || type === QUESTION_TYPES.SLIDER) {
+        } else if (currentQuestion.type === QUESTION_TYPES.SLIDER) {
             setSelection([answers]);
             setUserSubmittedAnswer(answers);
-            setLastQuestionType(type);
-            emitAnswer();
-        } else if (type === QUESTION_TYPES.SEQUENCE) {
+            setLastQuestionType(QUESTION_TYPES.SLIDER);
+            socket.emit("SUBMIT_ANSWER", {answers}, (response) => {
+                if (!response.success) {
+                    toast.error(response.error || "Fehler beim Senden der Antwort");
+                    return;
+                }
+                setCurrentQuestion(null);
+            });
+        } else if (currentQuestion.type === QUESTION_TYPES.SEQUENCE) {
             setSelection(answers);
             setUserSubmittedAnswer(answers);
-            setLastQuestionType(type);
-            emitAnswer();
+            setLastQuestionType(QUESTION_TYPES.SEQUENCE);
+            socket.emit("SUBMIT_ANSWER", {answers}, (response) => {
+                if (!response.success) {
+                    toast.error(response.error || "Fehler beim Senden der Antwort");
+                    return;
+                }
+                setCurrentQuestion(null);
+            });
         } else {
             let selection = Array.from({length: currentQuestion.answers}, (_, index) => answers.includes(index));
             setSelection(selection);
-            setLastQuestionType(type);
-            emitAnswer();
+            setLastQuestionType(currentQuestion.type);
+            socket.emit("SUBMIT_ANSWER", {answers}, (response) => {
+                if (!response.success) {
+                    toast.error(response.error || "Fehler beim Senden der Antwort");
+                    return;
+                }
+                setCurrentQuestion(null);
+            });
         }
     }
 
@@ -706,21 +715,15 @@ export const InGameClient = () => {
                             </>
                         )
                     ) : (
-                        (() => {
-                            const status = getCorrectStatus(selection, answers);
-                            return (
-                                <>
-                                    <FontAwesomeIcon icon={status === 1 ? faCheck : status === 0 ? faMinus : faX}
-                                                   className={status === 1 ? "ingame-icon-correct" : status === 0 ? "ingame-icon-partial" : "ingame-icon-wrong"}
-                                                   aria-hidden="true"/>
-                                    <h2 aria-live="polite">
-                                        {status === 1 && "Richtig!"}
-                                        {status === 0 && "Teilweise richtig!"}
-                                        {status === -1 && "Falsch!"}
-                                    </h2>
-                                </>
-                            );
-                        })()
+                        <>
+                            <FontAwesomeIcon icon={getCorrectStatus(selection, answers) === 1 ? faCheck : getCorrectStatus(selection, answers) === 0 ? faMinus : faX}
+                                           className={getCorrectStatus(selection, answers) === 1 ? " ingame-icon-correct" : getCorrectStatus(selection, answers) === 0 ? " ingame-icon-partial" : " ingame-icon-wrong"}/>
+                            <h2>
+                                {getCorrectStatus(selection, answers) === 1 && "Richtig!"}
+                                {getCorrectStatus(selection, answers) === 0 && "Teilweise richtig!"}
+                                {getCorrectStatus(selection, answers) === -1 && "Falsch!"}
+                            </h2>
+                        </>
                     )}
                 </div>
             )}
