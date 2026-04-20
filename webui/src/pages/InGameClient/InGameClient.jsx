@@ -29,6 +29,11 @@ export const InGameClient = () => {
     const [attemptId] = useState(() => generateUuid());
 
     const [points, setPoints] = useState(0);
+    const [pointsEarned, setPointsEarned] = useState(0);
+    const [rank, setRank] = useState(null);
+    const [totalPlayers, setTotalPlayers] = useState(0);
+    const [streak, setStreak] = useState(0);
+    const [playerAhead, setPlayerAhead] = useState(null);
     const [selection, setSelection] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [answers, setAnswers] = useState([]);
@@ -82,6 +87,7 @@ export const InGameClient = () => {
             setLastQuestionType(question?.type || null);
             setAnswersReady(false);
             setClientCountdown(5);
+            setPointsEarned(0);
 
             const countdownInterval = setInterval(() => {
                 setClientCountdown(prev => {
@@ -98,8 +104,17 @@ export const InGameClient = () => {
             }, 1000);
         }
 
-        const onPoints = (points) => {
-            setPoints(points);
+        const onPoints = (data) => {
+            if (typeof data === 'object' && data !== null) {
+                setPoints(data.points);
+                setPointsEarned(data.pointsEarned || 0);
+                setRank(data.rank || null);
+                setTotalPlayers(data.totalPlayers || 0);
+                setStreak(data.streak || 0);
+                setPlayerAhead(data.ahead || null);
+            } else {
+                setPoints(data);
+            }
         }
 
         const onAnswer = (answer) => {
@@ -715,15 +730,40 @@ export const InGameClient = () => {
                             </>
                         )
                     ) : (
-                        <>
-                            <FontAwesomeIcon icon={getCorrectStatus(selection, answers) === 1 ? faCheck : getCorrectStatus(selection, answers) === 0 ? faMinus : faX}
-                                           className={getCorrectStatus(selection, answers) === 1 ? " ingame-icon-correct" : getCorrectStatus(selection, answers) === 0 ? " ingame-icon-partial" : " ingame-icon-wrong"}/>
-                            <h2>
+                        <div className="result-reveal">
+                            <FontAwesomeIcon 
+                                icon={getCorrectStatus(selection, answers) === 1 ? faCheck : getCorrectStatus(selection, answers) === 0 ? faMinus : faX}
+                                className={`result-icon ${getCorrectStatus(selection, answers) === 1 ? 'result-correct' : getCorrectStatus(selection, answers) === 0 ? 'result-partial' : 'result-wrong'}`}
+                            />
+                            
+                            <h2 className="result-title">
                                 {getCorrectStatus(selection, answers) === 1 && "Richtig!"}
-                                {getCorrectStatus(selection, answers) === 0 && "Teilweise richtig!"}
-                                {getCorrectStatus(selection, answers) === -1 && "Falsch!"}
+                                {getCorrectStatus(selection, answers) === 0 && "Fast richtig!"}
+                                {getCorrectStatus(selection, answers) === -1 && "Nicht ganz!"}
                             </h2>
-                        </>
+
+                            {pointsEarned > 0 && (
+                                <span className="points-earned">+{pointsEarned}</span>
+                            )}
+
+                            <div className="result-details">
+                                {rank && (
+                                    <span className="rank-text">
+                                        Platz {rank}/{totalPlayers}
+                                    </span>
+                                )}
+                                {streak >= 2 && (
+                                    <span className="streak-text">{streak}x 🔥</span>
+                                )}
+                            </div>
+
+                            {playerAhead && playerAhead.gap > 0 && (
+                                <span className="gap-text">{playerAhead.gap} Punkte hinter {playerAhead.name}</span>
+                            )}
+                            {!playerAhead && rank === 1 && (
+                                <span className="leader-text">Du führst!</span>
+                            )}
+                        </div>
                     )}
                 </div>
             )}

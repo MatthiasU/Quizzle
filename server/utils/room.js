@@ -86,8 +86,24 @@ const generateAnswerData = (currentQuestion, currentAnswers, room) => {
 
 const broadcastAnswerResults = (io, roomCode, answerData, room) => {
     io.to(roomCode.toString()).emit('ANSWER_RECEIVED', answerData);
+
+    const sorted = Object.entries(room.players)
+        .map(([id, p]) => ({ id, name: p.name, points: p.points }))
+        .sort((a, b) => b.points - a.points);
+
     for (const player of Object.keys(room.players)) {
-        io.to(player).emit("POINTS_RECEIVED", room.players[player].points);
+        const p = room.players[player];
+        const rank = sorted.findIndex(s => s.id === player) + 1;
+        const aheadPlayer = rank > 1 ? sorted[rank - 2] : null;
+
+        io.to(player).emit("POINTS_RECEIVED", {
+            points: p.points,
+            pointsEarned: p.lastRoundPoints || 0,
+            rank,
+            totalPlayers: sorted.length,
+            streak: p.streak || 0,
+            ahead: aheadPlayer ? { name: aheadPlayer.name, gap: aheadPlayer.points - p.points } : null
+        });
     }
 };
 

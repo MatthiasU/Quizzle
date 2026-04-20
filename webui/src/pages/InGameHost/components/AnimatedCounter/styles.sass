@@ -1,0 +1,31 @@
+@use "@/common/styles/colors" as *
+
+.animated-counter
+  display: inline-flex
+  font-variant-numeric: tabular-nums
+
+  &.counting
+    animation: counterGlow 0.8s ease-out
+
+    .counter-digit
+      animation: digitBounce 0.15s ease infinite
+
+
+.counter-digit
+  display: inline-block
+
+@keyframes digitBounce
+  0%, 100%
+    transform: translateY(0)
+  50%
+    transform: translateY(-1px)
+
+@keyframes counterGlow
+  0%
+    text-shadow: 0 0 0 transparent
+  30%
+    text-shadow: 0 0 8px rgba($green, 0.6), 0 0 16px rgba($green, 0.3)
+    color: lighten($green, 20%)
+  100%
+    text-shadow: 0 0 0 transparent
+    color: inherit

@@ -320,13 +320,15 @@
 
     h2
       margin: 0
+      font-variant-numeric: tabular-nums
 
 .ingame-answers
   display: flex
   flex-direction: column
   align-items: center
   justify-content: center
-  height: 100%
+  flex: 1
+  min-height: 0
 
   .practice-final-score
     display: flex
@@ -421,3 +423,54 @@
 
   100%
     transform: rotate(1800deg)
+
+.result-reveal
+  display: flex
+  flex-direction: column
+  align-items: center
+  gap: 0.5rem
+
+  .result-icon
+    width: 3rem
+    height: 3rem
+    padding: 1.5rem
+    border-radius: 50%
+    color: white
+    margin-bottom: 0.25rem
+
+    &.result-correct
+      background-color: $green
+
+    &.result-partial
+      background-color: $orange
+
+    &.result-wrong
+      background-color: $red
+
+  .result-title
+    font-size: 1.25rem
+    font-weight: 700
+    margin: 0
+
+  .points-earned
+    font-size: 1.75rem
+    font-weight: 800
+    color: $green
+    font-variant-numeric: tabular-nums
+
+  .result-details
+    display: flex
+    align-items: center
+    gap: 0.75rem
+    color: $gray
+    font-size: 0.9rem
+
+    .rank-text
+      font-weight: 500
+
+    .streak-text
+      font-weight: 600
+
+  .gap-text, .leader-text
+    font-size: 0.85rem
+    color: $gray

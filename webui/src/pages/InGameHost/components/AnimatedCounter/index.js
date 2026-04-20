@@ -1,0 +1,1 @@
+export {AnimatedCounter as default} from "./AnimatedCounter.jsx";

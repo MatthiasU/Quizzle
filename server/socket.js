@@ -267,7 +267,7 @@ module.exports = (io, socket) => {
             }
 
             socket.join(data.code.toString());
-            room.players[socket.id] = {name: sanitizedName, character: data.character, points: 0};
+            room.players[socket.id] = {name: sanitizedName, character: data.character, points: 0, streak: 0, lastRoundPoints: 0};
             
             const sessionId = createSession(socket.id, data.code, {
                 name: sanitizedName,
@@ -322,7 +322,9 @@ module.exports = (io, socket) => {
                 room.players[socket.id] = {
                     name: existingPlayerData.name,
                     character: existingPlayerData.character,
-                    points: existingPlayerData.points
+                    points: existingPlayerData.points,
+                    streak: existingPlayerData.streak || 0,
+                    lastRoundPoints: existingPlayerData.lastRoundPoints || 0
                 };
 
                 if (room.playerAnswers?.length > 0) {
@@ -348,7 +350,9 @@ module.exports = (io, socket) => {
                 room.players[socket.id] = {
                     name: session.playerData.name,
                     character: session.playerData.character,
-                    points: session.playerData.points || 0
+                    points: session.playerData.points || 0,
+                    streak: 0,
+                    lastRoundPoints: 0
                 };
                 
                 io.to(room.host).emit('PLAYER_JOINED', {
@@ -489,6 +493,10 @@ module.exports = (io, socket) => {
             ? (score > 0 ? (room.currentQuestion.pointMultiplier === 'none' ? 0 : room.currentQuestion.pointMultiplier === 'double' ? 200 : 100) : 0)
             : calculatePoints(score, room.startTime, room.currentQuestion.pointMultiplier);
         room.players[socket.id].points += points;
+        room.players[socket.id].lastRoundPoints = points;
+        room.players[socket.id].streak = score >= 1
+            ? (room.players[socket.id].streak || 0) + 1
+            : 0;
 
         if (!handleAllAnswered(io, currentRoomCode, room)) {
             const activePlayers = getActivePlayers(room, io);
