@@ -10,35 +10,6 @@
   z-index: -1
   pointer-events: none
 
-.particles-container
-  position: absolute
-  top: 0
-  left: 0
-  width: 100%
-  height: 100%
-
-.particle
-  position: absolute
-  width: 6px
-  height: 6px
-  border-radius: 50%
-  
-.particle-0
-  background: rgba(101, 71, 238, 0.6)
-  box-shadow: 0 0 12px rgba(101, 71, 238, 0.8)
-  
-.particle-1
-  background: rgba(28, 148, 90, 0.6)
-  box-shadow: 0 0 12px rgba(28, 148, 90, 0.8)
-  
-.particle-2
-  background: rgba(255, 165, 0, 0.6)
-  box-shadow: 0 0 12px rgba(255, 165, 0, 0.8)
-  
-.particle-3
-  background: rgba(236, 85, 85, 0.6)
-  box-shadow: 0 0 12px rgba(236, 85, 85, 0.8)
-
 .circle-tl
   position: fixed
   top: -25rem
@@ -83,6 +54,17 @@
   border-radius: 100%
   filter: blur(30px)
 
+.dancing-diamond
+  position: fixed
+  top: 60%
+  right: 25%
+  width: 3rem
+  height: 3rem
+  background: rgba(101, 71, 238, 0.15)
+  transform: rotate(45deg)
+  border-radius: 0.4rem
+  filter: blur(2px)
+
 @media (max-width: 768px)
   .circle-tl
     width: 20rem
@@ -104,10 +86,6 @@
     width: 8rem
     height: 8rem
 
-  .pulsing-orb
-    width: 60px
-    height: 60px
-
 @media (max-width: 480px)
-  .particles-container, .orbs-container
+  .accent-circle-1, .accent-circle-2, .dancing-diamond
     display: none

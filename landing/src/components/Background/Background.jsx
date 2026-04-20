@@ -6,29 +6,6 @@ export const Background = () => {
         <div className="background-container">
             <div className="gradient-background"/>
 
-            <div className="particles-container">
-                {[...Array(10)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        className={`particle particle-${i % 4}`}
-                        initial={{
-                            x: Math.random() * (typeof window !== "undefined" ? window.innerWidth : 1200),
-                            y: Math.random() * (typeof window !== "undefined" ? window.innerHeight : 800),
-                            scale: Math.random() * 0.5 + 0.5,
-                        }}
-                        animate={{
-                            y: [null, -30, 30, -15],
-                            x: [null, Math.random() * 80 - 40, Math.random() * 80 - 40],
-                            rotate: [0, 360],
-                        }}
-                        transition={{
-                            duration: Math.random() * 12 + 15, repeat: Infinity, ease: "linear",
-                            delay: Math.random() * 10
-                        }}
-                    />
-                ))}
-            </div>
-
             <motion.div
                 className="circle-tl"
                 animate={{
