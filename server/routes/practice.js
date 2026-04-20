@@ -1,12 +1,13 @@
 const rateLimit = require('express-rate-limit');
 const {validateSchema} = require("../utils/error");
 const {quizUpload} = require("../validations/quiz");
-const pako = require("pako");
 const path = require("path");
 const fs = require("fs").promises;
 const {generatePracticeCode, isAlphabeticCode} = require("../utils/random");
 const app = require('express').Router();
 const {requireAuth} = require("../middleware/auth");
+const {decompressQuiz, compressQuiz, resolveQuestionType, shuffleSequenceAnswers, stripAnswerCorrectness} = require("../utils/quiz");
+const {evaluateTextAnswer, evaluateSequenceAnswer, evaluateChoiceAnswer} = require("../utils/scoring");
 
 const practiceQuizzesDir = path.join(process.cwd(), 'data', 'practice-quizzes');
 
@@ -44,6 +45,28 @@ const isPracticeQuizExpired = async (code) => {
     }
 };
 
+const loadPracticeQuiz = async (code) => {
+    const quizPath = path.join(practiceQuizzesDir, code, 'quiz.quizzle');
+    const quizData = await fs.readFile(quizPath);
+    return decompressQuiz(quizData);
+};
+
+const validatePracticeCode = async (code, res) => {
+    if (!isAlphabeticCode(code)) {
+        res.status(400).json({message: "Invalid practice code format"});
+        return false;
+    }
+    if (!await practiceQuizExists(code)) {
+        res.status(404).json({message: "Practice quiz not found"});
+        return false;
+    }
+    if (await isPracticeQuizExpired(code)) {
+        res.status(410).json({message: "Practice quiz has expired"});
+        return false;
+    }
+    return true;
+};
+
 app.put("/", createLimiter, requireAuth, async (req, res) => {
     try {
         if (validateSchema(res, quizUpload, req.body)) return;
@@ -61,7 +84,7 @@ app.put("/", createLimiter, requireAuth, async (req, res) => {
         await fs.mkdir(quizDir, {recursive: true});
         await fs.mkdir(resultsDir, {recursive: true});
 
-        const compressed = pako.deflate(JSON.stringify({__type: "QUIZZLE2", ...req.body}), {to: 'string'});
+        const compressed = compressQuiz({__type: "QUIZZLE2", ...req.body});
         await fs.writeFile(path.join(quizDir, 'quiz.quizzle'), compressed);
 
         const now = new Date();
@@ -108,34 +131,9 @@ app.get('/:code/exists', async (req, res) => {
 app.get('/:code', async (req, res) => {
     try {
         const code = req.params.code.replace(/[^A-Z]/gi, '').toUpperCase();
+        if (!await validatePracticeCode(code, res)) return;
 
-        if (!isAlphabeticCode(code)) {
-            return res.status(400).json({message: "Invalid practice code format"});
-        }
-
-        if (!await practiceQuizExists(code)) {
-            return res.status(404).json({message: "Practice quiz not found"});
-        }
-
-        if (await isPracticeQuizExpired(code)) {
-            return res.status(410).json({message: "Practice quiz has expired"});
-        }
-
-        const quizPath = path.join(practiceQuizzesDir, code, 'quiz.quizzle');
-        const quizData = await fs.readFile(quizPath);
-
-        const decompressed = pako.inflate(quizData, {to: 'string'});
-        const quiz = JSON.parse(decompressed);
-
-        const shuffleSequenceAnswers = (answers) => {
-            const shuffledAnswers = [...answers]
-                .map((answer, index) => ({
-                    ...answer,
-                    originalIndex: index
-                }))
-                .sort(() => Math.random() - 0.5);
-            return shuffledAnswers;
-        };
+        const quiz = await loadPracticeQuiz(code);
 
         const practiceQuiz = {
             ...quiz,
@@ -145,15 +143,12 @@ app.get('/:code', async (req, res) => {
                 if (question.type === 'text') {
                     practiceQuestion.answers = [];
                 } else if (question.type === 'sequence') {
-                    practiceQuestion.answers = shuffleSequenceAnswers(question.answers.map(answer => ({
-                        content: answer.content,
-                        type: answer.type || 'text'
-                    })));
+                    practiceQuestion.answers = shuffleSequenceAnswers(
+                        question.answers.map(a => ({content: a.content, type: a.type || 'text'}))
+                    );
                 } else {
-                    practiceQuestion.answers = question.answers.map(answer => ({
-                        content: answer.content,
-                        type: answer.type || 'text'
-                    }));
+                    practiceQuestion.answers = stripAnswerCorrectness(question.answers);
+                    practiceQuestion.type = resolveQuestionType(question.type, question.answers);
                 }
 
                 return practiceQuestion;
@@ -180,88 +175,30 @@ app.post('/:code/submit-answer', async (req, res) => {
             return res.status(400).json({message: "Attempt ID, question index and answer are required"});
         }
 
-        if (!await practiceQuizExists(code)) {
-            return res.status(404).json({message: "Practice quiz not found"});
-        }
+        if (!await validatePracticeCode(code, res)) return;
 
-        if (await isPracticeQuizExpired(code)) {
-            return res.status(410).json({message: "Practice quiz has expired"});
-        }
-
-        const quizPath = path.join(practiceQuizzesDir, code, 'quiz.quizzle');
-        const quizData = await fs.readFile(quizPath);
-        const decompressed = pako.inflate(quizData, {to: 'string'});
-        const quiz = JSON.parse(decompressed);
-
+        const quiz = await loadPracticeQuiz(code);
         const question = quiz.questions[questionIndex];
         if (!question) {
             return res.status(400).json({message: "Invalid question index"});
         }
 
-        let answerResult = 'incorrect';
-        let correctAnswer = null;
+        let answerResult;
+        let correctAnswer;
 
         if (question.type === 'text') {
-            const isCorrect = question.answers.some(acceptedAnswer =>
-                acceptedAnswer.content.toLowerCase().trim() === answer.toLowerCase().trim()
-            );
-            answerResult = isCorrect ? 'correct' : 'incorrect';
+            answerResult = evaluateTextAnswer(answer, question.answers) ? 'correct' : 'incorrect';
             correctAnswer = question.answers[0]?.content;
         } else if (question.type === 'sequence') {
-            const userOrder = answer;
-            const correctOrder = Array.from({length: question.answers.length}, (_, i) => i);
-
-            let isCompletelyCorrect = true;
-            if (userOrder.length !== correctOrder.length) {
-                isCompletelyCorrect = false;
-            } else {
-                for (let i = 0; i < userOrder.length; i++) {
-                    if (userOrder[i] !== correctOrder[i]) {
-                        isCompletelyCorrect = false;
-                        break;
-                    }
-                }
-            }
-            
-            if (isCompletelyCorrect) {
-                answerResult = 'correct';
-            } else {
-                let correctPositions = 0;
-                for (let i = 0; i < Math.min(userOrder.length, correctOrder.length); i++) {
-                    if (userOrder[i] === correctOrder[i]) {
-                        correctPositions++;
-                    }
-                }
-                const partialScore = correctPositions / correctOrder.length;
-                answerResult = partialScore >= 0.99 ? 'correct' : (partialScore > 0 ? 'partial' : 'incorrect');
-            }
-            
-            correctAnswer = question.answers.map(answer => answer.content);
+            const seqResult = evaluateSequenceAnswer(answer, question);
+            if (seqResult.isCorrect) answerResult = 'correct';
+            else if (seqResult.isPartial) answerResult = 'partial';
+            else answerResult = 'incorrect';
+            correctAnswer = question.answers.map(a => a.content);
         } else {
-            if (Array.isArray(answer)) {
-                const correctIndices = question.answers
-                    .map((ans, idx) => ans.is_correct ? idx : -1)
-                    .filter(idx => idx !== -1);
-
-                const selectedCorrect = answer.filter(idx => correctIndices.includes(idx));
-                const selectedIncorrect = answer.filter(idx => !correctIndices.includes(idx));
-
-                if (selectedCorrect.length === correctIndices.length && selectedIncorrect.length === 0) {
-                    answerResult = 'correct';
-                } else if (selectedCorrect.length > 0) {
-                    answerResult = 'partial';
-                } else {
-                    answerResult = 'incorrect';
-                }
-
-                correctAnswer = correctIndices;
-            } else {
-                const isCorrect = question.answers[answer]?.is_correct || false;
-                answerResult = isCorrect ? 'correct' : 'incorrect';
-                correctAnswer = question.answers
-                    .map((ans, idx) => ans.is_correct ? idx : -1)
-                    .filter(idx => idx !== -1);
-            }
+            const choiceResult = evaluateChoiceAnswer(answer, question.answers);
+            answerResult = choiceResult.result;
+            correctAnswer = choiceResult.correctIndices;
         }
 
         const resultsDir = path.join(practiceQuizzesDir, code, 'results');
@@ -319,9 +256,97 @@ app.post('/:code/submit-answer', async (req, res) => {
         });
     } catch (error) {
         console.error('Error submitting practice answer:', error);
-        res.status(500).json({message: "Error submitting practice answer"});
+        res.status(500).json({message: "Error submitting answer"});
     }
 });
+
+const generatePracticeAnalytics = (quiz, results, studentResults, averageScore, totalAttempts) => {
+    const totalStudents = Object.keys(studentResults).length;
+    const totalQuestions = quiz.questions.length;
+
+    const questionAnalytics = quiz.questions.map((question, questionIndex) => {
+        let correctCount = 0;
+        let partialCount = 0;
+        let incorrectCount = 0;
+        let totalResponses = 0;
+
+        results.forEach(result => {
+            if (result.answers && result.answers[questionIndex]) {
+                totalResponses++;
+                const answerResult = result.answers[questionIndex].result;
+                if (answerResult === 'correct') correctCount++;
+                else if (answerResult === 'partial') partialCount++;
+                else incorrectCount++;
+            }
+        });
+
+        const correctPercentage = totalResponses > 0 ? Math.round((correctCount / totalResponses) * 100) : 0;
+
+        return {
+            questionIndex,
+            title: question.title,
+            type: question.type,
+            totalResponses,
+            correctCount,
+            partialCount,
+            incorrectCount,
+            correctPercentage,
+            difficulty: correctPercentage >= 80 ? 'easy' : correctPercentage >= 60 ? 'medium' : 'hard',
+            needsReview: correctPercentage < 60
+        };
+    });
+
+    const studentAnalytics = Object.entries(studentResults).map(([studentName, attempts]) => {
+        const bestAttempt = attempts.reduce((best, current) =>
+            current.score > best.score ? current : best
+        );
+
+        const totalStudentAttempts = attempts.length;
+        const avgScore = attempts.reduce((sum, attempt) => sum + attempt.score, 0) / totalStudentAttempts;
+        const avgAccuracy = Math.round((avgScore / totalQuestions) * 100);
+
+        let correctAnswers = 0;
+        let partialAnswers = 0;
+        let incorrectAnswers = 0;
+
+        if (bestAttempt.answers) {
+            bestAttempt.answers.forEach(answer => {
+                if (answer.result === 'correct') correctAnswers++;
+                else if (answer.result === 'partial') partialAnswers++;
+                else incorrectAnswers++;
+            });
+        }
+
+        return {
+            id: studentName,
+            name: studentName,
+            character: bestAttempt.character,
+            totalPoints: bestAttempt.score,
+            correctAnswers,
+            partialAnswers,
+            incorrectAnswers,
+            totalAnswered: totalQuestions,
+            accuracy: avgAccuracy,
+            needsAttention: avgAccuracy < 60,
+            attempts: totalStudentAttempts,
+            avgScore: Math.round(avgScore * 100) / 100
+        };
+    });
+
+    const classAnalytics = {
+        totalStudents,
+        totalQuestions,
+        averageScore: Math.round(averageScore * 100) / 100,
+        averageAccuracy: studentAnalytics.length > 0 ?
+            Math.round((studentAnalytics.reduce((sum, student) => sum + student.accuracy, 0) / studentAnalytics.length) * 100) / 100 : 0,
+        questionsNeedingReview: questionAnalytics.filter(q => q.needsReview).length,
+        studentsNeedingAttention: studentAnalytics.filter(s => s.needsAttention).length,
+        participationRate: 100,
+        totalAttempts
+    };
+
+    return { classAnalytics, questionAnalytics, studentAnalytics };
+};
 
 app.post('/:code/results', requireAuth, async (req, res) => {
     try {
@@ -365,104 +390,9 @@ app.post('/:code/results', requireAuth, async (req, res) => {
             studentResults[result.name].push(result);
         });
 
-        const quizPath = path.join(practiceQuizzesDir, code, 'quiz.quizzle');
-        const quizData = await fs.readFile(quizPath);
-        const decompressed = pako.inflate(quizData, {to: 'string'});
-        const quiz = JSON.parse(decompressed);
+        const quiz = await loadPracticeQuiz(code);
 
-        const generatePracticeAnalytics = () => {
-            const totalStudents = Object.keys(studentResults).length;
-            const totalQuestions = quiz.questions.length;
-
-            const questionAnalytics = quiz.questions.map((question, questionIndex) => {
-                let correctCount = 0;
-                let partialCount = 0;
-                let incorrectCount = 0;
-                let totalResponses = 0;
-
-                results.forEach(result => {
-                    if (result.answers && result.answers[questionIndex]) {
-                        totalResponses++;
-                        const answerResult = result.answers[questionIndex].result;
-                        if (answerResult === 'correct') correctCount++;
-                        else if (answerResult === 'partial') partialCount++;
-                        else incorrectCount++;
-                    }
-                });
-
-                const correctPercentage = totalResponses > 0 ? Math.round((correctCount / totalResponses) * 100) : 0;
-
-                return {
-                    questionIndex,
-                    title: question.title,
-                    type: question.type,
-                    totalResponses,
-                    correctCount,
-                    partialCount,
-                    incorrectCount,
-                    correctPercentage,
-                    difficulty: correctPercentage >= 80 ? 'easy' : correctPercentage >= 60 ? 'medium' : 'hard',
-                    needsReview: correctPercentage < 60
-                };
-            });
-
-            const studentAnalytics = Object.entries(studentResults).map(([studentName, attempts]) => {
-                const bestAttempt = attempts.reduce((best, current) => 
-                    current.score > best.score ? current : best
-                );
-                
-                const totalAttempts = attempts.length;
-                const avgScore = attempts.reduce((sum, attempt) => sum + attempt.score, 0) / totalAttempts;
-                const avgAccuracy = Math.round((avgScore / totalQuestions) * 100);
-
-                let correctAnswers = 0;
-                let partialAnswers = 0;
-                let incorrectAnswers = 0;
-
-                if (bestAttempt.answers) {
-                    bestAttempt.answers.forEach(answer => {
-                        if (answer.result === 'correct') correctAnswers++;
-                        else if (answer.result === 'partial') partialAnswers++;
-                        else incorrectAnswers++;
-                    });
-                }
-
-                return {
-                    id: studentName,
-                    name: studentName,
-                    character: bestAttempt.character,
-                    totalPoints: bestAttempt.score,
-                    correctAnswers,
-                    partialAnswers,
-                    incorrectAnswers,
-                    totalAnswered: totalQuestions,
-                    accuracy: avgAccuracy,
-                    needsAttention: avgAccuracy < 60,
-                    attempts: totalAttempts,
-                    avgScore: Math.round(avgScore * 100) / 100
-                };
-            });
-
-            const classAnalytics = {
-                totalStudents,
-                totalQuestions,
-                averageScore: Math.round(averageScore * 100) / 100,
-                averageAccuracy: studentAnalytics.length > 0 ? 
-                    Math.round((studentAnalytics.reduce((sum, student) => sum + student.accuracy, 0) / studentAnalytics.length) * 100) / 100 : 0,
-                questionsNeedingReview: questionAnalytics.filter(q => q.needsReview).length,
-                studentsNeedingAttention: studentAnalytics.filter(s => s.needsAttention).length,
-                participationRate: 100,
-                totalAttempts: totalAttempts
-            };
-
-            return {
-                classAnalytics,
-                questionAnalytics,
-                studentAnalytics
-            };
-        };
-
-        const analytics = generatePracticeAnalytics();
+        const analytics = generatePracticeAnalytics(quiz, results, studentResults, averageScore, totalAttempts);
 
         res.json({
             meta: {
@@ -483,6 +413,5 @@ app.post('/:code/results', requireAuth, async (req, res) => {
         res.status(500).json({message: "Error viewing practice quiz results"});
     }
 });
-
 
 module.exports = app;

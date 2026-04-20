@@ -12,84 +12,17 @@ const {
     getSessionBySocketId,
     getAllSessionsForRoom
 } = require("./utils/session");
+const {shuffleSequenceAnswers, stripAnswerContent} = require("./utils/quiz");
+const {calculatePoints, calculateLiveScore} = require("./utils/scoring");
+const {generateAnalytics} = require("./utils/analytics");
+const {
+    getActivePlayers,
+    buildQuestionPayload,
+    generateAnswerData,
+    broadcastAnswerResults
+} = require("./utils/room");
 
 const rooms = {};
-
-const isSequenceCompletelyCorrect = (userOrder, correctOrder) => {
-    if (userOrder.length !== correctOrder.length) {
-        return false;
-    }
-    
-    for (let i = 0; i < userOrder.length; i++) {
-        if (userOrder[i] !== correctOrder[i]) {
-            return false;
-        }
-    }
-    
-    return true;
-};
-
-const calculateSequencePartialScore = (userOrder, correctOrder) => {
-    let correctPositions = 0;
-    for (let i = 0; i < Math.min(userOrder.length, correctOrder.length); i++) {
-        if (userOrder[i] === correctOrder[i]) {
-            correctPositions++;
-        }
-    }
-    return correctPositions / correctOrder.length;
-};
-
-const validateSequenceAnswer = (userOrder, question) => {
-    let correctOrder;
-    if (Array.isArray(question.answers)) {
-        correctOrder = question.answers.map((_, index) => index);
-    } else if (typeof question.answers === 'number') {
-        correctOrder = Array.from({length: question.answers}, (_, index) => index);
-    } else {
-        correctOrder = Array.from({length: userOrder.length}, (_, index) => index);
-    }
-    
-    const isCompletelyCorrect = isSequenceCompletelyCorrect(userOrder, correctOrder);
-    
-    if (isCompletelyCorrect) {
-        return { isCorrect: true, score: 1 };
-    } else {
-        const partialScore = calculateSequencePartialScore(userOrder, correctOrder);
-        return { 
-            isCorrect: false, 
-            score: partialScore >= 0.99 ? 1 : Math.max(0.1, partialScore),
-            isPartial: partialScore > 0
-        };
-    }
-};
-
-const calculatePoints = (correctAnswers, room, pointMultiplier) => {
-    if (pointMultiplier === 'none') {
-        return 0;
-    }
-    
-    const basePoints = 100;
-    const maxTime = 30000;
-    const timeTaken = Math.min(maxTime, Date.now() - room.startTime);
-    const timeFactor = 1 - timeTaken / maxTime;
-
-    let points = correctAnswers > 0 ? Math.round(basePoints * timeFactor + (correctAnswers * basePoints)) : 0;
-
-    if (pointMultiplier === 'double') {
-        points *= 2;
-    }
-    
-    return points;
-}
-
-const getActivePlayers = (room, io) => {
-    const activePlayers = {};
-    for (const [playerId, player] of Object.entries(room.players)) {
-        const playerSocket = io.sockets.sockets.get(playerId);
-        if (playerSocket?.connected) activePlayers[playerId] = player;
-    }
-    return activePlayers;
-};
 
 const validateCallback = (callback) => {
     if (!callback) return false;
@@ -113,223 +46,6 @@ const handleValidationError = (callback, schema, data) => {
     return false;
 };
 
-const generateAnswerData = (currentQuestion, currentAnswers, room) => {
-    if (currentQuestion.type === 'text') {
-        return {
-            answers: currentQuestion.answers.map(a => a.content)
-        };
-    } else if (currentQuestion.type === 'sequence') {
-        const originalQuestion = room.questionHistory[room.questionHistory.length - 1];
-        return {
-            answers: originalQuestion ? originalQuestion.answers : currentQuestion.answers,
-            correctOrder: (originalQuestion ? originalQuestion.answers : currentQuestion.answers).map((_, index) => index)
-        };
-    } else {
-        const voteCounts = new Array(currentQuestion.answers.length).fill(0);
-
-        Object.values(currentAnswers).forEach(playerAnswers => {
-            if (Array.isArray(playerAnswers)) {
-                playerAnswers.forEach(answerIndex => {
-                    if (answerIndex >= 0 && answerIndex < voteCounts.length) {
-                        voteCounts[answerIndex]++;
-                    }
-                });
-            }
-        });
-
-        return {
-            answers: currentQuestion.answers.map(answer => answer.is_correct),
-            voteCounts: voteCounts
-        };
-    }
-};
-
-const broadcastAnswerResults = (io, roomCode, answerData, room) => {
-    io.to(roomCode.toString()).emit('ANSWER_RECEIVED', answerData);
-
-    for (const player of Object.keys(room.players)) {
-        io.to(player).emit("POINTS_RECEIVED", room.players[player].points);
-    }
-};
-
-const generateAnalyticsData = (room) => {
-    const players = Object.keys(room.players);
-    const totalQuestions = room.playerAnswers.length;
-
-    const questionAnalytics = room.playerAnswers.map((questionAnswers, questionIndex) => {
-        const totalResponses = Object.keys(questionAnswers).length;
-        const question = room.questionHistory[questionIndex];
-        
-        if (!question) {
-            return {
-                questionIndex,
-                totalResponses: 0,
-                correctCount: 0,
-                partialCount: 0,
-                incorrectCount: 0,
-                correctPercentage: 0,
-                difficulty: 'unknown',
-                title: 'Unknown Question'
-            };
-        }
-        
-        let correctCount = 0;
-        let partialCount = 0;
-        let incorrectCount = 0;
-
-        Object.values(questionAnswers).forEach(playerAnswer => {
-            if (question.type === 'text') {
-                const isCorrect = question.answers.some(acceptedAnswer => 
-                    acceptedAnswer.content.toLowerCase().trim() === playerAnswer.toLowerCase().trim()
-                );
-                if (isCorrect) correctCount++;
-                else incorrectCount++;
-            } else if (question.type === 'sequence') {
-                const sequenceResult = validateSequenceAnswer(playerAnswer, question);
-                
-                if (sequenceResult.isCorrect) {
-                    correctCount++;
-                } else if (sequenceResult.isPartial) {
-                    partialCount++;
-                } else {
-                    incorrectCount++;
-                }
-            } else {
-                let correctSelected = 0;
-                let incorrectSelected = 0;
-                
-                const playerAnswers = Array.isArray(playerAnswer) ? playerAnswer : [playerAnswer];
-                
-                playerAnswers.forEach(answerIndex => {
-                    if (question.answers[answerIndex]?.is_correct) {
-                        correctSelected++;
-                    } else {
-                        incorrectSelected++;
-                    }
-                });
-                
-                const totalCorrectAnswers = question.answers.filter(a => a.is_correct).length;
-                
-                if (correctSelected === totalCorrectAnswers && incorrectSelected === 0) {
-                    correctCount++;
-                } else if (correctSelected > 0) {
-                    partialCount++;
-                } else {
-                    incorrectCount++;
-                }
-            }
-        });
-        
-        const correctPercentage = totalResponses > 0 ? Math.round((correctCount / totalResponses) * 100) : 0;
-        
-        return {
-            questionIndex,
-            title: question.title,
-            type: question.type,
-            totalResponses,
-            correctCount,
-            partialCount,
-            incorrectCount,
-            correctPercentage,
-            difficulty: totalResponses > 0 ? 
-                (correctPercentage >= 80) ? 'easy' :
-                (correctPercentage >= 60) ? 'medium' : 'hard' : 'unknown',
-            needsReview: correctPercentage < 60
-        };
-    });
-
-    const studentAnalytics = players.map(playerId => {
-        const player = room.players[playerId];
-        const studentAnswers = room.playerAnswers.map(questionAnswers => questionAnswers[playerId]);
-        
-        let correctAnswers = 0;
-        let partialAnswers = 0;
-        let incorrectAnswers = 0;
-        
-        studentAnswers.forEach((answer, questionIndex) => {
-            const question = room.questionHistory[questionIndex];
-            
-            if (answer !== undefined && question) {
-                if (question.type === 'text') {
-                    const isCorrect = question.answers.some(acceptedAnswer => 
-                        acceptedAnswer.content.toLowerCase().trim() === answer.toLowerCase().trim()
-                    );
-                    if (isCorrect) correctAnswers++;
-                    else incorrectAnswers++;
-                } else if (question.type === 'sequence') {
-                    const sequenceResult = validateSequenceAnswer(answer, question);
-                    
-                    if (sequenceResult.isCorrect) {
-                        correctAnswers++;
-                    } else if (sequenceResult.isPartial) {
-                        partialAnswers++;
-                    } else {
-                        incorrectAnswers++;
-                    }
-                } else {
-                    let correctSelected = 0;
-                    let incorrectSelected = 0;
-                    
-                    const playerAnswers = Array.isArray(answer) ? answer : [answer];
-                    
-                    playerAnswers.forEach(answerIndex => {
-                        if (question.answers[answerIndex]?.is_correct) {
-                            correctSelected++;
-                        } else {
-                            incorrectSelected++;
-                        }
-                    });
-                    
-                    const totalCorrectAnswers = question.answers.filter(a => a.is_correct).length;
-                    
-                    if (correctSelected === totalCorrectAnswers && incorrectSelected === 0) {
-                        correctAnswers++;
-                    } else if (correctSelected > 0) {
-                        partialAnswers++;
-                    } else {
-                        incorrectAnswers++;
-                    }
-                }
-            }
-        });
-        
-        const totalAnswered = studentAnswers.filter(answer => answer !== undefined).length;
-        
-        return {
-            id: playerId,
-            name: player.name,
-            character: player.character,
-            totalPoints: player.points,
-            correctAnswers,
-            partialAnswers,
-            incorrectAnswers,
-            totalAnswered,
-            accuracy: totalAnswered > 0 ? Math.round((correctAnswers / totalAnswered) * 100) : 0,
-            needsAttention: correctAnswers < (totalAnswered * 0.6)
-        };
-    });
-
-    const totalAnsweredQuestions = studentAnalytics.reduce((sum, student) => sum + student.totalAnswered, 0);
-    const classAnalytics = {
-        totalStudents: players.length,
-        totalQuestions,
-        averageScore: players.length > 0 ? 
-            Math.round((Object.values(room.players).reduce((sum, player) => sum + player.points, 0) / players.length) * 100) / 100 : 0,
-        averageAccuracy: studentAnalytics.length > 0 ?
-            Math.round((studentAnalytics.reduce((sum, student) => sum + student.accuracy, 0) / studentAnalytics.length) * 100) / 100 : 0,
-        questionsNeedingReview: questionAnalytics.filter(q => q.needsReview).length,
-        studentsNeedingAttention: studentAnalytics.filter(s => s.needsAttention).length,
-        participationRate: players.length > 0 && totalQuestions > 0 ? 
-            Math.round((totalAnsweredQuestions / (players.length * totalQuestions)) * 100) : 0
-    };
-    
-    return {
-        classAnalytics,
-        questionAnalytics,
-        studentAnalytics
-    };
-};
-
 const endGameForAllPlayers = (io, room, roomCode) => {
     for (const player of Object.keys(room.players)) {
         io.to(player).emit("GAME_ENDED", room.playerAnswers.filter(answer => answer[player]));
@@ -341,6 +57,38 @@ const endGameForAllPlayers = (io, room, roomCode) => {
     }
     cleanupRoomSessions(roomCode);
     delete rooms[roomCode];
+};
+
+const emitActivePlayerCount = (io, room) => {
+    const activePlayers = getActivePlayers(room, io);
+    io.to(room.host).emit('ACTIVE_PLAYER_COUNT', {
+        active: Object.keys(activePlayers).length,
+        total: Object.keys(room.players).length,
+        expectedAnswers: Object.keys(activePlayers).length
+    });
+    return activePlayers;
+};
+
+const handleAllAnswered = (io, roomCode, room) => {
+    const currentAnswers = room.playerAnswers[room.playerAnswers.length - 1];
+    const activePlayers = getActivePlayers(room, io);
+
+    if (Object.keys(currentAnswers).length !== Object.keys(activePlayers).length) return false;
+
+    const answerData = generateAnswerData(room.currentQuestion, currentAnswers, room);
+    room.currentQuestion.isCompleted = true;
+    broadcastAnswerResults(io, roomCode, answerData, room);
+
+    io.to(room.host).emit('ANSWERS_RECEIVED', {
+        answers: currentAnswers,
+        scoreboard: room.players,
+        answerData,
+        activePlayerCount: Object.keys(activePlayers).length,
+        totalPlayerCount: Object.keys(room.players).length,
+        allActiveAnswered: true
+    });
+
+    return true;
 };
 
 module.exports = (io, socket) => {
@@ -593,12 +341,7 @@ module.exports = (io, socket) => {
                 });
                 
                 if (room.state === 'ingame' && room.currentQuestion && !room.currentQuestion.isCompleted) {
-                    const activePlayers = getActivePlayers(room, io);
-                    io.to(room.host).emit('ACTIVE_PLAYER_COUNT', {
-                        active: Object.keys(activePlayers).length,
-                        total: Object.keys(room.players).length,
-                        expectedAnswers: Object.keys(activePlayers).length
-                    });
+                    emitActivePlayerCount(io, room);
                 }
             } else {
                 room.players[socket.id] = {
@@ -612,7 +355,9 @@ module.exports = (io, socket) => {
                     name: session.playerData.name,
                     character: session.playerData.character
                 });
-            }            const gameState = {
+            }
+
+            const gameState = {
                 roomState: room.state,
                 currentQuestion: room.currentQuestion,
                 playerPoints: room.players[socket.id].points,
@@ -621,23 +366,7 @@ module.exports = (io, socket) => {
             };
             
             if (room.state === 'ingame' && room.currentQuestion && !room.currentQuestion.isCompleted) {
-                let questionType = room.currentQuestion.type;
-                if (room.currentQuestion.type === 'multiple-choice') {
-                    const isMultipleChoice = room.currentQuestion.answers.filter(answer => answer.is_correct).length > 1;
-                    questionType = isMultipleChoice ? 'multiple' : 'single';
-                }
-
-                const questionData = { type: questionType, title: room.currentQuestion.title };
-
-                if (room.currentQuestion.type === 'text') {
-                    questionData.maxLength = 200;
-                } else if (room.currentQuestion.type === 'sequence') {
-                    const originalQuestion = room.questionHistory[room.questionHistory.length - 1];
-                    questionData.answers = originalQuestion?.shuffledAnswers || room.currentQuestion.answers.length;
-                } else {
-                    questionData.answers = room.currentQuestion.answers.length;
-                }
-                
+                const questionData = buildQuestionPayload(room.currentQuestion, room);
                 socket.emit('QUESTION_RECEIVED', questionData);
                 if (room.currentQuestion.answersReady) socket.emit('ANSWERS_READY', true);
             }
@@ -695,10 +424,7 @@ module.exports = (io, socket) => {
             pointMultiplier: data.pointMultiplier,
             answers: data.type === 'text' ? data.answers : 
                      data.type === 'sequence' ? data.answers.length :
-                     data.answers.map(answer => {
-                         const {content, ...rest} = answer;
-                         return rest;
-                     }),
+                     stripAnswerContent(data.answers),
             isCompleted: false,
             answersReady: false
         };
@@ -708,42 +434,17 @@ module.exports = (io, socket) => {
             type: data.type,
             pointMultiplier: data.pointMultiplier,
             answers: data.answers,
-            shuffledAnswers: data.type === 'sequence' ? [...data.answers]
-                .map((answer, index) => ({
-                    content: answer.content,
-                    type: answer.type || 'text',
-                    originalIndex: index
-                }))
-                .sort(() => Math.random() - 0.5) : undefined
+            shuffledAnswers: data.type === 'sequence'
+                ? shuffleSequenceAnswers(data.answers)
+                : undefined
         });
 
         room.playerAnswers.push({});
 
-        let questionType = data.type;
-        if (data.type === 'multiple-choice') {
-            const isMultipleChoice = data.answers.filter(answer => answer.is_correct).length > 1;
-            questionType = isMultipleChoice ? 'multiple' : 'single';
-        }
-
-        const questionData = { type: questionType, title: data.title };
-
-        if (data.type === 'text') {
-            questionData.maxLength = 200;
-        } else if (data.type === 'sequence') {
-            const currentQuestionHistory = room.questionHistory[room.questionHistory.length - 1];
-            questionData.answers = currentQuestionHistory.shuffledAnswers;
-        } else {
-            questionData.answers = data.answers.length;
-        }
-
+        const questionData = buildQuestionPayload({...data, answers: data.answers}, room);
         io.to(currentRoomCode.toString()).emit('QUESTION_RECEIVED', questionData);
 
-        const activePlayers = getActivePlayers(room, io);
-        io.to(room.host).emit('ACTIVE_PLAYER_COUNT', {
-            active: Object.keys(activePlayers).length,
-            total: Object.keys(room.players).length,
-            expectedAnswers: Object.keys(activePlayers).length
-        });
+        emitActivePlayerCount(io, room);
 
         setTimeout(() => {
             if (rooms[currentRoomCode]?.currentQuestion) {
@@ -780,56 +481,13 @@ module.exports = (io, socket) => {
 
         playerAnswers[playerAnswers.length - 1][socket.id] = data.answers;
 
-        let correctAnswers = 0;
-        const currentQuestion = room.currentQuestion;
-
-        if (currentQuestion.type === 'text') {
-            const userAnswer = data.answers.toLowerCase().trim();
-            const correctTextAnswers = currentQuestion.answers.map(a => a.content.toLowerCase().trim());
-            correctAnswers = correctTextAnswers.includes(userAnswer) ? 1 : 0;
-        } else if (currentQuestion.type === 'sequence') {
-            const sequenceResult = validateSequenceAnswer(data.answers, currentQuestion);
-            correctAnswers = sequenceResult.score;
-        } else {
-            let correctSelected = 0;
-            let incorrectSelected = 0;
-
-            for (const answer of data.answers) {
-                if (currentQuestion.answers[answer].is_correct) {
-                    correctSelected++;
-                } else {
-                    incorrectSelected++;
-                }
-            }
-
-            if (correctSelected > 0) {
-                correctAnswers = Math.max(0.1, correctSelected - (incorrectSelected * 0.5));
-            } else {
-                correctAnswers = 0;
-            }
-        }
-
-        const points = calculatePoints(correctAnswers, room, currentQuestion.pointMultiplier);
+        const score = calculateLiveScore(room.currentQuestion, data.answers);
+        const points = calculatePoints(score, room.startTime, room.currentQuestion.pointMultiplier);
         room.players[socket.id].points += points;
 
-        const currentAnswers = playerAnswers[playerAnswers.length - 1];
-        const activePlayers = getActivePlayers(room, io);
-        
-        if (Object.keys(currentAnswers).length === Object.keys(activePlayers).length) {
-            const answerData = generateAnswerData(currentQuestion, currentAnswers, room);
-            room.currentQuestion.isCompleted = true;
-
-            broadcastAnswerResults(io, currentRoomCode, answerData, room);
-
-            io.to(room.host).emit('ANSWERS_RECEIVED', {
-                answers: currentAnswers,
-                scoreboard: room.players,
-                answerData: answerData,
-                activePlayerCount: Object.keys(activePlayers).length,
-                totalPlayerCount: Object.keys(room.players).length,
-                allActiveAnswered: true
-            });
-        } else {
+        if (!handleAllAnswered(io, currentRoomCode, room)) {
+            const activePlayers = getActivePlayers(room, io);
+            const currentAnswers = playerAnswers[playerAnswers.length - 1];
             io.to(room.host).emit('ANSWER_PROGRESS', {
                 answeredCount: Object.keys(currentAnswers).length,
                 activePlayerCount: Object.keys(activePlayers).length,
@@ -872,12 +530,19 @@ module.exports = (io, socket) => {
         }
 
         const room = rooms[currentRoomCode];
-        const analytics = generateAnalyticsData(room);
+        const players = Object.entries(room.players).map(([id, p]) => ({
+            id, name: p.name, character: p.character, points: p.points
+        }));
+        const analytics = generateAnalytics({
+            players,
+            playerAnswers: room.playerAnswers,
+            questionHistory: room.questionHistory
+        });
         
         callback({
             playerAnswers: room.playerAnswers, 
             players: room.players,
-            analytics: analytics
+            analytics
         });
         endGameForAllPlayers(io, room, currentRoomCode);
     });
@@ -916,28 +581,8 @@ module.exports = (io, socket) => {
             });
             
             if (room.state === 'ingame' && room.currentQuestion && !room.currentQuestion.isCompleted) {
-                const activePlayers = getActivePlayers(room, io);
-                const currentAnswers = room.playerAnswers[room.playerAnswers.length - 1];
-                
-                io.to(room.host).emit('ACTIVE_PLAYER_COUNT', {
-                    active: Object.keys(activePlayers).length,
-                    total: Object.keys(room.players).length,
-                    expectedAnswers: Object.keys(activePlayers).length
-                });
-                
-                if (Object.keys(currentAnswers).length === Object.keys(activePlayers).length && Object.keys(activePlayers).length > 0) {
-                    const answerData = generateAnswerData(room.currentQuestion, currentAnswers, room);
-                    room.currentQuestion.isCompleted = true;
-                    broadcastAnswerResults(io, currentRoomCode, answerData, room);
-                    io.to(room.host).emit('ANSWERS_RECEIVED', {
-                        answers: currentAnswers,
-                        scoreboard: room.players,
-                        answerData: answerData,
-                        activePlayerCount: Object.keys(activePlayers).length,
-                        totalPlayerCount: Object.keys(room.players).length,
-                        allActiveAnswered: true
-                    });
-                }
+                emitActivePlayerCount(io, room);
+                handleAllAnswered(io, currentRoomCode, room);
             }
         }
     });

@@ -1,13 +1,13 @@
 const rateLimit = require('express-rate-limit');
 const {validateSchema} = require("../utils/error");
 const {quizUpload} = require("../validations/quiz");
-const pako = require("pako");
 const path = require("path");
 const fs = require("fs");
 const app = require('express').Router();
 const {quizzesFolder} = require("../utils/file");
 const {generateQuizId} = require("../utils/random");
 const {requireAuth} = require("../middleware/auth");
+const {compressQuiz} = require("../utils/quiz");
 
 const uploadFile = async (content) => {
     let random = generateQuizId();
@@ -16,7 +16,7 @@ const uploadFile = async (content) => {
         random = generateQuizId();
     }
 
-    const compressed = pako.deflate(JSON.stringify({__type: "QUIZZLE2", ...content}), { to: 'string' });
+    const compressed = compressQuiz({__type: "QUIZZLE2", ...content});
 
     fs.writeFile(path.join(quizzesFolder, `${random}.quizzle`), compressed, (err) => {
         if (err) {

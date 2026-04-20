@@ -294,6 +294,7 @@ export const InGameClient = () => {
         if (currentQuestionIndex < practiceQuiz.questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
             setSelection([]);
+            setUserSubmittedAnswer(null);
             setShowingPracticeResult(false);
             setPracticeQuestionResult(null);
         }
