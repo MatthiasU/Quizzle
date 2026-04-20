@@ -107,7 +107,8 @@ module.exports = (io, socket) => {
         socket.join(roomCode.toString());
         rooms[roomCode] = {
             host: socket.id, code: roomCode, state: 'waiting', players: {}, playerAnswers: [],
-            currentQuestion: {}, startTime: 0, questionHistory: [], locked: false
+            currentQuestion: {}, startTime: 0, questionHistory: [], locked: false,
+            settings: data?.settings || {}
         };
         currentRoomCode = roomCode;
 
@@ -482,7 +483,10 @@ module.exports = (io, socket) => {
         playerAnswers[playerAnswers.length - 1][socket.id] = data.answers;
 
         const score = calculateLiveScore(room.currentQuestion, data.answers);
-        const points = calculatePoints(score, room.startTime, room.currentQuestion.pointMultiplier);
+        const isFlatScoring = room.settings?.scoringMode === 'flat';
+        const points = isFlatScoring
+            ? (score > 0 ? (room.currentQuestion.pointMultiplier === 'none' ? 0 : room.currentQuestion.pointMultiplier === 'double' ? 200 : 100) : 0)
+            : calculatePoints(score, room.startTime, room.currentQuestion.pointMultiplier);
         room.players[socket.id].points += points;
 
         if (!handleAllAnswered(io, currentRoomCode, room)) {

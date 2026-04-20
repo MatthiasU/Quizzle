@@ -61,7 +61,7 @@ export const importQuizzleFile = (file) => {
                     return newQuestion;
                 }));
 
-                resolve({title: parsedData.title, questions: questions});
+                resolve({title: parsedData.title, questions: questions, settings: parsedData.settings || null});
             } catch (e) {
                 console.error("Import error:", e);
                 reject(new Error("Ungültiges Dateiformat."));

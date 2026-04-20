@@ -4,6 +4,7 @@ import pako from "pako";
 import {socket, getSessionData, getSessionState} from "@/common/utils/SocketUtil.js";
 import {soundManager} from "@/common/utils/SoundManager.js";
 import {QuizValidationUtil} from "@/common/utils/QuizValidationUtil.js";
+import {DEFAULT_QUIZ_SETTINGS} from "@/common/constants/QuizSettings.js";
 
 export const QuizContext = createContext({});
 
@@ -72,6 +73,33 @@ export const QuizProvider = ({children}) => {
 
     const validateQuiz = (json) => QuizValidationUtil.validateQuizForContext(json);
 
+    const applySettings = (parsedData) => {
+        const settings = {...DEFAULT_QUIZ_SETTINGS, ...parsedData.settings};
+        let processedQuestions = [...parsedData.questions];
+
+        if (settings.shuffleQuestions) {
+            processedQuestions = randomizeArray(processedQuestions);
+        }
+
+        if (settings.shuffleAnswers) {
+            processedQuestions = processedQuestions.map(q => {
+                if (q.type === 'multiple-choice' || q.type === 'true-false') {
+                    return {...q, answers: randomizeArray(q.answers)};
+                }
+                return q;
+            });
+        }
+
+        processedQuestions = processedQuestions.map(q => {
+            if (q.timer === undefined || q.timer === null) {
+                return {...q, timer: settings.defaultTimer === 60 ? undefined : settings.defaultTimer === -1 ? -1 : settings.defaultTimer};
+            }
+            return q;
+        });
+
+        return {questions: processedQuestions, settings};
+    };
+
     const loadQuizByContent = (content) => {
         try {
             const data = pako.inflate(new Uint8Array(content), {to: "string"});
@@ -79,8 +107,8 @@ export const QuizProvider = ({children}) => {
 
             if (!validateQuiz(parsedData)) return false;
 
-            const questions = randomizeArray(parsedData.questions);
-            setQuiz({title: parsedData.title, questions});
+            const {questions, settings} = applySettings(parsedData);
+            setQuiz({title: parsedData.title, questions, settings});
             setQuestions(questions);
             return true;
         } catch (error) {
@@ -99,8 +127,8 @@ export const QuizProvider = ({children}) => {
 
             if (!validateQuiz(parsedData)) return false;
 
-            const questions = randomizeArray(parsedData.questions);
-            setQuiz({title: parsedData.title, questions});
+            const {questions, settings} = applySettings(parsedData);
+            setQuiz({title: parsedData.title, questions, settings});
             setQuestions(questions);
             return true;
         } catch (error) {

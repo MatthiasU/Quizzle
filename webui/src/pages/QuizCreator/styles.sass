@@ -103,6 +103,24 @@
         background: color-mix(in srgb, $red 12%, white 88%)
         border-color: color-mix(in srgb, $red 50%, $border 50%)
 
+    &.settings
+      border-color: color-mix(in srgb, $gray 30%, $border 70%)
+      background: color-mix(in srgb, $gray 8%, white 92%)
+
+      svg
+        color: $gray
+
+      &:hover
+        background: color-mix(in srgb, $gray 12%, white 88%)
+        border-color: color-mix(in srgb, $gray 50%, $border 50%)
+
+      &.active
+        border-color: color-mix(in srgb, $primary 50%, $border 50%)
+        background: color-mix(in srgb, $primary 12%, white 88%)
+
+        svg
+          color: $primary
+
     &.locked, &.disabled
       background: color-mix(in srgb, $gray 8%, white 92%)
       border-color: color-mix(in srgb, $gray 30%, $border 70%)

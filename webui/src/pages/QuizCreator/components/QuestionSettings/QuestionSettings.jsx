@@ -5,7 +5,7 @@ import {faClock, faInfinity, faCoins} from "@fortawesome/free-solid-svg-icons";
 import {useState, useEffect} from "react";
 import {motion} from "framer-motion";
 
-export const QuestionSettings = ({question, onChange, onCommit}) => {
+export const QuestionSettings = ({question, onChange, onCommit, defaultTimer = 60}) => {
     const [selectedTimer, setSelectedTimer] = useState(() => {
         if (question.timer === undefined || question.timer === null) return "default";
         if (question.timer === -1) return "unlimited";
@@ -19,17 +19,25 @@ export const QuestionSettings = ({question, onChange, onCommit}) => {
         return question.pointMultiplier;
     });
 
+    const defaultTimerLabel = defaultTimer === -1 ? "Unbegrenzt" : `${defaultTimer}s`;
+
     const timerOptions = [
         {
             value: "default",
-            label: "Standard (60s)",
-            description: "Standardzeit für Fragen",
+            label: `Standard (${defaultTimerLabel})`,
+            description: "Aus Quiz-Einstellungen",
             icon: faClock
         },
         {
             value: "30",
             label: "30 Sekunden",
             description: "Schnelle Fragen",
+            icon: faClock
+        },
+        {
+            value: "60",
+            label: "60 Sekunden",
+            description: "Eine Minute pro Frage",
             icon: faClock
         },
         {

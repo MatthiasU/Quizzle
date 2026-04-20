@@ -1,0 +1,1 @@
+export {QuizSettingsPanel as default} from "./QuizSettingsPanel.jsx";

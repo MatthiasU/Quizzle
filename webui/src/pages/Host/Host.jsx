@@ -39,7 +39,7 @@ export const Host = () => {
             return;
         }
 
-        socket.emit("CREATE_ROOM", undefined, (roomCode) => {
+        socket.emit("CREATE_ROOM", {settings: quizRaw?.settings || {}}, (roomCode) => {
             setRoomCode(roomCode);
         });
 

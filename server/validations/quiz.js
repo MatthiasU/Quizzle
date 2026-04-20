@@ -97,6 +97,16 @@ module.exports.questionValidation = Joi.object({
     })
 });
 
+module.exports.settingsValidation = Joi.object({
+    description: Joi.string().allow('').max(300).optional(),
+    coverImage: Joi.string().max(10000000).allow(null).optional(),
+    difficulty: Joi.string().valid('easy', 'medium', 'hard').allow(null).optional(),
+    shuffleQuestions: Joi.boolean().optional(),
+    shuffleAnswers: Joi.boolean().optional(),
+    defaultTimer: Joi.number().integer().min(-1).max(3600).optional(),
+    scoringMode: Joi.string().valid('time-based', 'flat').optional()
+});
+
 module.exports.quizUpload = Joi.object({
     title: Joi.string().required().min(1).max(100)
         .custom((value, helpers) => {
@@ -110,6 +120,7 @@ module.exports.quizUpload = Joi.object({
             'string.min': 'Quiz-Titel darf nicht leer sein',
             'string.max': 'Quiz-Titel darf maximal 100 Zeichen lang sein'
         }),
+    settings: module.exports.settingsValidation.optional(),
     questions: Joi.array().items(module.exports.questionValidation).min(1).max(50).required()
         .messages({
             'array.min': 'Quiz muss mindestens eine Frage enthalten',

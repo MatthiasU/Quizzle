@@ -12,6 +12,7 @@ import {
     faExclamationTriangle,
     faFileDownload,
     faFileImport,
+    faGear,
     faGraduationCap,
     faRotateLeft,
     faRotateRight,
@@ -33,6 +34,8 @@ import {QUESTION_TYPES} from "@/common/constants/QuestionTypes.js";
 import {DEFAULT_QUESTION_TYPE} from "@/common/constants/QuestionTypes.js";
 import {useAIGeneration} from "@/common/hooks/useAIGeneration.jsx";
 import {AuthContext} from "@/common/contexts/Auth";
+import {DEFAULT_QUIZ_SETTINGS} from "@/common/constants/QuizSettings.js";
+import QuizSettingsPanel from "@/pages/QuizCreator/components/QuizSettingsPanel";
 
 export const QuizCreator = () => {
     const {setCirclePosition} = useOutletContext();
@@ -41,6 +44,7 @@ export const QuizCreator = () => {
 
     const [errorToastId, setErrorToastId] = useState(null);
     const [aiAvailable, setAIAvailable] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
 
     const initialQuizState = () => {
         const stored = localStorage.getItem("qq_questions");
@@ -65,25 +69,37 @@ export const QuizCreator = () => {
                         type: cleanQuestion.type || DEFAULT_QUESTION_TYPE
                     };
                 });
+                let settings = DEFAULT_QUIZ_SETTINGS;
+                const storedSettings = localStorage.getItem("qq_settings");
+                if (storedSettings) {
+                    try { settings = {...DEFAULT_QUIZ_SETTINGS, ...JSON.parse(storedSettings)}; } catch (e) {}
+                }
                 return {
                     questions,
                     activeQuestion: questions[0].uuid,
-                    title: localStorage.getItem("qq_title") || ""
+                    title: localStorage.getItem("qq_title") || "",
+                    settings
                 };
             } catch (e) {
                 console.error("Error parsing stored questions:", e);
             }
         }
         const uuid = generateUuid();
+        let settings = DEFAULT_QUIZ_SETTINGS;
+        const storedSettings = localStorage.getItem("qq_settings");
+        if (storedSettings) {
+            try { settings = {...DEFAULT_QUIZ_SETTINGS, ...JSON.parse(storedSettings)}; } catch (e) {}
+        }
         return {
             questions: [{uuid, title: "", type: DEFAULT_QUESTION_TYPE, answers: []}],
             activeQuestion: uuid,
-            title: localStorage.getItem("qq_title") || ""
+            title: localStorage.getItem("qq_title") || "",
+            settings
         };
     };
 
     const {current: quiz, set: setQuiz, silentSet: silentSetQuiz, undo, redo, canUndo, canRedo, clearHistory} = useUndoRedo(initialQuizState);
-    const {questions, activeQuestion, title: quizTitle} = quiz;
+    const {questions, activeQuestion, title: quizTitle, settings: quizSettings} = quiz;
     const debounceRef = useRef(null);
 
     const titleValidation = useInputValidation(quizTitle, validationRules.quizTitle);
@@ -105,6 +121,10 @@ export const QuizCreator = () => {
     const setActiveQuestion = useCallback((uuid) => {
         silentSetQuiz(prev => ({...prev, activeQuestion: uuid}));
     }, [silentSetQuiz]);
+
+    const setSettings = useCallback((newSettings) => {
+        setQuiz(prev => ({...prev, settings: typeof newSettings === "function" ? newSettings(prev.settings) : newSettings}));
+    }, [setQuiz]);
 
     const setQuizDebounced = useCallback((updater) => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -147,7 +167,8 @@ export const QuizCreator = () => {
                     ...prev,
                     title: importedData.title,
                     questions: importedData.questions,
-                    activeQuestion: importedData.questions[0].uuid
+                    activeQuestion: importedData.questions[0].uuid,
+                    settings: importedData.settings ? {...DEFAULT_QUIZ_SETTINGS, ...importedData.settings} : DEFAULT_QUIZ_SETTINGS
                 }));
                 titleValidation.setValue(importedData.title);
                 toast.success("Quiz erfolgreich importiert!");
@@ -198,6 +219,7 @@ export const QuizCreator = () => {
 
     const publishPracticeQuiz = async () => {
         const quizData = await prepareQuizData(questions, titleValidation.value, true);
+        quizData.settings = quizSettings;
         try {
             const response = await putRequest("/practice", quizData);
             if (response.practiceCode) {
@@ -219,6 +241,7 @@ export const QuizCreator = () => {
         if (!validateQuestions()) return;
 
         const quizData = await prepareQuizData(questions, titleValidation.value, true);
+        quizData.settings = quizSettings;
 
         putRequest("/quizzes", quizData).then((r) => {
             if (r.quizId === undefined) throw {ce: "Dein Quiz übersteigt die Speicherkapazität des Servers. Bitte lade es lokal herunter."};
@@ -238,6 +261,7 @@ export const QuizCreator = () => {
         if (!validateQuestions()) return;
 
         const quizData = await prepareQuizDataForExport(questions, titleValidation.value);
+        quizData.settings = quizSettings;
         downloadQuizzleFile(quizData, titleValidation.value.trim());
     }
 
@@ -271,11 +295,13 @@ export const QuizCreator = () => {
         setQuiz(prev => ({
             questions: [{uuid: newUuid, title: "", type: DEFAULT_QUESTION_TYPE, answers: []}],
             activeQuestion: newUuid,
-            title: ""
+            title: "",
+            settings: DEFAULT_QUIZ_SETTINGS
         }));
         clearHistory();
         localStorage.removeItem("qq_title");
         localStorage.removeItem("qq_questions");
+        localStorage.removeItem("qq_settings");
     }
 
     const navigateQuestion = useCallback((direction) => {
@@ -311,6 +337,7 @@ export const QuizCreator = () => {
         try {
             localStorage.setItem("qq_title", quizTitle);
             localStorage.setItem("qq_questions", JSON.stringify(questions));
+            localStorage.setItem("qq_settings", JSON.stringify(quizSettings));
 
             if (errorToastId) {
                 toast.dismiss(errorToastId);
@@ -326,7 +353,7 @@ export const QuizCreator = () => {
             }
         }
 
-    }, [quizTitle, questions]);
+    }, [quizTitle, questions, quizSettings]);
 
     return (
         <div className="quiz-creator">
@@ -371,6 +398,14 @@ export const QuizCreator = () => {
                                 onStop={aiStop}
                             />
                         )}
+
+                        <div
+                            className={`action-button settings ${showSettings ? 'active' : ''}`}
+                            onClick={() => setShowSettings(s => !s)}
+                            title="Quiz-Einstellungen"
+                        >
+                            <FontAwesomeIcon icon={faGear} />
+                        </div>
 
                         <div className="action-group">
                             <div 
@@ -448,7 +483,11 @@ export const QuizCreator = () => {
                 <QuestionEditor key={activeQuestion} question={questions.find(q => q.uuid === activeQuestion)}
                     onChange={onChange} onCommit={onChangeWithSnapshot} deleteQuestion={deleteQuestion} duplicateQuestion={duplicateQuestion} />
                     
-                <QuestionSettings key={`settings-${activeQuestion}`} question={questions.find(q => q.uuid === activeQuestion)} onChange={onChange} onCommit={onChangeWithSnapshot} />
+                {showSettings ? (
+                    <QuizSettingsPanel settings={quizSettings} onChange={setSettings} />
+                ) : (
+                    <QuestionSettings key={`settings-${activeQuestion}`} question={questions.find(q => q.uuid === activeQuestion)} onChange={onChange} onCommit={onChangeWithSnapshot} defaultTimer={quizSettings.defaultTimer} />
+                )}
             </div>
         </div>
     )

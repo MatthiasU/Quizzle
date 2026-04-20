@@ -49,7 +49,7 @@ export const Root = () => {
     return (
         <>
             <Background positionCircle={circlePosition}/>
-            <Toaster toastOptions={{position: "bottom-right"}} />
+            <Toaster position="bottom-right" toastOptions={{duration: 4000}} />
             <LoginDialog
                 isOpen={showLoginDialog}
                 onClose={closeLoginDialog}
