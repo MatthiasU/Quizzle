@@ -14,7 +14,11 @@ export const AnswerContainer = ({onChange, question}) => {
     }
 
     const removeAnswer = (index) => {
-        const newAnswers = question.answers.filter((_, i) => i !== index);
+        const newAnswers = [...question.answers];
+        newAnswers[index] = undefined;
+        while (newAnswers.length > 0 && newAnswers[newAnswers.length - 1] === undefined) {
+            newAnswers.pop();
+        }
         onChange({...question, answers: newAnswers});
     }
 
