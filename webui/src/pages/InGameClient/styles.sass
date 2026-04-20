@@ -55,6 +55,7 @@
   padding: 1rem
   border-bottom: 1px solid $border
   flex-shrink: 0
+  background-color: $background
   h2
     margin: 0
 
@@ -189,24 +190,25 @@
     bottom: 0
     display: flex
     justify-content: center
-    overflow: hidden
+    pointer-events: none
+    padding-bottom: 1.5rem
 
   .submit-answers
-    padding: 1.5rem
-    margin: 2rem 2rem 6rem 2rem
+    width: 4rem
+    height: 4rem
     display: flex
     background-color: $primary
     border: none
-    border-radius: 5rem
+    border-radius: 50%
     color: $background
-    font-size: 2rem
+    font-size: 1.5rem
     justify-content: center
     align-items: center
     cursor: pointer
     transform: translateY(240%)
     filter: drop-shadow(0 0 1rem $primary)
     transition: transform 0.2s
-    gap: 0.5rem
+    pointer-events: auto
 
     span
       font-size: 1rem
