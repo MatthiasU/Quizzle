@@ -60,7 +60,7 @@ export const TextAnswers = ({answers, onChange}) => {
             </div>
 
             <div className="add-answer-section">
-                <div className="answer-number-placeholder">+</div>
+                <div className="answer-number-placeholder"><FontAwesomeIcon icon={faPlus} /></div>
                 <input
                     type="text"
                     value={newAnswer}
@@ -87,7 +87,7 @@ export const TextAnswers = ({answers, onChange}) => {
 
             {answers.length === 0 && (
                 <div className="no-answers-hint">
-                    Fügen Sie mindestens eine akzeptierte Antwort hinzu
+                    Füge mindestens eine akzeptierte Antwort hinzu
                 </div>
             )}
         </div>

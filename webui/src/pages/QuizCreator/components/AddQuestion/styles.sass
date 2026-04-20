@@ -10,12 +10,22 @@
   border-radius: 1rem
   overflow: hidden
   cursor: pointer
+  transition: all 0.2s ease
+
+  &:hover
+    transform: translateY(-1px)
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06)
+    border-color: $primary
+
+    svg
+      color: $primary
 
   svg
     margin: auto
     font-size: 2rem
     color: $gray
     user-select: none
+    transition: color 0.2s ease
 
 
 @media screen and (max-width: 915px)

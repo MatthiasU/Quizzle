@@ -66,7 +66,7 @@ export const SequenceAnswers = ({answers, onChange}) => {
         <div className="sequence-answers-container">
             <div className="sequence-answers-header">
                 <h3>Antworten</h3>
-                <span className="sequence-answers-hint">Sortieren Sie die Antworten in die richtige Reihenfolge.</span>
+                <span className="sequence-answers-hint">Sortiere die Antworten in die richtige Reihenfolge</span>
             </div>
             
             {answers.length > 0 && (
@@ -118,7 +118,7 @@ export const SequenceAnswers = ({answers, onChange}) => {
             )}
 
             <div className="add-answer-section">
-                <div className="answer-number-placeholder">+</div>
+                <div className="answer-number-placeholder"><FontAwesomeIcon icon={faPlus} /></div>
                 <input
                     type="text"
                     value={newAnswer}
@@ -145,7 +145,7 @@ export const SequenceAnswers = ({answers, onChange}) => {
 
             {answers.length === 0 && (
                 <div className="no-answers-hint">
-                    Fügen Sie mindestens zwei Antworten hinzu, die in der richtigen Reihenfolge sortiert werden sollen
+                    Füge mindestens zwei Antworten hinzu
                 </div>
             )}
         </div>

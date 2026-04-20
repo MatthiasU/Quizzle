@@ -9,6 +9,12 @@
   box-sizing: border-box
   align-items: center
   justify-content: space-between
+  transition: all 0.2s ease
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04)
+
+  &:hover
+    transform: translateY(-1px)
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07)
 
   input
     box-sizing: border-box
@@ -17,6 +23,7 @@
     font-size: 28px
     outline: none
     height: 3rem
+    background: transparent
 
   svg
     margin-right: 1rem
@@ -33,27 +40,43 @@
 
 .quiz-answer-red
   border-color: $red
+  background: color-mix(in srgb, $red 3%, $background 97%)
 
   .img-icon
     color: $red
 
+  &:hover
+    box-shadow: 0 4px 12px color-mix(in srgb, $red 12%, transparent 88%)
+
 .quiz-answer-green
   border-color: $green
+  background: color-mix(in srgb, $green 3%, $background 97%)
 
   .img-icon
     color: $green
 
+  &:hover
+    box-shadow: 0 4px 12px color-mix(in srgb, $green 12%, transparent 88%)
+
 .quiz-answer-blue
   border-color: $blue
+  background: color-mix(in srgb, $blue 3%, $background 97%)
 
   .img-icon
     color: $blue
 
+  &:hover
+    box-shadow: 0 4px 12px color-mix(in srgb, $blue 12%, transparent 88%)
+
 .quiz-answer-orange
   border-color: $orange
+  background: color-mix(in srgb, $orange 3%, $background 97%)
 
   .img-icon
     color: $orange
+
+  &:hover
+    box-shadow: 0 4px 12px color-mix(in srgb, $orange 12%, transparent 88%)
 
 
 .quiz-answer-correct
