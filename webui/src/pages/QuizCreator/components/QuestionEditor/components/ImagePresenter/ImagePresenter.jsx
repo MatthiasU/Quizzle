@@ -2,13 +2,14 @@ import "./styles.sass";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faImage, faUpload} from "@fortawesome/free-solid-svg-icons";
 import {useEffect, useState} from "react";
-import {createFileInput} from "@/common/utils/FileOperationsUtil.js";
 import {imageCache} from "@/common/utils/ImageCacheUtil.js";
+import {MediaDialog} from "@/common/components/MediaDialog";
 
 export const ImagePresenter = ({question, onChange}) => {
     const [isDragging, setIsDragging] = useState(false);
     const [imageDataUrl, setImageDataUrl] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
 
     useEffect(() => {
         const loadImage = async () => {
@@ -53,11 +54,13 @@ export const ImagePresenter = ({question, onChange}) => {
         }
     };
     
-    const uploadImage = () => {
-        createFileInput("image/*", (file) => {
-            storeImageFile(file);
-        });
-    }
+    const openMediaDialog = () => {
+        setMediaDialogOpen(true);
+    };
+
+    const handleMediaSelect = (file) => {
+        storeImageFile(file);
+    };
 
     const onDrop = (e) => {
         e.preventDefault();
@@ -102,7 +105,7 @@ export const ImagePresenter = ({question, onChange}) => {
         <div className="image-presenter-edit">
             <div 
                 className="image-container" 
-                onClick={hasImage ? removeImage : uploadImage} 
+                onClick={hasImage ? removeImage : openMediaDialog} 
                 onDrop={onDrop}
                 onDragOver={(e) => {
                     e.preventDefault();
@@ -118,6 +121,11 @@ export const ImagePresenter = ({question, onChange}) => {
                     <FontAwesomeIcon icon={isDragging ? faUpload : faImage}/>
                 )}
             </div>
+            <MediaDialog
+                isOpen={mediaDialogOpen}
+                onClose={() => setMediaDialogOpen(false)}
+                onSelect={handleMediaSelect}
+            />
         </div>
     )
 }

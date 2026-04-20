@@ -1,0 +1,258 @@
+@use "@/common/styles/colors" as *
+
+.media-dialog-overlay
+  position: fixed
+  top: 0
+  left: 0
+  right: 0
+  bottom: 0
+  background: $modal-overlay
+  display: flex
+  align-items: center
+  justify-content: center
+  z-index: 1000
+  backdrop-filter: blur(4px)
+
+.media-dialog
+  background: $background
+  border-radius: 1.5rem
+  box-shadow: 0 20px 40px $modal-shadow
+  width: 90%
+  max-width: 860px
+  height: 80vh
+  max-height: 640px
+  display: flex
+  flex-direction: column
+  overflow: hidden
+  border: 1px solid $modal-border
+
+.media-dialog-header
+  display: flex
+  align-items: center
+  justify-content: space-between
+  padding: 1.25rem 1.5rem
+  border-bottom: 1px solid $border
+
+  h3
+    margin: 0
+    font-size: 1.25rem
+    font-weight: 700
+    color: $text
+
+.media-dialog-close
+  background: none
+  border: none
+  cursor: pointer
+  padding: 0.5rem
+  border-radius: 0.5rem
+  color: $gray
+  font-size: 1.1rem
+  transition: all 0.15s ease
+
+  &:hover
+    background: $hover-bg
+    color: $text
+
+.media-dialog-body
+  display: flex
+  flex: 1
+  overflow: hidden
+
+.media-dialog-sidebar
+  display: flex
+  flex-direction: column
+  gap: 0.25rem
+  padding: 1rem 0.75rem
+  border-right: 1px solid $border
+  min-width: 140px
+  background: color-mix(in srgb, $background 97%, $border)
+
+.media-tab
+  display: flex
+  align-items: center
+  gap: 0.6rem
+  padding: 0.65rem 0.85rem
+  border: none
+  background: none
+  cursor: pointer
+  border-radius: 0.65rem
+  color: $gray
+  font-size: 0.9rem
+  font-weight: 500
+  transition: all 0.15s ease
+  text-align: left
+
+  &:hover
+    background: $hover-bg
+    color: $text
+
+  &.active
+    background: $selected-bg
+    color: $blue
+    font-weight: 600
+
+  svg
+    width: 1rem
+    font-size: 0.95rem
+
+.media-dialog-content
+  flex: 1
+  display: flex
+  flex-direction: column
+  overflow: hidden
+  padding: 1rem
+
+.media-search
+  position: relative
+  margin-bottom: 1rem
+
+  .search-icon
+    position: absolute
+    left: 0.85rem
+    top: 50%
+    transform: translateY(-50%)
+    color: $gray
+    font-size: 0.85rem
+
+  input
+    width: 100%
+    padding: 0.65rem 0.85rem 0.65rem 2.4rem
+    border: 1px solid $border
+    border-radius: 0.75rem
+    font-size: 0.95rem
+    outline: none
+    background: $background
+    color: $text
+    box-sizing: border-box
+    transition: border-color 0.15s ease
+
+    &:focus
+      border-color: $blue
+
+    &::placeholder
+      color: $disabled-text
+
+.media-grid
+  flex: 1
+  overflow-y: auto
+  display: grid
+  grid-template-columns: repeat(3, 1fr)
+  grid-auto-rows: min-content
+  gap: 0.75rem
+  align-content: start
+  padding: 0.25rem
+
+.media-grid-item
+  position: relative
+  border-radius: 0.75rem
+  overflow: hidden
+  cursor: pointer
+  background: $disabled-bg-light
+  transition: transform 0.15s ease, box-shadow 0.15s ease
+
+  &::before
+    content: ""
+    display: block
+    padding-top: 75%
+
+  &:hover
+    transform: scale(1.02)
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12)
+
+    .media-attribution
+      opacity: 1
+
+  img
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    object-fit: cover
+    display: block
+
+.media-attribution
+  position: absolute
+  bottom: 0
+  left: 0
+  right: 0
+  padding: 0.3rem 0.5rem
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6))
+  color: white
+  font-size: 0.7rem
+  opacity: 0
+  transition: opacity 0.15s ease
+
+.media-attribution-footer
+  padding: 0.6rem 0
+  text-align: center
+  font-size: 0.75rem
+  color: $gray
+  flex-shrink: 0
+
+  a
+    color: $blue
+    text-decoration: none
+
+    &:hover
+      text-decoration: underline
+
+.media-upload-zone
+  flex: 1
+  display: flex
+  flex-direction: column
+  align-items: center
+  justify-content: center
+  border: 2px dashed $border
+  border-radius: 1rem
+  cursor: pointer
+  transition: all 0.2s ease
+  gap: 0.75rem
+  color: $gray
+
+  &:hover, &.drag-active
+    border-color: $blue
+    background: color-mix(in srgb, $blue 5%, transparent)
+    color: $blue
+
+  svg
+    font-size: 2.5rem
+
+  p
+    margin: 0
+    font-size: 1rem
+    font-weight: 600
+
+  span
+    font-size: 0.8rem
+    opacity: 0.7
+
+.media-loading
+  flex: 1
+  display: flex
+  align-items: center
+  justify-content: center
+  color: $blue
+  font-size: 1.5rem
+
+.media-empty
+  flex: 1
+  display: flex
+  align-items: center
+  justify-content: center
+  color: $gray
+  font-size: 0.95rem
+
+.media-error
+  display: flex
+  align-items: center
+  gap: 0.5rem
+  padding: 0.75rem 1rem
+  background: color-mix(in srgb, $red 8%, transparent)
+  border-radius: 0.65rem
+  color: $red
+  font-size: 0.85rem
+  margin-bottom: 0.75rem
+
+  svg
+    flex-shrink: 0

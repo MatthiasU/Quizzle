@@ -54,3 +54,8 @@ module.exports.firstStart = () => {
 module.exports.dataFolder = dataFolder;
 module.exports.quizzesFolder = quizzesFolder;
 module.exports.brandingFolder = brandingFolder;
+
+module.exports.getConfig = () => {
+    delete require.cache[require.resolve(path.join(brandingFolder, 'config.json'))];
+    return require(path.join(brandingFolder, 'config.json'));
+};

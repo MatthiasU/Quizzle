@@ -27,7 +27,8 @@ app.get('/settings', requireAdmin, (req, res) => {
 
     res.json({
         config: {
-            ai: configPayload.ai || {provider: '', apiKey: '', model: '', baseUrl: ''}
+            ai: configPayload.ai || {provider: '', apiKey: '', model: '', baseUrl: ''},
+            media: configPayload.media || {unsplashAccessKey: '', giphyApiKey: ''}
         },
         branding: brandingPayload
     });
@@ -46,6 +47,13 @@ app.put('/settings', requireAdmin, (req, res) => {
                 apiKey: config.ai.apiKey || '',
                 model: config.ai.model || '',
                 baseUrl: config.ai.baseUrl || ''
+            };
+        }
+
+        if (config.media) {
+            existing.media = {
+                unsplashAccessKey: config.media.unsplashAccessKey || '',
+                giphyApiKey: config.media.giphyApiKey || ''
             };
         }
 

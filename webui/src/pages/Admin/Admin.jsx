@@ -10,7 +10,7 @@ import Dialog from "@/common/components/Dialog";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faUsers, faRobot, faPalette, faPlus, faTrash,
-    faShieldAlt, faChalkboardTeacher, faKey, faRightFromBracket, faUpload, faRotateLeft
+    faShieldAlt, faChalkboardTeacher, faKey, faRightFromBracket, faUpload, faRotateLeft, faImage
 } from "@fortawesome/free-solid-svg-icons";
 import {motion} from "framer-motion";
 import toast from "react-hot-toast";
@@ -40,6 +40,9 @@ export const Admin = () => {
     const [aiBaseUrl, setAiBaseUrl] = useState('');
     const [aiModels, setAiModels] = useState([]);
     const [modelsLoading, setModelsLoading] = useState(false);
+
+    const [unsplashAccessKey, setUnsplashAccessKey] = useState('');
+    const [giphyApiKey, setGiphyApiKey] = useState('');
 
     const [brandName, setBrandName] = useState('');
     const [brandColor, setBrandColor] = useState('');
@@ -96,6 +99,8 @@ export const Admin = () => {
             setAiApiKey(data.config?.ai?.apiKey || '');
             setAiModel(data.config?.ai?.model || '');
             setAiBaseUrl(data.config?.ai?.baseUrl || '');
+            setUnsplashAccessKey(data.config?.media?.unsplashAccessKey || '');
+            setGiphyApiKey(data.config?.media?.giphyApiKey || '');
             setBrandName(data.branding?.name || '');
             setBrandColor(data.branding?.color || '');
             setBrandImprint(data.branding?.imprint || '');
@@ -122,6 +127,17 @@ export const Admin = () => {
                 config: {ai: {provider: aiProvider, apiKey: aiApiKey, model: aiModel, baseUrl: aiBaseUrl}}
             });
             toast.success('KI-Einstellungen gespeichert.');
+        } catch (error) {
+            toast.error(error.message || 'Fehler beim Speichern.');
+        }
+    };
+
+    const saveMediaSettings = async () => {
+        try {
+            await putRequest('/admin/settings', {
+                config: {media: {unsplashAccessKey, giphyApiKey}}
+            });
+            toast.success('Medien-Einstellungen gespeichert.');
         } catch (error) {
             toast.error(error.message || 'Fehler beim Speichern.');
         }
@@ -268,6 +284,9 @@ export const Admin = () => {
                     <button className={`sidebar-item ${activeTab === 'ai' ? 'active' : ''}`} onClick={() => setActiveTab('ai')}>
                         <FontAwesomeIcon icon={faRobot}/> KI-Konfiguration
                     </button>
+                    <button className={`sidebar-item ${activeTab === 'media' ? 'active' : ''}`} onClick={() => setActiveTab('media')}>
+                        <FontAwesomeIcon icon={faImage}/> Medien
+                    </button>
                     <button className={`sidebar-item ${activeTab === 'branding' ? 'active' : ''}`} onClick={() => setActiveTab('branding')}>
                         <FontAwesomeIcon icon={faPalette}/> Branding
                     </button>
@@ -316,6 +335,28 @@ export const Admin = () => {
                                 )}
 
                                 <Button text="Speichern" type="green compact" onClick={saveAiSettings}/>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'media' && (
+                        <motion.div className="settings-section" initial={{opacity: 0}} animate={{opacity: 1}}>
+                            <h2><FontAwesomeIcon icon={faImage}/> Medien</h2>
+                            <p className="section-description">Konfiguriere API-Schlüssel für die Bildersuche im Quiz-Editor. Beide Dienste sind kostenlos.</p>
+
+                            <div className="settings-form">
+                                <div className="form-group">
+                                    <label>Unsplash Access Key</label>
+                                    <span className="form-hint">Erstelle eine App auf <a href="https://unsplash.com/oauth/applications/new" target="_blank" rel="noopener noreferrer">unsplash.com/developers</a> und kopiere den "Access Key".</span>
+                                    <Input placeholder="z.B. ab12cd34ef56gh78ij90..." value={unsplashAccessKey} onChange={(e) => setUnsplashAccessKey(e.target.value)}/>
+                                </div>
+                                <div className="form-group">
+                                    <label>Giphy API Key</label>
+                                    <span className="form-hint">Erstelle eine App auf <a href="https://developers.giphy.com/dashboard/?create=true" target="_blank" rel="noopener noreferrer">developers.giphy.com</a> und kopiere den "API Key".</span>
+                                    <Input placeholder="z.B. aBcDeFgHiJkLmNoPqRsT..." value={giphyApiKey} onChange={(e) => setGiphyApiKey(e.target.value)}/>
+                                </div>
+
+                                <Button text="Speichern" type="green compact" onClick={saveMediaSettings}/>
                             </div>
                         </motion.div>
                     )}

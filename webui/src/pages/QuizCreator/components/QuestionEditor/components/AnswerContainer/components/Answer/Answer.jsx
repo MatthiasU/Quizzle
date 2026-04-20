@@ -3,12 +3,14 @@ import {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle, faImage} from "@fortawesome/free-solid-svg-icons";
 import {imageCache} from "@/common/utils/ImageCacheUtil.js";
+import MediaDialog from "@/common/components/MediaDialog";
 
 export const Answer = ({color, answer, onChange, index, removeAnswer, questionUuid}) => {
     const [answerContent, setAnswerContent] = useState(answer && answer.type === "text" ? answer.content : "");
     const [isCorrect, setIsCorrect] = useState(answer ? answer.is_correct || false : false);
     const [imageDataUrl, setImageDataUrl] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
 
     useEffect(() => {
         const loadImage = async () => {
@@ -53,18 +55,13 @@ export const Answer = ({color, answer, onChange, index, removeAnswer, questionUu
         }
     };
 
-    const uploadImage = async () => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "image/*";
-        input.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                storeImageFile(file);
-            }
-        }
-        input.click();
-    }
+    const openMediaDialog = () => {
+        setMediaDialogOpen(true);
+    };
+
+    const handleMediaSelect = (file) => {
+        storeImageFile(file);
+    };
 
     const deleteImage = async () => {
         if (answer && answer.imageId) {
@@ -123,10 +120,15 @@ export const Answer = ({color, answer, onChange, index, removeAnswer, questionUu
             {!hasImage && !isLoading && <input type="text" placeholder={`Antwort ${index + 1}`} value={answerContent}
                    onChange={(e) => updateAnswerContent(e.target.value)}/>}
             <div className="answer-actions">
-                {answerContent === "" && !hasImage && !isLoading && <FontAwesomeIcon icon={faImage} onClick={uploadImage} className="img-icon"/>}
+                {answerContent === "" && !hasImage && !isLoading && <FontAwesomeIcon icon={faImage} onClick={openMediaDialog} className="img-icon"/>}
                 {(answerContent !== "" || hasImage) && !isLoading && <FontAwesomeIcon icon={faCheckCircle}
                     onClick={updateCorrect} className={isCorrect ? "quiz-answer-correct" : ""}/>}
             </div>
+            <MediaDialog
+                isOpen={mediaDialogOpen}
+                onClose={() => setMediaDialogOpen(false)}
+                onSelect={handleMediaSelect}
+            />
         </div>
     )
 }
