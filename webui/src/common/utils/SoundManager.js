@@ -11,7 +11,7 @@ import gameComplete from '@/pages/InGameHost/assets/sounds/celebrations/game-com
 import lobbyAmbient from '@/pages/InGameHost/assets/sounds/ambience/lobby-ambient.mp3';
 import questionAmbient from '@/pages/InGameHost/assets/sounds/ambience/question-ambient.mp3';
 
-export const SOUNDS = {
+const SOUNDS = {
     QUESTION_APPEAR: questionAppear,
     TO_RESULTS: toResults,
     TO_SCOREBOARD: toScoreboard,
@@ -28,7 +28,7 @@ export const SOUNDS = {
     INGAME_MUSIC: questionAmbient,
 };
 
-export class SoundManager {
+class SoundManager {
     constructor() {
         this.soundEnabled = this.loadSoundEnabledFromStorage();
         this.currentlyPlaying = new Map();

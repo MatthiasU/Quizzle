@@ -17,7 +17,7 @@ const autoSizeColumns = (worksheet, data) => {
     worksheet['!cols'] = colWidths.map(width => ({width}));
 };
 
-export const exportAnalyticsToExcel = (analyticsData, quizData = null, isLiveQuiz = false, quizName = 'Quiz') => {
+const exportAnalyticsToExcel = (analyticsData, quizData = null, isLiveQuiz = false, quizName = 'Quiz') => {
     const {classAnalytics, questionAnalytics, studentAnalytics} = analyticsData;
 
     const workbook = XLSX.utils.book_new();

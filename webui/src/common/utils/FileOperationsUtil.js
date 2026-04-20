@@ -82,7 +82,7 @@ export const downloadQuizzleFile = (quizData, filename) => {
     URL.revokeObjectURL(url);
 };
 
-export const handleImageUpload = (file, onSuccess, onError) => {
+const handleImageUpload = (file, onSuccess, onError) => {
     if (!file || !file.type.startsWith('image/')) {
         if (onError) onError(new Error("Nur Bilddateien sind erlaubt."));
         return;
@@ -98,7 +98,7 @@ export const handleImageUpload = (file, onSuccess, onError) => {
     reader.readAsDataURL(file);
 };
 
-export const handleImagePaste = (event, onImagePasted) => {
+const handleImagePaste = (event, onImagePasted) => {
     if (event.clipboardData.files.length > 0) {
         const file = event.clipboardData.files[0];
         if (file.type.startsWith('image/')) {

@@ -126,5 +126,3 @@ class ImageCacheUtil {
 }
 
 export const imageCache = new ImageCacheUtil();
-
-export {ImageCacheUtil};

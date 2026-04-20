@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import {useNavigate} from "react-router-dom";
 import Answer from "@/pages/InGameHost/components/Answer";
 import "./styles.sass";
-import {Question} from "@/pages/InGameHost/components/Question/Question.jsx";
+import Question from "@/pages/InGameHost/components/Question";
 import Button from "@/common/components/Button";
 import {faForward} from "@fortawesome/free-solid-svg-icons";
 import Scoreboard from "@/pages/InGameHost/components/Scoreboard";

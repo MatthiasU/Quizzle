@@ -16,7 +16,7 @@ export const QUESTION_TYPE_CONFIG = [
     {type: QUESTION_TYPES.SEQUENCE, icon: faSort, name: 'Reihenfolge', description: 'Spieler sortieren Antworten in die richtige Reihenfolge'}
 ];
 
-export const getQuestionTypeConfig = (type) => QUESTION_TYPE_CONFIG.find(config => config.type === type) || QUESTION_TYPE_CONFIG[0];
+const getQuestionTypeConfig = (type) => QUESTION_TYPE_CONFIG.find(config => config.type === type) || QUESTION_TYPE_CONFIG[0];
 export const getQuestionTypeIcon = (type) => getQuestionTypeConfig(type).icon;
 export const getQuestionTypeName = (type) => getQuestionTypeConfig(type).name;
 
