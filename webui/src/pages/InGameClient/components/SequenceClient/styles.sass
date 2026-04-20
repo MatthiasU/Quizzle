@@ -17,8 +17,8 @@
     gap: 0.75rem
     margin-bottom: 2rem
     padding: 1rem 1.5rem
-    background-color: rgba(101, 71, 238, 0.1)
-    border: 2px solid rgba(101, 71, 238, 0.3)
+    background-color: $background
+    border: 2px solid $border
     border-radius: 1rem
     color: $primary
     font-weight: 600
@@ -125,10 +125,34 @@
           object-fit: contain
           border-radius: 0.5rem
 
+  .reset-btn
+    display: flex
+    align-items: center
+    justify-content: center
+    width: 4rem
+    height: 4rem
+    border: none
+    border-radius: 50%
+    background-color: rgba(101, 71, 238, 0.15)
+    color: $primary
+    font-size: 1.25rem
+    cursor: pointer
+    -webkit-tap-highlight-color: transparent
+    transition: all 0.2s ease
+
+    &:active
+      transform: scale(0.9)
+
   .submit-container
     display: flex
     justify-content: center
+    align-items: center
+    gap: 1.5rem
     margin-top: auto
+    padding-top: 1rem
+    flex-shrink: 0
+    position: static
+    pointer-events: auto
 
     .submit-sequence
       display: flex
@@ -153,13 +177,91 @@
         transform: scale(0.8)
 
       &:disabled
-        opacity: 0.5
-        cursor: not-allowed
-        background-color: $gray
+        opacity: 0.3
+        cursor: default
 
-        &:hover
-          background-color: $gray
-          transform: scale(0.8)
+  &.touch-mode
+    .tap-list
+      width: 100%
+      display: flex
+      flex-direction: column
+      gap: 0.75rem
+      flex: 1
+      overflow-y: auto
+      padding: 0.25rem
+
+    .tap-item
+      display: flex
+      align-items: center
+      gap: 0.75rem
+      padding: 0.75rem
+      border-radius: 0.5rem
+      flex-shrink: 0
+      cursor: pointer
+      user-select: none
+      -webkit-tap-highlight-color: transparent
+      transition: all 0.2s ease
+      position: relative
+      min-height: 3.5rem
+      color: white
+
+      &:active
+        transform: scale(0.97)
+
+      &.tap-color-orange
+        background-color: $orange
+      &.tap-color-blue
+        background-color: $blue
+      &.tap-color-green
+        background-color: $green
+      &.tap-color-red
+        background-color: $red
+
+      &:not(.picked)
+        opacity: 0.85
+
+      &.picked
+        opacity: 1
+
+      .tap-badge
+        display: flex
+        align-items: center
+        justify-content: center
+        width: 2.25rem
+        height: 2.25rem
+        border-radius: 50%
+        background-color: rgba(255, 255, 255, 0.25)
+        color: white
+        font-weight: bold
+        font-size: 1.1rem
+        flex-shrink: 0
+        transition: all 0.2s ease
+        border: 2px dashed rgba(255, 255, 255, 0.5)
+
+      &.picked .tap-badge
+        background-color: rgba(255, 255, 255, 0.95)
+        border: none
+        color: $text
+
+      .tap-content
+        flex: 1
+        display: flex
+        align-items: center
+        justify-content: center
+
+        .tap-answer-text
+          font-size: 1.15rem
+          font-weight: 600
+          color: white
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3)
+          text-align: center
+          line-height: 1.3
+
+        .tap-answer-image
+          max-width: 100%
+          max-height: 3rem
+          object-fit: contain
+          border-radius: 0.5rem
 
 @media screen and (max-width: 768px)
   .sequence-client
