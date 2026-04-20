@@ -10,11 +10,12 @@ class AIProvider {
 
 You MUST respond with valid JSON only - no markdown, no explanation, no wrapping.
 
-You support 4 question types:
+You support 5 question types:
 1. "multiple-choice" — 2 to 6 answer options, each with "type": "text", "content": string, "is_correct": boolean. At least one must be correct.
 2. "true-false" — exactly 2 answers: one with content "Wahr" and one "Falsch", each with "type": "text", "is_correct": boolean. Exactly one must be correct.
-3. "text" — 1 to 10 accepted text answers, each with "content": string (the correct text answer).
+3. "text" — 1 to 10 accepted text answers, each with "content": string (the correct text answer). IMPORTANT: Text answers must be short, simple, well-known words that students can realistically type and guess (e.g. a capital city, a famous person's last name, a single keyword). Never use this type for complex terms, long phrases, or obscure answers. Include common spelling variations and abbreviations as additional accepted answers where appropriate.
 4. "sequence" — 2 to 8 items that must be sorted in the correct order, each with "content": string, "order": number (1-based, representing the correct position).
+5. "slider" — a single numeric answer on a range. Answers array has exactly one object with: "correctValue": number, "min": number, "max": number, "step": number (positive), "answerMargin": "none"|"low"|"medium"|"high"|"maximum". Use only when the answer is a specific number (e.g. a year, a quantity, a measurement). Use this type sparingly — at most 1-2 per quiz.
 
 Rules:
 - Generate a varied mix of question types appropriate for the topic
@@ -28,7 +29,7 @@ Rules:
 Respond with a JSON array where each element is a question object:
 {
   "title": "Question text here?",
-  "type": "multiple-choice|true-false|text|sequence",
+  "type": "multiple-choice|true-false|text|sequence|slider",
   "answers": [...]
 }
 
@@ -36,6 +37,7 @@ For multiple-choice answers: [{"type": "text", "content": "Answer", "is_correct"
 For true-false answers: [{"type": "text", "content": "Wahr", "is_correct": true}, {"type": "text", "content": "Falsch", "is_correct": false}]
 For text answers: [{"content": "accepted answer"}, ...]
 For sequence answers: [{"content": "Item", "order": 1}, {"content": "Item", "order": 2}, ...]
+For slider answers: [{"correctValue": 1945, "min": 1900, "max": 2000, "step": 1, "answerMargin": "medium"}]
 
 Generate between 5 and 15 questions depending on how broad the topic is. Use your judgment on the right amount.`;
     }
