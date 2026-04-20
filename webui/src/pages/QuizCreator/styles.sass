@@ -103,10 +103,11 @@
         background: color-mix(in srgb, $red 12%, white 88%)
         border-color: color-mix(in srgb, $red 50%, $border 50%)
 
-    &.locked
+    &.locked, &.disabled
       background: color-mix(in srgb, $gray 8%, white 92%)
       border-color: color-mix(in srgb, $gray 30%, $border 70%)
       cursor: not-allowed
+      opacity: 0.5
       
       svg
         color: $gray
@@ -116,6 +117,21 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05)
         background: color-mix(in srgb, $gray 8%, white 92%)
         border-color: color-mix(in srgb, $gray 30%, $border 70%)
+
+    &.undo, &.redo
+      svg
+        color: $gray
+
+      &:not(.disabled)
+        border-color: color-mix(in srgb, $blue 30%, $border 70%)
+        background: color-mix(in srgb, $blue 8%, white 92%)
+
+        svg
+          color: $blue
+
+        &:hover
+          background: color-mix(in srgb, $blue 12%, white 88%)
+          border-color: color-mix(in srgb, $blue 50%, $border 50%)
 
   .action-group
     display: flex

@@ -5,7 +5,7 @@ import {faClock, faInfinity, faCoins} from "@fortawesome/free-solid-svg-icons";
 import {useState, useEffect} from "react";
 import {motion} from "framer-motion";
 
-export const QuestionSettings = ({question, onChange}) => {
+export const QuestionSettings = ({question, onChange, onCommit}) => {
     const [selectedTimer, setSelectedTimer] = useState(() => {
         if (question.timer === undefined || question.timer === null) return "default";
         if (question.timer === -1) return "unlimited";
@@ -89,6 +89,7 @@ export const QuestionSettings = ({question, onChange}) => {
 
     const handleTimerChange = (value) => {
         setSelectedTimer(value);
+        const commit = onCommit || onChange;
 
         let timerNum;
         if (value === "default") {
@@ -101,13 +102,14 @@ export const QuestionSettings = ({question, onChange}) => {
             timerNum = 120;
         }
 
-        onChange({...question, timer: timerNum});
+        commit({...question, timer: timerNum});
     };
 
     const handlePointMultiplierChange = (value) => {
         setSelectedPointMultiplier(value);
+        const commit = onCommit || onChange;
         const multiplierValue = value === "standard" ? undefined : value;
-        onChange({...question, pointMultiplier: multiplierValue});
+        commit({...question, pointMultiplier: multiplierValue});
     };
 
     if (!question) return null;

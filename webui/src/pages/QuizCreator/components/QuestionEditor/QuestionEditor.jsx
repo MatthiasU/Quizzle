@@ -9,17 +9,18 @@ import {useState, useRef, useEffect} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {QUESTION_TYPE_CONFIG, getQuestionTypeIcon, getQuestionTypeName, getDefaultAnswersForType, DEFAULT_QUESTION_TYPE} from "@/common/constants/QuestionTypes.js";
 
-export const QuestionEditor = ({question, onChange, deleteQuestion, duplicateQuestion}) => {
+export const QuestionEditor = ({question, onChange, onCommit, deleteQuestion, duplicateQuestion}) => {
     const [showTypeSelector, setShowTypeSelector] = useState(false);
     const popoverRef = useRef(null);
     
     const updateTitle = (title) => onChange({...question, title: title});
     const updateType = (type) => {
+        const commit = onCommit || onChange;
         const newAnswers = getDefaultAnswersForType(type);
         if (newAnswers.length === 0) {
-            onChange({...question, type: type});
+            commit({...question, type: type});
         } else {
-            onChange({...question, type: type, answers: newAnswers});
+            commit({...question, type: type, answers: newAnswers});
         }
         setShowTypeSelector(false);
     };
