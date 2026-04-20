@@ -1,0 +1,118 @@
+@use "../../styles/colors" as *
+
+.navbar
+  position: fixed
+  top: 0
+  left: 0
+  right: 0
+  z-index: 100
+  padding: 1rem 2rem
+  transition: all 0.3s ease
+
+.navbar-scrolled
+  background: rgba(255, 255, 255, 0.85)
+  backdrop-filter: blur(12px)
+  border-bottom: 1px solid $border
+  padding: 0.7rem 2rem
+
+.navbar-inner
+  max-width: 1100px
+  margin: 0 auto
+  display: flex
+  align-items: center
+  justify-content: space-between
+
+.navbar-brand
+  display: flex
+  align-items: center
+  gap: 0.5rem
+  text-decoration: none
+  color: $text
+  font-weight: 700
+  font-size: 1.15rem
+
+  img
+    width: 2rem
+    height: 2rem
+
+  &:hover
+    text-decoration: none
+
+.navbar-links
+  display: flex
+  align-items: center
+  gap: 2rem
+
+  a
+    color: $gray
+    text-decoration: none
+    font-weight: 600
+    font-size: 0.95rem
+    transition: color 0.2s
+    position: relative
+
+    &:hover
+      color: $text
+      text-decoration: none
+
+    &.active
+      color: $primary
+
+      &::after
+        content: ""
+        position: absolute
+        bottom: -4px
+        left: 0
+        right: 0
+        height: 2px
+        background: $primary
+        border-radius: 1px
+
+.navbar-github
+  display: inline-flex
+  align-items: center
+  gap: 0.4rem
+  background: $text
+  color: $background !important
+  padding: 0.4rem 1rem
+  border-radius: 0.5rem
+  font-size: 0.9rem !important
+  transition: opacity 0.2s !important
+
+  &:hover
+    opacity: 0.85
+
+  &.active::after
+    display: none
+
+.navbar-toggle
+  display: none
+  background: none
+  border: none
+  font-size: 1.3rem
+  color: $text
+  cursor: pointer
+  padding: 0.3rem
+
+@media screen and (max-width: 700px)
+  .navbar-toggle
+    display: block
+
+  .navbar-links
+    display: none
+    position: absolute
+    top: 100%
+    left: 0
+    right: 0
+    flex-direction: column
+    background: rgba(255, 255, 255, 0.95)
+    backdrop-filter: blur(12px)
+    border-bottom: 1px solid $border
+    padding: 1rem 2rem
+    gap: 1rem
+
+    &.open
+      display: flex
+
+    a.active::after
+      display: none

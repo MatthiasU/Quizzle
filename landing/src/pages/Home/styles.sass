@@ -1,0 +1,79 @@
+@use "../../styles/colors" as *
+
+.home-page
+  height: 100vh
+  overflow: hidden
+
+.hero
+  display: flex
+  flex-direction: column
+  align-items: center
+  justify-content: center
+  height: 100vh
+  text-align: center
+  padding: 2rem
+
+.hero-logo
+  width: 22rem
+  max-width: 90vw
+  background-color: $background
+  border-radius: 1rem
+  padding: 1rem
+
+.hero-subtitle
+  font-size: 1.5rem
+  font-weight: 700
+  color: $text
+  margin: 1.5rem 0 0.5rem
+
+.hero-tagline
+  font-size: 1rem
+  font-weight: 500
+  color: $gray
+  margin: 0 0 2.5rem
+
+.hero-actions
+  display: flex
+  gap: 1rem
+
+.btn
+  display: inline-flex
+  align-items: center
+  gap: 0.5rem
+  font-weight: 700
+  font-size: 1.1rem
+  padding: 0.7rem 1.6rem
+  border-radius: 0.6rem
+  border: 1px solid rgba(0, 0, 0, 0.15)
+  text-decoration: none
+  user-select: none
+  cursor: pointer
+  transition: all 0.2s ease-in-out
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)
+
+  &:hover
+    filter: brightness(1.1)
+    transform: scale(1.02) rotate(-2deg)
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25), 0 4px 8px rgba(0, 0, 0, 0.15)
+    text-decoration: none
+
+  &:active
+    transform: scale(0.95) rotate(3deg)
+
+.btn-primary
+  background: linear-gradient(135deg, color-mix(in srgb, $primary 100%, white 20%), color-mix(in srgb, $primary 100%, black 10%))
+  color: $background
+
+.btn-secondary
+  background: linear-gradient(135deg, color-mix(in srgb, $gray 100%, white 20%), color-mix(in srgb, $gray 100%, black 10%))
+  color: $background
+
+@media screen and (max-width: 600px)
+  .hero-logo
+    width: 15rem
+
+  .hero-subtitle
+    font-size: 1.2rem
+
+  .hero-actions
+    flex-direction: column

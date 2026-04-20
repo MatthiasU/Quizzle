@@ -1,0 +1,30 @@
+@use "colors" as *
+
+*, *::before, *::after
+  box-sizing: border-box
+
+body, html
+  margin: 0
+  padding: 0
+  background-color: $background
+  color: $text
+  font-family: "Inter", sans-serif
+  font-weight: 700
+  scroll-behavior: smooth
+
+::-webkit-scrollbar
+  width: 5px
+
+::-webkit-scrollbar-thumb
+  background-color: $gray
+  border-radius: 10px
+
+::-webkit-scrollbar-thumb:hover
+  filter: brightness(0.8)
+
+a
+  color: $primary
+  text-decoration: none
+
+  &:hover
+    text-decoration: underline

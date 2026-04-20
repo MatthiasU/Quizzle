@@ -1,15 +1,15 @@
-name: Deploy Documentation
+name: Deploy Landing Page
 
 on:
   push:
     branches: [ main ]
     paths:
-      - 'docs/**'
+      - 'landing/**'
       - '.github/workflows/docs.yml'
   pull_request:
     branches: [ main ]
     paths:
-      - 'docs/**'
+      - 'landing/**'
   workflow_dispatch:
 
 permissions:
@@ -33,23 +33,23 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: 'docs/package.json'
+          cache-dependency-path: 'landing/package.json'
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Install dependencies
-        working-directory: ./docs
+        working-directory: ./landing
         run: npm install
 
-      - name: Build documentation
-        working-directory: ./docs
+      - name: Build landing page
+        working-directory: ./landing
         run: npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./docs/doc_build
+          path: ./landing/dist
 
   deploy:
     if: github.ref == 'refs/heads/main'

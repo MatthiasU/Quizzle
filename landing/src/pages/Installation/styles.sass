@@ -1,0 +1,250 @@
+@use "../../styles/colors" as *
+
+.install-page
+  padding-top: 4rem
+
+.page-header
+  text-align: center
+  padding: 6rem 2rem 2rem
+  max-width: 700px
+  margin: 0 auto
+
+  h1
+    font-size: 2.5rem
+    margin-bottom: 1rem
+
+  p
+    font-size: 1.15rem
+    font-weight: 500
+    color: $gray
+    line-height: 1.6
+
+.section
+  max-width: 850px
+  margin: 0 auto
+  padding: 4rem 2rem
+
+  h2
+    font-size: 1.8rem
+    margin-bottom: 2.5rem
+    display: flex
+    align-items: center
+    gap: 0.6rem
+
+.install-step
+  margin-bottom: 2.5rem
+
+.step-label
+  display: flex
+  align-items: center
+  gap: 0.8rem
+  margin-bottom: 0.8rem
+
+  h3
+    margin: 0
+    font-size: 1.15rem
+
+.step-number
+  width: 2rem
+  height: 2rem
+  border-radius: 50%
+  background: $primary
+  color: white
+  display: flex
+  align-items: center
+  justify-content: center
+  font-size: 0.9rem
+  font-weight: 700
+  flex-shrink: 0
+
+.step-desc
+  font-size: 0.95rem
+  font-weight: 500
+  color: $gray
+  line-height: 1.6
+  margin: 0 0 1rem
+  padding-left: 2.8rem
+
+  code
+    background: rgba(101, 71, 238, 0.08)
+    color: $primary
+    padding: 0.15rem 0.4rem
+    border-radius: 0.3rem
+    font-size: 0.9rem
+    font-weight: 600
+
+.code-block
+  background: $dark-gray
+  border-radius: 1rem
+  overflow: hidden
+  margin-left: 2.8rem
+
+.code-header
+  background: rgba(255, 255, 255, 0.08)
+  padding: 0.6rem 1.2rem
+  font-size: 0.8rem
+  font-weight: 600
+  color: rgba(255, 255, 255, 0.5)
+
+.code-block pre
+  margin: 0
+  padding: 1.2rem 1.5rem
+  overflow-x: auto
+
+.code-block code
+  font-family: "JetBrains Mono", "Fira Code", monospace
+  font-size: 0.88rem
+  color: #e0e0e0
+  line-height: 1.6
+  font-weight: 400
+
+.success-banner
+  display: flex
+  align-items: center
+  gap: 0.8rem
+  background: rgba(28, 148, 90, 0.08)
+  border: 1px solid rgba(28, 148, 90, 0.2)
+  border-radius: 1rem
+  padding: 1.2rem 1.5rem
+  margin-top: 1rem
+  color: $green
+  font-weight: 600
+  font-size: 1rem
+
+  svg
+    font-size: 1.3rem
+
+.btn
+  display: inline-flex
+  align-items: center
+  gap: 0.5rem
+  font-weight: 700
+  font-size: 1.1rem
+  padding: 0.7rem 1.6rem
+  border-radius: 0.6rem
+  border: 1px solid rgba(0, 0, 0, 0.15)
+  text-decoration: none
+  user-select: none
+  cursor: pointer
+  transition: all 0.2s ease-in-out
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)
+
+  &:hover
+    filter: brightness(1.1)
+    transform: scale(1.02) rotate(-2deg)
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25), 0 4px 8px rgba(0, 0, 0, 0.15)
+    text-decoration: none
+
+  &:active
+    transform: scale(0.95) rotate(3deg)
+
+.btn-dark
+  background: linear-gradient(135deg, #3a3a3a, $text)
+  color: $background
+
+.btn-primary
+  background: linear-gradient(135deg, #7b63f2, $primary)
+  color: white
+
+.btn-small
+  font-size: 0.9rem
+  padding: 0.5rem 1.2rem
+
+.btn-large
+  font-size: 1.3rem
+  padding: 0.9rem 2.4rem
+
+.section-desc
+  font-size: 1.05rem
+  font-weight: 500
+  color: $gray
+  line-height: 1.6
+  margin-bottom: 2.5rem
+
+.download-grid
+  display: grid
+  grid-template-columns: repeat(2, 1fr)
+  gap: 1.5rem
+  margin-bottom: 2rem
+
+.download-card
+  display: flex
+  flex-direction: column
+  align-items: center
+  text-align: center
+  background: $background
+  border: 1px solid $border
+  border-radius: 1.2rem
+  padding: 2.5rem 2rem
+  text-decoration: none
+  color: $text
+  transition: all 0.2s ease-in-out
+
+  &:hover
+    border-color: $primary
+    box-shadow: 0 4px 20px rgba(101, 71, 238, 0.12)
+    transform: translateY(-2px)
+
+  .download-icon
+    font-size: 2.5rem
+    color: $primary
+    margin-bottom: 1rem
+
+  h3
+    font-size: 1.2rem
+    margin: 0 0 0.4rem
+
+  p
+    font-size: 0.9rem
+    font-weight: 500
+    color: $gray
+    margin: 0 0 1.2rem
+
+.download-hint
+  font-size: 0.92rem
+  font-weight: 500
+  color: $gray
+  text-align: center
+
+  a
+    color: $primary
+    text-decoration: none
+    font-weight: 600
+
+    &:hover
+      text-decoration: underline
+
+.cta-section
+  text-align: center
+  padding: 5rem 2rem
+
+  h2
+    justify-content: center
+
+.cta-text
+  font-size: 1.1rem
+  font-weight: 500
+  color: $gray
+  margin-bottom: 2rem
+
+.cta-actions
+  display: flex
+  justify-content: center
+
+@media screen and (max-width: 900px)
+  .download-grid
+    grid-template-columns: 1fr
+
+@media screen and (max-width: 600px)
+  .page-header h1
+    font-size: 2rem
+
+  .code-block
+    margin-left: 0
+
+  .step-desc
+    padding-left: 0
+
+  .btn-large
+    font-size: 1.1rem
+    padding: 0.7rem 1.8rem
