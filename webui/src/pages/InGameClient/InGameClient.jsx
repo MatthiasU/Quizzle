@@ -4,7 +4,7 @@ import {useContext, useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
 import {socket, addReconnectionCallback, removeReconnectionCallback, clearCurrentSession, getSessionManager, getSessionState} from "@/common/utils/SocketUtil.js";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCheck, faCheckCircle, faMinus, faPaperPlane, faX, faWifi, faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
+import {faCheck, faCheckCircle, faMinus, faPaperPlane, faX, faWifi, faExclamationTriangle, faFire} from "@fortawesome/free-solid-svg-icons";
 import {TrueFalseClient} from "./components/TrueFalseClient";
 import {TextInputClient} from "./components/TextInputClient";
 import {SequenceClient} from "./components/SequenceClient";
@@ -730,40 +730,62 @@ export const InGameClient = () => {
                             </>
                         )
                     ) : (
-                        <div className="result-reveal">
-                            <FontAwesomeIcon 
-                                icon={getCorrectStatus(selection, answers) === 1 ? faCheck : getCorrectStatus(selection, answers) === 0 ? faMinus : faX}
-                                className={`result-icon ${getCorrectStatus(selection, answers) === 1 ? 'result-correct' : getCorrectStatus(selection, answers) === 0 ? 'result-partial' : 'result-wrong'}`}
-                            />
-                            
-                            <h2 className="result-title">
-                                {getCorrectStatus(selection, answers) === 1 && "Richtig!"}
-                                {getCorrectStatus(selection, answers) === 0 && "Fast richtig!"}
-                                {getCorrectStatus(selection, answers) === -1 && "Nicht ganz!"}
-                            </h2>
+                        (() => {
+                            const status = getCorrectStatus(selection, answers);
+                            const statusClass = status === 1 ? 'result-correct' : status === 0 ? 'result-partial' : 'result-wrong';
+                            const statusIcon = status === 1 ? faCheck : status === 0 ? faMinus : faX;
+                            const statusTitle = status === 1 ? 'Richtig!' : status === 0 ? 'Fast richtig!' : 'Nicht ganz!';
+                            const pointsColorClass = status === 1 ? 'points-correct' : status === 0 ? 'points-partial' : 'points-wrong';
+                            return (
+                                <div className="result-reveal">
+                                    <div className={`result-icon-wrapper ${statusClass}`}>
+                                        <FontAwesomeIcon icon={statusIcon} className="result-icon"/>
+                                    </div>
 
-                            {pointsEarned > 0 && (
-                                <span className="points-earned">+{pointsEarned}</span>
-                            )}
+                                    <h2 className="result-title">{statusTitle}</h2>
 
-                            <div className="result-details">
-                                {rank && (
-                                    <span className="rank-text">
-                                        Platz {rank}/{totalPlayers}
-                                    </span>
-                                )}
-                                {streak >= 2 && (
-                                    <span className="streak-text">{streak}x 🔥</span>
-                                )}
-                            </div>
+                                    {pointsEarned > 0 && (
+                                        <span className={`points-earned ${pointsColorClass}`}>+{pointsEarned}</span>
+                                    )}
 
-                            {playerAhead && playerAhead.gap > 0 && (
-                                <span className="gap-text">{playerAhead.gap} Punkte hinter {playerAhead.name}</span>
-                            )}
-                            {!playerAhead && rank === 1 && (
-                                <span className="leader-text">Du führst!</span>
-                            )}
-                        </div>
+                                    {streak >= 2 && (
+                                        <div className="result-card streak-card">
+                                            <div className="streak-card-header">
+                                                <div className="streak-card-title">
+                                                    <span className="streak-number">{streak}</span>
+                                                    <span className="streak-label">Richtige in Folge</span>
+                                                </div>
+                                                <div className="streak-badge">
+                                                    <FontAwesomeIcon icon={faFire}/>
+                                                    <span>{streak}</span>
+                                                </div>
+                                            </div>
+                                            <div className="streak-bars">
+                                                {Array.from({length: Math.max(5, streak)}, (_, i) => (
+                                                    <div key={i} className={`streak-bar ${i < streak ? 'streak-bar-filled' : ''}`}/>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {rank && (
+                                        <div className="result-card rank-card">
+                                            <div className="rank-badge">{rank}.</div>
+                                            <div className="rank-info">
+                                                <span className="rank-main">Platz {rank} von {totalPlayers}</span>
+                                                <span className="rank-sub">
+                                                    {playerAhead && playerAhead.gap >= 0
+                                                        ? `${playerAhead.gap} Punkte bis zum nächsten Platz`
+                                                        : rank === 1
+                                                            ? 'Du führst!'
+                                                            : ''}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })()
                     )}
                 </div>
             )}

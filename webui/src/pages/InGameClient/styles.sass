@@ -369,7 +369,10 @@
       background: $primary
       transform: translateY(-2px)
 
-.ingame-answers svg
+.ingame-answers > svg,
+.ingame-answers > .ingame-icon-correct,
+.ingame-answers > .ingame-icon-partial,
+.ingame-answers > .ingame-icon-wrong
   display: flex
   justify-content: center
   align-items: center
@@ -430,50 +433,155 @@
 .result-reveal
   display: flex
   flex-direction: column
-  align-items: center
-  gap: 0.5rem
+  align-items: stretch
+  gap: 0.75rem
+  width: 100%
+  max-width: 24rem
+  margin: 0 auto
+  padding: 1rem
 
-  .result-icon
-    width: 3rem
-    height: 3rem
-    padding: 1.5rem
+  .result-icon-wrapper
+    align-self: center
+    display: flex
+    align-items: center
+    justify-content: center
+    width: 4rem
+    height: 4rem
     border-radius: 50%
     color: white
     margin-bottom: 0.25rem
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25), inset 0 -2px 4px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.1)
+
+    .result-icon
+      width: 1.75rem
+      height: 1.75rem
 
     &.result-correct
       background-color: $green
+      filter: drop-shadow(0 0 1rem rgba(28, 148, 90, 0.5))
 
     &.result-partial
       background-color: $orange
+      filter: drop-shadow(0 0 1rem rgba(255, 165, 0, 0.5))
 
     &.result-wrong
       background-color: $red
+      filter: drop-shadow(0 0 1rem rgba(236, 85, 85, 0.5))
 
   .result-title
-    font-size: 1.25rem
-    font-weight: 700
+    font-size: 1.5rem
+    font-weight: 800
     margin: 0
+    text-align: center
 
   .points-earned
-    font-size: 1.75rem
-    font-weight: 800
-    color: $green
+    font-size: 2.25rem
+    font-weight: 900
     font-variant-numeric: tabular-nums
+    text-align: center
+    margin-bottom: 0.5rem
 
-  .result-details
+    &.points-correct
+      color: $green
+
+    &.points-partial
+      color: $orange
+
+    &.points-wrong
+      color: $red
+
+  .result-card
+    background-color: $background
+    border: 1px solid $border
+    border-radius: 0.75rem
+    padding: 0.9rem 1rem
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04)
+
+  .streak-card
+    display: flex
+    flex-direction: column
+    gap: 0.75rem
+
+    .streak-card-header
+      display: flex
+      align-items: center
+      justify-content: space-between
+      gap: 1rem
+
+    .streak-card-title
+      display: flex
+      align-items: baseline
+      gap: 0.5rem
+
+      .streak-number
+        font-size: 1.25rem
+        font-weight: 800
+
+      .streak-label
+        font-size: 0.95rem
+        font-weight: 500
+
+    .streak-badge
+      display: inline-flex
+      align-items: center
+      gap: 0.4rem
+      background-color: $orange
+      color: white
+      font-weight: 700
+      font-size: 0.95rem
+      line-height: 1
+      padding: 0.35rem 0.85rem
+      border-radius: 10rem
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25), inset 0 -2px 4px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08)
+
+      svg
+        width: 0.9rem
+        height: 0.9rem
+
+    .streak-bars
+      display: flex
+      gap: 0.3rem
+      width: 100%
+
+      .streak-bar
+        flex: 1
+        height: 0.4rem
+        border-radius: 10rem
+        background-color: #FFD9A3
+        transition: background-color 0.2s
+
+        &.streak-bar-filled
+          background-color: $orange
+          box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3), inset 0 -1px 2px rgba(0, 0, 0, 0.12)
+
+  .rank-card
     display: flex
     align-items: center
-    gap: 0.75rem
-    color: $gray
-    font-size: 0.9rem
+    gap: 0.85rem
 
-    .rank-text
-      font-weight: 500
+    .rank-badge
+      display: flex
+      align-items: center
+      justify-content: center
+      width: 2.5rem
+      height: 2.5rem
+      border-radius: 0.6rem
+      background-color: #F1F0F7
+      color: $dark-gray
+      font-weight: 700
+      font-size: 0.95rem
+      flex-shrink: 0
 
-    .streak-text
-      font-weight: 600
+    .rank-info
+      display: flex
+      flex-direction: column
+      gap: 0.1rem
+      min-width: 0
 
-  .gap-text, .leader-text
-    font-size: 0.85rem
-    color: $gray
+      .rank-main
+        font-size: 1rem
+        font-weight: 700
+
+      .rank-sub
+        font-size: 0.8rem
+        color: $gray
