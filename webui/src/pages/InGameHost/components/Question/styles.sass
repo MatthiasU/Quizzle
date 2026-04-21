@@ -1,57 +1,59 @@
 @use "@/common/styles/colors" as *
 
-.question-circle
-  width: 10rem
-  height: 10rem
-  background-color: $primary
-  border-radius: 10rem
-
 .question-container
   display: flex
   justify-content: center
   align-items: center
   user-select: none
-
-.question-container h1
-  font-size: 28pt
+  width: 100%
 
 .question
-  margin-bottom: 3rem
   z-index: 20
-  max-width: 40rem
-  background: linear-gradient(135deg, color-mix(in srgb, $dark-gray 100%, white 15%), color-mix(in srgb, $dark-gray 100%, black 20%))
-  border: 1px solid rgba(255, 255, 255, 0.1)
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.07), 0 4px 12px rgba(0, 0, 0, 0.3)
-  padding: 1.5rem 2rem
-  border-radius: 1.5rem
-  position: relative
-  color: $background
-  right: 5rem
-  top: 3rem
+  width: 100%
+  max-width: 60rem
+  background: white
+  color: $text
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25)
+  padding: 1.5rem 2.5rem
+  border-radius: 0.5rem
+  text-align: center
 
   h1
     margin: 0
+    font-size: 2.25rem
+    font-weight: 800
+    line-height: 1.2
+
+.image-question-container
+  display: flex
+  flex-direction: column
+  align-items: center
+  gap: 1rem
+  width: 100%
 
 .image-question-container img
-  width: 30rem
-  height: 15rem
-  background-color: $primary
-  border-radius: 1rem
+  max-width: 30rem
+  width: 100%
+  max-height: 18rem
+  object-fit: contain
+  border-radius: 0.5rem
+  background-color: white
+  padding: 0.5rem
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25)
 
 .image-question
-  position: relative
-  width: 25rem
-  background: linear-gradient(135deg, color-mix(in srgb, $dark-gray 100%, white 15%), color-mix(in srgb, $dark-gray 100%, black 20%))
-  border: 1px solid rgba(255, 255, 255, 0.1)
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.07), 0 4px 12px rgba(0, 0, 0, 0.3)
-  color: $background
-  border-radius: 1rem
+  width: 100%
+  max-width: 50rem
+  background: white
+  color: $text
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25)
+  border-radius: 0.5rem
   padding: 1rem 1.5rem
-  top: 1rem
-  left: 1rem
-  right: 1rem
   display: flex
   justify-content: center
+  text-align: center
 
   h1
     margin: 0
+    font-size: 1.75rem
+    font-weight: 800

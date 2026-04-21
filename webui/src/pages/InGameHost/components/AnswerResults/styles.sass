@@ -37,10 +37,11 @@
     align-items: flex-end
     gap: 1.5rem
     margin: 0 0 2rem 0
-    height: 10rem
+    height: 14rem
     padding: 1.5rem
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))
-    border-radius: 2rem
+    background: rgba(0, 0, 0, 0.35)
+    border-radius: 1rem
+    backdrop-filter: blur(6px)
     box-shadow: 0 0.8rem 3rem rgba(0, 0, 0, 0.2)
     max-width: 90vw
     box-sizing: border-box
@@ -52,46 +53,40 @@
       gap: 0.5rem
 
       .vote-count-display
-        color: $background
-        font-weight: bold
-        font-size: 1.5rem
+        color: white
+        font-weight: 900
+        font-size: 1.6rem
         margin: 0
-        background: linear-gradient(135deg, color-mix(in srgb, $dark-gray 100%, white 15%), color-mix(in srgb, $dark-gray 100%, black 20%))
-        padding: 0.5rem 1rem
-        border-radius: 1rem
         min-width: 3rem
         text-align: center
-        border: 1px solid rgba(255, 255, 255, 0.1)
-        box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.07), 0 0.5rem 1.2rem rgba(0, 0, 0, 0.3)
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4)
 
       .vote-bar-container
-        width: 3rem
-        height: 6.5rem
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05))
-        border-radius: 1.2rem
+        width: 3.5rem
+        height: 8.5rem
+        background: rgba(255, 255, 255, 0.1)
+        border-radius: 0.4rem
         position: relative
         overflow: hidden
         display: flex
         align-items: flex-end
-        border: 2px solid rgba(255, 255, 255, 0.1)
-        box-shadow: inset 0 0.3rem 0.8rem rgba(0, 0, 0, 0.2)
 
         .vote-bar
           width: 100%
-          border-radius: 1.2rem
+          border-radius: 0.4rem 0.4rem 0 0
           position: relative
           transition: all 0.3s ease
-          box-shadow: 0 -0.3rem 1.2rem rgba(0, 0, 0, 0.3)
-          
-          &::before
-            content: ''
-            position: absolute
-            top: 0
-            left: 0
-            right: 0
-            height: 30%
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent)
-            border-radius: 1.2rem 1.2rem 0 0
+          box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.25)
+
+      .vote-bar-shape
+        width: 2.5rem
+        height: 2.5rem
+        border-radius: 0.4rem
+        display: flex
+        align-items: center
+        justify-content: center
+        color: white
+        box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25)
 
   .answer-list
     display: grid
@@ -112,66 +107,67 @@
     margin: 0
     padding: 0
 
+    &.incorrect-answer .text-answer,
+    &.incorrect-answer .image-answer-wrap
+      opacity: 0.4
+
     .text-answer
-      width: min(18rem, 40vw)
-      height: 7rem
-      padding: 0.8rem 1.2rem
-      color: $background
-      border-radius: 1.5rem
+      width: min(22rem, 42vw)
+      height: 6.5rem
+      padding: 0.8rem 1rem
+      color: white
+      border-radius: 0.5rem
       display: flex
-      justify-content: center
       align-items: center
-      text-align: center
+      gap: 0.8rem
+      text-align: left
       user-select: none
       transition: all 0.3s ease
       margin: 0
       position: relative
-      border: 1px solid rgba(0, 0, 0, 0.15)
-      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2)
+      box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.2), 0 4px 0 rgba(0, 0, 0, 0.25)
       box-sizing: border-box
-      
-      &.correct
-        &::after
-          content: ''
-          position: absolute
-          top: -1rem
-          right: -1rem
-          background: linear-gradient(135deg, $green, color.adjust($green, $lightness: -10%))
-          width: 2rem
-          height: 2rem
-          border-radius: 50%
-          z-index: 19
-          box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.3), 0 0 0 3px white
+
+      h2
+        margin: 0
+        flex: 1
+        font-weight: 800
+        text-shadow: 0 2px 2px rgba(0, 0, 0, 0.25)
+        overflow: hidden
+
+      .answer-shape-wrap
+        display: flex
+        align-items: center
+        justify-content: center
+        flex-shrink: 0
+        color: white
+
+    .image-answer-wrap
+      position: relative
+      width: min(24rem, 42vw)
+      height: 8rem
+      border-radius: 0.5rem
+      overflow: hidden
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25)
+
+      .answer-shape-wrap.image-shape
+        position: absolute
+        top: 0.4rem
+        left: 0.4rem
+        width: 2.25rem
+        height: 2.25rem
+        border-radius: 0.4rem
+        display: flex
+        align-items: center
+        justify-content: center
+        z-index: 2
+        color: white
 
     .image-answer
-      width: min(20rem, 40vw)
-      height: 8rem
-      border-radius: 1.5rem
-      display: flex
-      justify-content: center
-      align-items: center
-      text-align: center
-      background-size: cover
-      background-position: center
-      background-repeat: no-repeat
-      transition: all 0.3s ease
-      margin: 0
-      position: relative
-      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2)
-      box-sizing: border-box
-      
-      &.correct
-        &::after
-          content: ''
-          position: absolute
-          top: -1rem
-          right: -1rem
-          background: linear-gradient(135deg, $green, color.adjust($green, $lightness: -10%))
-          width: 2rem
-          height: 2rem
-          border-radius: 50%
-          z-index: 19
-          box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.3), 0 0 0 3px white
+      width: 100%
+      height: 100%
+      object-fit: cover
+      display: block
           
     .correct-badge
       position: absolute

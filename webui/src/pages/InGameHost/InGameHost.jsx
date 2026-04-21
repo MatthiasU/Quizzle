@@ -16,12 +16,15 @@ import {useSoundManager} from "@/common/utils/SoundManager.js";
 import SoundRenderer from "@/common/components/SoundRenderer";
 import SoundControl from "@/common/components/SoundControl";
 import {QUESTION_TYPES} from "@/common/constants/QuestionTypes.js";
+import AnswerShape from "@/common/components/AnswerShape";
+import {getAnswerColor} from "@/common/utils/AnswerColorUtil.js";
 
 export const InGameHost = () => {
     const {isLoaded, pullNextQuestion, scoreboard, setScoreboard, playerCount, setPlayerCount} = useContext(QuizContext);
     const navigate = useNavigate();
     const soundManager = useSoundManager();
     const inGameMusicRef = useRef(null);
+    const lastAnsweredCountRef = useRef(0);
 
     const [currentQuestion, setCurrentQuestion] = useState({});
     const [gameState, setGameState] = useState('question');
@@ -29,6 +32,12 @@ export const InGameHost = () => {
     const [questionAnimationState, setQuestionAnimationState] = useState('hidden');
     const [timerActive, setTimerActive] = useState(false);
     const [showDoublePointsAnimation, setShowDoublePointsAnimation] = useState(false);
+    const [answerProgress, setAnswerProgress] = useState({
+        answeredCount: 0,
+        activePlayerCount: 0,
+        voteCounts: null,
+        answerLabels: null
+    });
 
     const skipQuestion = async () => {
         try {
@@ -70,6 +79,8 @@ export const InGameHost = () => {
             setAnswerData(null);
             setQuestionAnimationState('hidden');
             setTimerActive(false);
+            setAnswerProgress({answeredCount: 0, activePlayerCount: 0, voteCounts: null, answerLabels: null});
+            lastAnsweredCountRef.current = 0;
 
             if (!inGameMusicRef.current && (gameState === 'answer-results' || gameState === 'scoreboard')) {
                 inGameMusicRef.current = soundManager.playAmbient('INGAME');
@@ -166,11 +177,26 @@ export const InGameHost = () => {
             soundManager.playTransition('RESULTS');
         });
 
+        socket.on("ANSWER_PROGRESS", (data) => {
+            const newCount = data.answeredCount || 0;
+            if (newCount > lastAnsweredCountRef.current) {
+                soundManager.playFeedback('ANSWER_RECEIVED');
+            }
+            lastAnsweredCountRef.current = newCount;
+            setAnswerProgress({
+                answeredCount: newCount,
+                activePlayerCount: data.activePlayerCount || 0,
+                voteCounts: data.voteCounts || null,
+                answerLabels: data.answerLabels || null
+            });
+        });
+
         const timeout = setTimeout(() => nextQuestion(), 500);
 
         return () => {
             socket.off("PLAYER_LEFT");
             socket.off("ANSWERS_RECEIVED");
+            socket.off("ANSWER_PROGRESS");
             clearTimeout(timeout);
 
             if (inGameMusicRef.current) {
@@ -228,6 +254,31 @@ export const InGameHost = () => {
                         <div className={`question-wrapper ${questionAnimationState}`}>
                             <Question title={currentQuestion.title} image={currentQuestion.b64_image}/>
                         </div>
+
+                        {questionAnimationState === 'answers-ready' && (
+                            <div className="answer-progress-panel">
+                                <div className="answer-progress-counter">
+                                    <span className="answer-progress-number">{answerProgress.answeredCount}</span>
+                                    <span className="answer-progress-label">Antworten</span>
+                                </div>
+                                {answerProgress.voteCounts && Array.isArray(currentQuestion.answers) && (
+                                    <div className="answer-progress-list">
+                                        {currentQuestion.answers.map((answer, idx) => {
+                                            const label = answerProgress.answerLabels?.[idx] ?? answer.content;
+                                            if (!label) return null;
+                                            return (
+                                                <div key={idx} className="answer-progress-item"
+                                                     style={{background: getAnswerColor(answer, idx, currentQuestion.type)}}>
+                                                    <AnswerShape index={idx} size="1.1rem" questionType={currentQuestion.type}/>
+                                                    <span className="answer-progress-text">{label}</span>
+                                                    <span className="answer-progress-count">{answerProgress.voteCounts[idx] || 0}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {questionAnimationState === 'answers-ready' && currentQuestion.type !== QUESTION_TYPES.TEXT && currentQuestion.type !== QUESTION_TYPES.SEQUENCE && currentQuestion.type !== QUESTION_TYPES.SLIDER && (
                             <div className={`answer-list ${questionAnimationState}`}>

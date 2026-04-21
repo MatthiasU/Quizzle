@@ -5,6 +5,7 @@ import {useNavigate, useParams} from "react-router-dom";
 import {socket, addReconnectionCallback, removeReconnectionCallback, clearCurrentSession, getSessionManager, getSessionState} from "@/common/utils/SocketUtil.js";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheck, faCheckCircle, faMinus, faPaperPlane, faX, faWifi, faExclamationTriangle, faFire} from "@fortawesome/free-solid-svg-icons";
+import AnswerShape from "@/common/components/AnswerShape";
 import {TrueFalseClient} from "./components/TrueFalseClient";
 import {TextInputClient} from "./components/TextInputClient";
 import {SequenceClient} from "./components/SequenceClient";
@@ -429,7 +430,7 @@ export const InGameClient = () => {
                     <div className="ingame-content grid-layout">
                         {Array.from({length: question.answers}, (_, index) => (
                             <div key={index} className="ingame-answer" onClick={() => submitAnswer([index])}>
-                                <FontAwesomeIcon icon={faCheckCircle} className={"ingame-icon"}/>
+                                <AnswerShape index={index} size="4.5rem"/>
                             </div>
                         ))}
                     </div>
@@ -466,7 +467,7 @@ export const InGameClient = () => {
                             <div key={index} 
                                  className={`ingame-answer ${selection[index] ? 'ingame-answer-selected' : ''}`}
                                  onClick={() => handleMultipleChoiceSelection(index)}>
-                                <FontAwesomeIcon icon={faCheckCircle} className={"ingame-icon" + (selection[index] ? " ingame-icon-selected" : "")}/>
+                                <AnswerShape index={index} size={selection[index] ? "5.5rem" : "4.5rem"}/>
                             </div>
                         ))}
                         <div className="submit-container">

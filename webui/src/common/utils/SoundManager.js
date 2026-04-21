@@ -8,6 +8,7 @@ import playerJoined from '@/pages/InGameHost/assets/sounds/feedback/player-joine
 import playerLeft from '@/pages/InGameHost/assets/sounds/feedback/player-left.wav';
 import timerTick from '@/pages/InGameHost/assets/sounds/feedback/timer-tick.wav';
 import pointsAdd from '@/pages/InGameHost/assets/sounds/feedback/points-add.mp3';
+import answerReceived from '@/pages/InGameHost/assets/sounds/feedback/answer-received.mp3';
 import gameComplete from '@/pages/InGameHost/assets/sounds/celebrations/game-complete.wav';
 import lobbyAmbient from '@/pages/InGameHost/assets/sounds/ambience/lobby-ambient.mp3';
 import questionAmbient from '@/pages/InGameHost/assets/sounds/ambience/question-ambient.mp3';
@@ -22,6 +23,7 @@ const SOUNDS = {
     PLAYER_LEFT: playerLeft,
     TIMER_TICK: timerTick,
     POINTS_ADD: pointsAdd,
+    ANSWER_RECEIVED: answerReceived,
 
     GAME_COMPLETE: gameComplete,
 
@@ -171,6 +173,8 @@ class SoundManager {
                 return this.playSound('TIMER_TICK');
             case 'POINTS_ADD':
                 return this.playSound('POINTS_ADD', { volume: 40 });
+            case 'ANSWER_RECEIVED':
+                return this.playSound('ANSWER_RECEIVED', { volume: 50 });
             default:
                 console.warn(`Unknown feedback type: ${type}`);
                 return null;

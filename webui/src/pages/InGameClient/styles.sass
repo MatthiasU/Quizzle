@@ -171,21 +171,20 @@
     align-items: center
     border-radius: 0.5rem
     font-size: 1.5rem
-    color: $background
+    color: white
     cursor: pointer
     padding: 0.5rem
     min-height: 0
     overflow: hidden
-    border: 1px solid rgba(0, 0, 0, 0.15)
-    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)
+    box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.22), 0 4px 0 rgba(0, 0, 0, 0.2)
     transition: all 0.15s ease-in-out
 
     &:hover
-      filter: brightness(1.1)
-      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25), 0 4px 8px rgba(0, 0, 0, 0.15)
+      filter: brightness(1.05)
 
     &:active
-      transform: scale(0.96)
+      transform: translateY(2px)
+      box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.22), 0 2px 0 rgba(0, 0, 0, 0.2)
 
     .ingame-icon
       transition: font-size 0.2s
@@ -230,16 +229,16 @@
     transform: translateY(0)
 
   .ingame-answer:nth-child(1)
-    background: linear-gradient(135deg, color-mix(in srgb, $orange 100%, white 20%), color-mix(in srgb, $orange 100%, black 10%))
+    background: linear-gradient(180deg, color-mix(in srgb, #E21B3C 100%, white 8%), color-mix(in srgb, #E21B3C 100%, black 14%))
 
   .ingame-answer:nth-child(2)
-    background: linear-gradient(135deg, color-mix(in srgb, $blue 100%, white 20%), color-mix(in srgb, $blue 100%, black 10%))
+    background: linear-gradient(180deg, color-mix(in srgb, #1368CE 100%, white 8%), color-mix(in srgb, #1368CE 100%, black 14%))
 
   .ingame-answer:nth-child(3)
-    background: linear-gradient(135deg, color-mix(in srgb, $green 100%, white 20%), color-mix(in srgb, $green 100%, black 10%))
+    background: linear-gradient(180deg, color-mix(in srgb, #D89E00 100%, white 8%), color-mix(in srgb, #D89E00 100%, black 14%))
 
   .ingame-answer:nth-child(4)
-    background: linear-gradient(135deg, color-mix(in srgb, $red 100%, white 20%), color-mix(in srgb, $red 100%, black 10%))
+    background: linear-gradient(180deg, color-mix(in srgb, #26890C 100%, white 8%), color-mix(in srgb, #26890C 100%, black 14%))
 
 .answers-not-ready-overlay
   position: fixed

@@ -1,12 +1,12 @@
 import {motion} from "framer-motion";
 import "./styles.sass";
 import Button from "@/common/components/Button";
-import {faForward, faCheck} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faForward} from "@fortawesome/free-solid-svg-icons";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import {useEffect} from "react";
 import {QUESTION_TYPES} from "@/common/constants/QuestionTypes.js";
 import {getAnswerColor, getAnswerGradient} from "@/common/utils/AnswerColorUtil.js";
+import AnswerShape from "@/common/components/AnswerShape";
 
 export const AnswerResults = ({question, answerData, showScoreboard}) => {
     const soundManager = useSoundManager();
@@ -191,6 +191,9 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
                                     transition={{duration: 1.2, delay: 0.4 + index * 0.1, ease: "easeOut"}}
                                 />
                             </div>
+                            <div className="vote-bar-shape" style={{background: getAnswerColor(answer, index)}}>
+                                <AnswerShape index={index} size="1.4rem" questionType={question.type}/>
+                            </div>
                         </motion.div>
                     );
                 })}
@@ -201,7 +204,7 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
                     const isCorrect = answer.is_correct;
 
                     return (
-                        <div key={index} className={`answer-container ${isCorrect ? 'correct-answer' : ''}`}>
+                        <div key={index} className={`answer-container ${isCorrect ? 'correct-answer' : ''} ${!isCorrect ? 'incorrect-answer' : ''}`}>
                             {answer.type === "text" && (
                                 <motion.div
                                     className="text-answer"
@@ -210,26 +213,17 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
                                     animate={{scale: 1}}
                                     transition={{duration: 0.2, delay: 1.8 + index * 0.05}}
                                 >
+                                    <div className="answer-shape-wrap">
+                                        <AnswerShape index={index} size="2rem" questionType={question.type}/>
+                                    </div>
                                     <h2 style={{fontSize: getTextSize(answer.content)}}>{answer.content}</h2>
-                                    {isCorrect && (
-                                        <motion.div
-                                            className="correct-badge"
-                                            initial={{scale: 0, opacity: 0}}
-                                            animate={{scale: 1, opacity: 1}}
-                                            transition={{
-                                                duration: 0.4,
-                                                delay: 2.0 + index * 0.1,
-                                                type: "spring",
-                                                stiffness: 300
-                                            }}
-                                        >
-                                            <FontAwesomeIcon icon={faCheck}/>
-                                        </motion.div>
-                                    )}
                                 </motion.div>
                             )}
                             {answer.type === "image" && (
-                                <div style={{position: 'relative'}}>
+                                <div className="image-answer-wrap" style={{border: `6px solid ${getColor(answer, index)}`}}>
+                                    <div className="answer-shape-wrap image-shape" style={{background: getColor(answer, index)}}>
+                                        <AnswerShape index={index} size="1.5rem" questionType={question.type}/>
+                                    </div>
                                     <motion.img
                                         src={answer.content}
                                         alt="Answer"
@@ -237,23 +231,7 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
                                         initial={{scale: 0}}
                                         animate={{scale: 1}}
                                         transition={{duration: 0.2, delay: 1.8 + index * 0.05}}
-                                        style={{border: `5px solid ${getColor(answer, index)}`}}
                                     />
-                                    {isCorrect && (
-                                        <motion.div
-                                            className="correct-badge"
-                                            initial={{scale: 0, opacity: 0}}
-                                            animate={{scale: 1, opacity: 1}}
-                                            transition={{
-                                                duration: 0.4,
-                                                delay: 2.0 + index * 0.1,
-                                                type: "spring",
-                                                stiffness: 300
-                                            }}
-                                        >
-                                            <FontAwesomeIcon icon={faCheck}/>
-                                        </motion.div>
-                                    )}
                                 </div>
                             )}
                         </div>

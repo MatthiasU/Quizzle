@@ -3,6 +3,7 @@ import {useContext, useEffect, useState} from "react";
 import {QuizContext} from "@/common/contexts/Quiz";
 import {useNavigate} from "react-router-dom";
 import Scoreboard from "@/pages/InGameHost/components/Scoreboard/index.js";
+import Podium from "@/pages/EndingHost/components/Podium";
 import AnalyticsTabs from "@/common/components/AnalyticsTabs";
 import Button from "@/common/components/Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -101,12 +102,21 @@ export const EndingHost = () => {
             )}
 
             {activeView === 'scoreboard' && (
-                <Scoreboard
-                    isEnd
-                    nextQuestion={() => {
-                    }}
-                    scoreboard={Object.values(scoreboard?.scoreboard || {})}
-                />
+                <>
+                    <h1 className="ending-title">Top-Spieler!</h1>
+                    <Podium
+                        scoreboard={Object.values(scoreboard?.scoreboard || {})}
+                        analytics={analyticsData}
+                        totalQuestions={analyticsData?.questionAnalytics?.length}
+                    />
+                    <Scoreboard
+                        isEnd
+                        hideTop3
+                        nextQuestion={() => {
+                        }}
+                        scoreboard={Object.values(scoreboard?.scoreboard || {})}
+                    />
+                </>
             )}
 
             {activeView === 'analytics' && analyticsData && (

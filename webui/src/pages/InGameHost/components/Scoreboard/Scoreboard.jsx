@@ -1,6 +1,6 @@
 import "./styles.sass";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faForward, faHouse, faArrowUp, faArrowDown, faBolt, faTrophy} from "@fortawesome/free-solid-svg-icons";
+import {faForward, faHouse, faArrowUp, faBolt} from "@fortawesome/free-solid-svg-icons";
 import Button from "@/common/components/Button";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {LayoutGroup, motion} from "framer-motion";
@@ -8,7 +8,7 @@ import {getCharacterEmoji} from "@/common/data/characters";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import AnimatedCounter from "@/pages/InGameHost/components/AnimatedCounter";
 
-export const Scoreboard = ({scoreboard, nextQuestion, isEnd}) => {
+export const Scoreboard = ({scoreboard, nextQuestion, isEnd, hideTop3}) => {
     const prevRanksRef = useRef({});
     const [animatedPlayers, setAnimatedPlayers] = useState([]);
     const [pointsAnimationPhase, setPointsAnimationPhase] = useState('initial');
@@ -113,11 +113,12 @@ export const Scoreboard = ({scoreboard, nextQuestion, isEnd}) => {
                 {isEnd && <Button onClick={goHome} text="Startseite"
                         padding="1rem 1.5rem" icon={faHouse}/>}
             </div>
-            <h1>{isEnd ? "Endstand" : "Scoreboard"}</h1>
+            {!hideTop3 && <h1>{isEnd ? "Endstand" : "Scoreboard"}</h1>}
 
             <div className="scoreboard-players">
                 <LayoutGroup>
                     {displayPlayers.map((player, index) => {
+                        if (hideTop3 && index < 3) return null;
                         const hasRoundPoints = (player.lastRoundPoints || 0) > 0;
                         const showFlyingPoints = hasRoundPoints && pointsAnimationPhase === 'flying';
                         const showCounting = pointsAnimationPhase === 'counting' || pointsAnimationPhase === 'reordering';
@@ -154,27 +155,13 @@ export const Scoreboard = ({scoreboard, nextQuestion, isEnd}) => {
                                         ? 20 + Math.abs(player.positionChange)
                                         : (isReordering && moved ? 2 : 1),
                                 }}
-                                className={`scoreboard-player ${index < 3 ? `scoreboard-top-${index + 1}` : ''} ${highlightClass}`}
+                                className={`scoreboard-player ${!hideTop3 && index === 0 ? 'scoreboard-top-1' : ''} ${highlightClass}`}
                             >
                                 <div className="player-left">
-                                    <span className={`player-rank ${index < 3 ? 'rank-podium' : ''}`}>
-                                        {index < 3
-                                            ? <FontAwesomeIcon icon={faTrophy} className={`trophy-icon trophy-${index + 1}`} />
-                                            : `#${index + 1}`
-                                        }
-                                    </span>
                                     <div className="player-character">
                                         {getCharacterEmoji(player.character)}
                                     </div>
-                                    <div className="player-name-section">
-                                        <h2>{player.name}</h2>
-                                        {player.positionChange !== 0 && (
-                                            <span className={`position-change ${player.positionChange > 0 ? 'pos-up' : 'pos-down'}`}>
-                                                <FontAwesomeIcon icon={player.positionChange > 0 ? faArrowUp : faArrowDown} />
-                                                {Math.abs(player.positionChange)}
-                                            </span>
-                                        )}
-                                    </div>
+                                    <h2 className="player-name">{player.name}</h2>
                                 </div>
                                 <div className="player-right">
                                     {hasRoundPoints && (
@@ -197,6 +184,11 @@ export const Scoreboard = ({scoreboard, nextQuestion, isEnd}) => {
                                             player.previousPoints
                                         )}
                                     </h2>
+                                    {rising && (
+                                        <span className="rise-indicator" aria-label={`${player.positionChange} Plätze nach oben`}>
+                                            <FontAwesomeIcon icon={faArrowUp} />
+                                        </span>
+                                    )}
                                 </div>
                             </motion.div>
                         );

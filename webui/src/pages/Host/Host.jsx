@@ -8,12 +8,13 @@ import {BrandingContext} from "@/common/contexts/Branding";
 import {motion} from "framer-motion";
 import Button from "@/common/components/Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faGamepad, faUser, faLock, faLockOpen, faTimes} from "@fortawesome/free-solid-svg-icons";
+import {faGamepad, faUser, faLock, faLockOpen} from "@fortawesome/free-solid-svg-icons";
 import {socket} from "@/common/utils/SocketUtil.js";
 import {getCharacterEmoji} from "@/common/data/characters";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import SoundRenderer from "@/common/components/SoundRenderer";
 import SoundControl from "@/common/components/SoundControl";
+import BackgroundChooser from "@/common/components/BackgroundChooser";
 import toast from "react-hot-toast";
 
 export const Host = () => {
@@ -189,22 +190,21 @@ export const Host = () => {
                         <motion.div
                             key={player.id}
                             className={`player ${player.disconnected ? 'disconnected' : ''}`}
-                            initial={{scale: 0}}
-                            animate={{scale: 1}}
+                            initial={{scale: 0, y: 20}}
+                            animate={{scale: 1, y: 0}}
+                            transition={{type: "spring", stiffness: 320, damping: 18}}
+                            onClick={() => kickPlayer(player)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); kickPlayer(player); } }}
+                            aria-label={`${player.name} entfernen`}
+                            title="Klicken zum Entfernen"
                         >
                             <div className="player-character">{getCharacterEmoji(player.character)}</div>
                             <h3>{player.name}</h3>
                             {player.disconnected && (
                                 <div className="disconnected-indicator" aria-label="Getrennt"></div>
                             )}
-                            <button
-                                type="button"
-                                className="kick-button"
-                                onClick={() => kickPlayer(player)}
-                                aria-label={`${player.name} entfernen`}
-                            >
-                                <FontAwesomeIcon icon={faTimes} aria-hidden="true" />
-                            </button>
                         </motion.div>
                     ))}
                 </div>
@@ -213,6 +213,7 @@ export const Host = () => {
             <motion.div className="system-ui" initial={{opacity: 0, y: 100}} animate={{opacity: 1, y: 0}}>
                 <Button icon={faUser} text={players.length} padding="0.5rem 0.8rem"/>
                 <SoundControl />
+                <BackgroundChooser />
             </motion.div>
             
             <SoundRenderer />

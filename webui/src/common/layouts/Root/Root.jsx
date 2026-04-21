@@ -1,4 +1,4 @@
-import {Outlet, useNavigate} from "react-router-dom";
+import {Outlet, useNavigate, useLocation} from "react-router-dom";
 import "./styles.sass";
 import Background from "@/common/components/Background";
 import {useContext, useEffect, useState} from "react";
@@ -10,7 +10,10 @@ import LoginDialog from "@/common/components/LoginDialog";
 export const Root = () => {
     const [circlePosition, setCirclePosition] = useState(["-25rem 0 0 -25rem", "-8rem 0 0 -8rem"]);
     const navigate = useNavigate();
+    const location = useLocation();
     const {showLoginDialog, handleLoginSuccess, closeLoginDialog} = useContext(AuthContext);
+
+    const isHostRoute = location.pathname.startsWith('/host');
 
     useEffect(() => {
         socket.connect();
@@ -49,14 +52,14 @@ export const Root = () => {
     return (
         <>
             <a href="#main-content" className="skip-to-content">Zum Inhalt springen</a>
-            <Background positionCircle={circlePosition}/>
+            <Background positionCircle={circlePosition} variant={isHostRoute ? 'host' : 'default'}/>
             <Toaster position="bottom-right" toastOptions={{duration: 4000}} />
             <LoginDialog
                 isOpen={showLoginDialog}
                 onClose={closeLoginDialog}
                 onSuccess={handleLoginSuccess}
             />
-            <main id="main-content">
+            <main id="main-content" className={isHostRoute ? 'host-theme' : ''}>
                 <Outlet context={{setCirclePosition}}/>
             </main>
         </>
