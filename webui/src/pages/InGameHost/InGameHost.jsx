@@ -12,6 +12,8 @@ import Scoreboard from "@/pages/InGameHost/components/Scoreboard";
 import AnswerResults from "@/pages/InGameHost/components/AnswerResults";
 import CountdownTimer from "@/pages/InGameHost/components/CountdownTimer";
 import {DoublePointsAnimation} from "@/pages/InGameHost/components/DoublePointsAnimation";
+import QuestionCountdown from "@/pages/InGameHost/components/QuestionCountdown";
+import QuestionTypeTeaser from "@/pages/InGameHost/components/QuestionTypeTeaser";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import SoundRenderer from "@/common/components/SoundRenderer";
 import SoundControl from "@/common/components/SoundControl";
@@ -32,6 +34,8 @@ export const InGameHost = () => {
     const [questionAnimationState, setQuestionAnimationState] = useState('hidden');
     const [timerActive, setTimerActive] = useState(false);
     const [showDoublePointsAnimation, setShowDoublePointsAnimation] = useState(false);
+    const [showQuestionCountdown, setShowQuestionCountdown] = useState(false);
+    const [showTypeTeaser, setShowTypeTeaser] = useState(false);
     const [answerProgress, setAnswerProgress] = useState({
         answeredCount: 0,
         activePlayerCount: 0,
@@ -79,6 +83,8 @@ export const InGameHost = () => {
             setAnswerData(null);
             setQuestionAnimationState('hidden');
             setTimerActive(false);
+            setShowQuestionCountdown(false);
+            setShowTypeTeaser(false);
             setAnswerProgress({answeredCount: 0, activePlayerCount: 0, voteCounts: null, answerLabels: null});
             lastAnsweredCountRef.current = 0;
 
@@ -120,11 +126,21 @@ export const InGameHost = () => {
                 }, 100);
 
                 setTimeout(() => {
+                    setShowTypeTeaser(true);
+                }, 600);
+
+                setTimeout(() => {
+                    setShowTypeTeaser(false);
+                    setShowQuestionCountdown(true);
+                }, 2600);
+
+                setTimeout(() => {
+                    setShowQuestionCountdown(false);
                     setQuestionAnimationState('answers-ready');
                     if (newQuestion.timer !== -1) {
                         setTimerActive(true);
                     }
-                }, 5100);
+                }, 5600);
             }
         } catch (e) {
             socket.emit("END_GAME", null, (data) => {
@@ -218,6 +234,10 @@ export const InGameHost = () => {
                 isVisible={showDoublePointsAnimation} 
                 onComplete={() => setShowDoublePointsAnimation(false)}
             />
+
+            <QuestionCountdown isActive={showQuestionCountdown} from={3} />
+
+            <QuestionTypeTeaser isActive={showTypeTeaser} type={currentQuestion?.type} />
 
             {gameState === 'question' && questionAnimationState === 'answers-ready' && currentQuestion && (
                 <CountdownTimer

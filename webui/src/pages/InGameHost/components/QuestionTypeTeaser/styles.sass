@@ -1,0 +1,186 @@
+@use "@/common/styles/colors" as *
+
+.type-teaser-overlay
+  position: fixed
+  inset: 0
+  display: flex
+  align-items: center
+  justify-content: center
+  z-index: 280
+  pointer-events: none
+  background: rgba(0, 0, 0, 0.45)
+  backdrop-filter: blur(6px)
+  -webkit-backdrop-filter: blur(6px)
+  animation: type-teaser-fade 0.25s ease-out
+
+@keyframes type-teaser-fade
+  from
+    opacity: 0
+  to
+    opacity: 1
+
+.type-teaser-card
+  background: #2d2940
+  border-radius: 1.5rem
+  padding: 1.75rem
+  box-shadow: 0 14px 0 rgba(0, 0, 0, 0.22), 0 30px 60px rgba(0, 0, 0, 0.4)
+  display: flex
+  align-items: center
+  justify-content: center
+
+  &.mc
+    width: 22rem
+    height: 22rem
+
+  &.tf
+    width: 26rem
+    height: 16rem
+    gap: 1.25rem
+
+  &.text
+    width: 24rem
+    height: 12rem
+
+  &.sequence
+    width: 20rem
+    height: 22rem
+    flex-direction: column
+    gap: 0.9rem
+    padding: 1.5rem
+
+  &.slider
+    width: 28rem
+    height: 10rem
+    padding: 2rem
+
+.mc-grid
+  display: grid
+  grid-template-columns: 1fr 1fr
+  grid-template-rows: 1fr 1fr
+  gap: 0.9rem
+  width: 100%
+  height: 100%
+
+.mc-tile
+  border-radius: 0.65rem
+  display: flex
+  align-items: center
+  justify-content: center
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25)
+
+  svg
+    width: 48%
+    height: 48%
+
+.tf-tile
+  width: 10rem
+  height: 10rem
+  border-radius: 1rem
+  display: flex
+  align-items: center
+  justify-content: center
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25)
+
+  svg
+    width: 55%
+    height: 55%
+
+.tf-true
+  background: $green
+
+.tf-false
+  background: $red
+  margin-left: 1.25rem
+
+.text-line
+  display: flex
+  align-items: center
+  gap: 0.4rem
+  font-size: 4rem
+  font-weight: 900
+  color: white
+  font-family: monospace, 'Courier New'
+
+.text-char
+  display: inline-block
+
+.text-caret
+  display: inline-block
+  width: 0.35rem
+  height: 4rem
+  background: white
+  border-radius: 2px
+  margin-left: 0.25rem
+
+.seq-bar
+  width: 100%
+  height: 2.5rem
+  border-radius: 0.6rem
+  display: flex
+  align-items: center
+  padding: 0 1rem
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25)
+
+.seq-num
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  width: 1.75rem
+  height: 1.75rem
+  border-radius: 50%
+  background: white
+  color: #2d2940
+  font-weight: 900
+  font-size: 1.1rem
+
+.slider-track
+  position: relative
+  width: 100%
+  height: 1rem
+  background: #44405a
+  border-radius: 1rem
+  overflow: visible
+
+.slider-fill
+  position: absolute
+  inset: 0 auto 0 0
+  background: $primary
+  border-radius: 1rem
+
+.slider-knob
+  position: absolute
+  top: 50%
+  width: 2.5rem
+  height: 2.5rem
+  background: white
+  border-radius: 50%
+  transform: translate(-50%, -50%)
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25)
+
+@media (max-width: 768px)
+  .type-teaser-card
+    &.mc
+      width: 16rem
+      height: 16rem
+    &.tf
+      width: 20rem
+      height: 12rem
+    &.text
+      width: 18rem
+      height: 10rem
+    &.sequence
+      width: 16rem
+      height: 18rem
+    &.slider
+      width: 20rem
+      height: 8rem
+
+  .tf-tile
+    width: 7rem
+    height: 7rem
+
+  .text-line
+    font-size: 3rem
+
+  .text-caret
+    height: 3rem

@@ -1,0 +1,56 @@
+@use "@/common/styles/colors" as *
+
+.question-countdown-overlay
+  position: fixed
+  inset: 0
+  display: flex
+  align-items: center
+  justify-content: center
+  z-index: 300
+  pointer-events: none
+  background: rgba(0, 0, 0, 0.45)
+  backdrop-filter: blur(6px)
+  -webkit-backdrop-filter: blur(6px)
+  animation: question-countdown-fade 0.25s ease-out
+
+@keyframes question-countdown-fade
+  from
+    opacity: 0
+  to
+    opacity: 1
+
+.question-countdown-stack
+  position: relative
+  width: 16rem
+  height: 16rem
+  display: flex
+  align-items: center
+  justify-content: center
+
+.question-countdown-diamond
+  position: absolute
+  inset: 0
+  background: $orange
+  border-radius: 1rem
+  transform-origin: center
+  transform: rotate(45deg)
+  transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1)
+
+.question-countdown-number
+  position: absolute
+  inset: 0
+  display: flex
+  align-items: center
+  justify-content: center
+  font-size: 9rem
+  font-weight: 900
+  color: white
+  line-height: 1
+
+@media (max-width: 768px)
+  .question-countdown-stack
+    width: 11rem
+    height: 11rem
+
+  .question-countdown-number
+    font-size: 6rem
