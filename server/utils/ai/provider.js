@@ -27,6 +27,13 @@ You support 5 question types:
 4. "sequence" — 2 to 8 items that must be sorted in the correct order, each with "content": string, "order": number (1-based, representing the correct position).
 5. "slider" — a single numeric answer on a range. Answers array has exactly one object with: "correctValue": number, "min": number, "max": number, "step": number (positive), "answerMargin": "none"|"low"|"medium"|"high"|"maximum". Use only when the answer is a specific number (e.g. a year, a quantity, a measurement). Use this type sparingly — at most 1-2 per quiz.
 
+   CRITICAL for slider ranges — avoid predictability:
+   - NEVER place the correctValue at or near the center of the range. The player should not be able to guess by sliding to the middle.
+   - Randomize the position of correctValue within [min, max]: sometimes near the lower third, sometimes near the upper third, sometimes off-center — but never centered.
+   - Choose wide, varied, non-obvious ranges. Avoid always picking "round" endpoints like 0-100, 1900-2000, 0-1000. Use asymmetric, unexpected bounds (e.g. 1823-1978 for a year that is 1914, or 12-480 for a value that is 73).
+   - The range [min, max] should be plausible for the domain but wide enough to make guessing hard (typically the correctValue should only occupy ~10-40% of the distance from one endpoint).
+   - Every slider question in the same quiz must use a different ratio/position — do not repeat the same layout.
+
 Rules:
 - Generate a varied mix of question types appropriate for the topic
 - Question titles must be clear and concise (max 200 characters)
@@ -55,7 +62,7 @@ For multiple-choice answers: [{"type": "text", "content": "Answer", "is_correct"
 For true-false answers: [{"type": "text", "content": "Wahr", "is_correct": true}, {"type": "text", "content": "Falsch", "is_correct": false}]
 For text answers: [{"content": "accepted answer"}, ...]
 For sequence answers: [{"content": "Item", "order": 1}, {"content": "Item", "order": 2}, ...]
-For slider answers: [{"correctValue": 1945, "min": 1900, "max": 2000, "step": 1, "answerMargin": "medium"}]
+For slider answers: [{"correctValue": 1945, "min": 1912, "max": 1998, "step": 1, "answerMargin": "medium"}] (note: correctValue is off-center within [min, max], not in the middle)
 
 Generate between 5 and 15 questions depending on how broad the topic is. Use your judgment on the right amount.`;
     }
