@@ -83,7 +83,7 @@ export const QuizProvider = ({children}) => {
 
         if (settings.shuffleAnswers) {
             processedQuestions = processedQuestions.map(q => {
-                if (q.type === 'multiple-choice' || q.type === 'true-false') {
+                if (q.type === 'multiple-choice') {
                     return {...q, answers: randomizeArray(q.answers)};
                 }
                 return q;

@@ -18,6 +18,12 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
         return () => clearTimeout(timer);
     }, [soundManager]);
 
+    const getTrueFalseColor = (answer) => {
+        const content = answer.content?.toString().toLowerCase();
+        if (content === 'true' || content === 'wahr' || content === 'richtig') return "#1C945A";
+        return "#EC5555";
+    }
+
     const getColorByIndex = (index) => {
         switch (index) {
             case 1:
@@ -29,6 +35,11 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
             default:
                 return "#FFA500";
         }
+    }
+
+    const getAnswerColor = (answer, index) => {
+        if (question.type === QUESTION_TYPES.TRUE_FALSE) return getTrueFalseColor(answer);
+        return getColorByIndex(index);
     }
 
     const getTextSize = (content) => {
@@ -192,7 +203,7 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
                                 <motion.div
                                     className={`vote-bar ${isCorrect ? 'correct' : ''}`}
                                     style={{
-                                        backgroundColor: getColorByIndex(index),
+                                        backgroundColor: getAnswerColor(answer, index),
                                         height: `${barHeight}%`
                                     }}
                                     initial={{height: 0}}
@@ -214,7 +225,7 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
                             {answer.type === "text" && (
                                 <motion.div
                                     className="text-answer"
-                                    style={{backgroundColor: getColorByIndex(index)}}
+                                    style={{backgroundColor: getAnswerColor(answer, index)}}
                                     initial={{scale: 0}}
                                     animate={{scale: 1}}
                                     transition={{duration: 0.2, delay: 1.8 + index * 0.05}}
@@ -246,7 +257,7 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
                                         initial={{scale: 0}}
                                         animate={{scale: 1}}
                                         transition={{duration: 0.2, delay: 1.8 + index * 0.05}}
-                                        style={{border: `5px solid ${getColorByIndex(index)}`}}
+                                        style={{border: `5px solid ${getAnswerColor(answer, index)}`}}
                                     />
                                     {isCorrect && (
                                         <motion.div

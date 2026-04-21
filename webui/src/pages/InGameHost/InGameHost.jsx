@@ -226,7 +226,7 @@ export const InGameHost = () => {
                         {questionAnimationState === 'answers-ready' && currentQuestion.type !== QUESTION_TYPES.TEXT && currentQuestion.type !== QUESTION_TYPES.SEQUENCE && currentQuestion.type !== QUESTION_TYPES.SLIDER && (
                             <div className={`answer-list ${questionAnimationState}`}>
                                 {currentQuestion.answers.map((answer, index) => <Answer key={index} answer={answer}
-                                                                                        index={index}/>)}
+                                                                                        index={index} questionType={currentQuestion.type}/>)}
                             </div>
                         )}
 

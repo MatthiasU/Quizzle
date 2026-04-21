@@ -1,7 +1,14 @@
 import {motion} from "framer-motion";
 import "./styles.sass";
+import {QUESTION_TYPES} from "@/common/constants/QuestionTypes.js";
 
-export const Answer = ({answer, index}) => {
+export const Answer = ({answer, index, questionType}) => {
+
+    const getTrueFalseColor = (answer) => {
+        const content = answer.content?.toString().toLowerCase();
+        if (content === 'true' || content === 'wahr' || content === 'richtig') return "#1C945A";
+        return "#EC5555";
+    }
 
     const getColorByIndex = (index) => {
         switch (index) {
@@ -14,6 +21,11 @@ export const Answer = ({answer, index}) => {
             default:
                 return "#FFA500";
         }
+    }
+
+    const getColor = () => {
+        if (questionType === QUESTION_TYPES.TRUE_FALSE) return getTrueFalseColor(answer);
+        return getColorByIndex(index);
     }
 
     const getTextSize = (content) => {
@@ -31,7 +43,7 @@ export const Answer = ({answer, index}) => {
     return (
         <>
             {answer.type === "text" && (
-                <motion.div className="text-answer" style={{backgroundColor: getColorByIndex(index)}}
+                <motion.div className="text-answer" style={{backgroundColor: getColor()}}
                             initial={{scale: 0}} animate={{scale: 1}} transition={{duration: 0.2,delay: index * 0.05}}>
                     <h2 style={{fontSize: getTextSize(answer.content)}}>{answer.content}</h2>
                 </motion.div>
@@ -39,7 +51,7 @@ export const Answer = ({answer, index}) => {
             {answer.type === "image" && (
                 <motion.img src={answer.content} alt="Answer" className="image-answer"
                             initial={{scale: 0}} animate={{scale: 1}} transition={{duration: 0.2,delay: index * 0.05}}
-                        style={{border: `5px solid ${getColorByIndex(index)}`}}/>
+                        style={{border: `5px solid ${getColor()}`}}/>
             )}
         </>
     )
