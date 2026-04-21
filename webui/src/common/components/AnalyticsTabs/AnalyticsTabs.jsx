@@ -1,40 +1,18 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartPie, faUsers, faQuestionCircle, faGraduationCap } from '@fortawesome/free-solid-svg-icons';
+import { faChartPie, faUsers, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 import ClassOverview from '../ClassOverview';
 import StudentAnalytics from '../StudentAnalytics';
 import QuestionAnalytics from '../QuestionAnalytics';
-import RecommendationsTab from '../RecommendationsTab';
 import './styles.sass';
 
 const AnalyticsTabs = ({ analyticsData, quizData, isLiveQuiz = false }) => {
     const [activeTab, setActiveTab] = useState('overview');
 
     const tabs = [
-        {
-            id: 'overview',
-            title: 'Übersicht',
-            icon: faChartPie,
-            component: ClassOverview
-        },
-        {
-            id: 'students',
-            title: 'Schüler',
-            icon: faUsers,
-            component: StudentAnalytics
-        },
-        {
-            id: 'questions',
-            title: 'Fragen',
-            icon: faQuestionCircle,
-            component: QuestionAnalytics
-        },
-        {
-            id: 'recommendations',
-            title: 'Hinweise',
-            icon: faGraduationCap,
-            component: RecommendationsTab
-        }
+        {id: 'overview', title: 'Übersicht', icon: faChartPie, component: ClassOverview},
+        {id: 'students', title: 'Schüler', icon: faUsers, component: StudentAnalytics},
+        {id: 'questions', title: 'Fragen', icon: faQuestionCircle, component: QuestionAnalytics}
     ];
 
     const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component;

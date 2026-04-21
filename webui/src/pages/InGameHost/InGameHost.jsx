@@ -18,8 +18,6 @@ import {useSoundManager} from "@/common/utils/SoundManager.js";
 import SoundRenderer from "@/common/components/SoundRenderer";
 import SoundControl from "@/common/components/SoundControl";
 import {QUESTION_TYPES} from "@/common/constants/QuestionTypes.js";
-import AnswerShape from "@/common/components/AnswerShape";
-import {getAnswerColor} from "@/common/utils/AnswerColorUtil.js";
 
 export const InGameHost = () => {
     const {isLoaded, pullNextQuestion, scoreboard, setScoreboard, playerCount, setPlayerCount} = useContext(QuizContext);
@@ -38,9 +36,7 @@ export const InGameHost = () => {
     const [showTypeTeaser, setShowTypeTeaser] = useState(false);
     const [answerProgress, setAnswerProgress] = useState({
         answeredCount: 0,
-        activePlayerCount: 0,
-        voteCounts: null,
-        answerLabels: null
+        activePlayerCount: 0
     });
 
     const skipQuestion = async () => {
@@ -85,7 +81,7 @@ export const InGameHost = () => {
             setTimerActive(false);
             setShowQuestionCountdown(false);
             setShowTypeTeaser(false);
-            setAnswerProgress({answeredCount: 0, activePlayerCount: 0, voteCounts: null, answerLabels: null});
+            setAnswerProgress({answeredCount: 0, activePlayerCount: 0});
             lastAnsweredCountRef.current = 0;
 
             if (!inGameMusicRef.current && (gameState === 'answer-results' || gameState === 'scoreboard')) {
@@ -201,9 +197,7 @@ export const InGameHost = () => {
             lastAnsweredCountRef.current = newCount;
             setAnswerProgress({
                 answeredCount: newCount,
-                activePlayerCount: data.activePlayerCount || 0,
-                voteCounts: data.voteCounts || null,
-                answerLabels: data.answerLabels || null
+                activePlayerCount: data.activePlayerCount || 0
             });
         });
 
@@ -281,22 +275,6 @@ export const InGameHost = () => {
                                     <span className="answer-progress-number">{answerProgress.answeredCount}</span>
                                     <span className="answer-progress-label">Antworten</span>
                                 </div>
-                                {answerProgress.voteCounts && Array.isArray(currentQuestion.answers) && (
-                                    <div className="answer-progress-list">
-                                        {currentQuestion.answers.map((answer, idx) => {
-                                            const label = answerProgress.answerLabels?.[idx] ?? answer.content;
-                                            if (!label) return null;
-                                            return (
-                                                <div key={idx} className="answer-progress-item"
-                                                     style={{background: getAnswerColor(answer, idx, currentQuestion.type)}}>
-                                                    <AnswerShape index={idx} size="1.1rem" questionType={currentQuestion.type}/>
-                                                    <span className="answer-progress-text">{label}</span>
-                                                    <span className="answer-progress-count">{answerProgress.voteCounts[idx] || 0}</span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
                             </div>
                         )}
 

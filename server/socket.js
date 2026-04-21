@@ -502,33 +502,10 @@ module.exports = (io, socket) => {
             const activePlayers = getActivePlayers(room, io);
             const currentAnswers = playerAnswers[playerAnswers.length - 1];
 
-            let voteCounts = null;
-            let answerLabels = null;
-            const qType = room.currentQuestion?.type;
-            if (qType === 'multiple' || qType === 'single' || qType === 'true-false' || qType === 'true_false') {
-                const answerSlotCount = Array.isArray(room.currentQuestion.answers)
-                    ? room.currentQuestion.answers.length
-                    : (typeof room.currentQuestion.answers === 'number' ? room.currentQuestion.answers : 0);
-                voteCounts = new Array(answerSlotCount).fill(0);
-                Object.values(currentAnswers).forEach(playerAnswers => {
-                    if (Array.isArray(playerAnswers)) {
-                        playerAnswers.forEach(idx => {
-                            if (idx >= 0 && idx < voteCounts.length) voteCounts[idx]++;
-                        });
-                    }
-                });
-                const historyEntry = room.questionHistory[room.questionHistory.length - 1];
-                if (historyEntry && Array.isArray(historyEntry.answers)) {
-                    answerLabels = historyEntry.answers.map(a => (a && a.type !== 'image' ? a.content : null));
-                }
-            }
-
             io.to(room.host).emit('ANSWER_PROGRESS', {
                 answeredCount: Object.keys(currentAnswers).length,
                 activePlayerCount: Object.keys(activePlayers).length,
-                totalPlayerCount: Object.keys(room.players).length,
-                voteCounts,
-                answerLabels
+                totalPlayerCount: Object.keys(room.players).length
             });
         }
 

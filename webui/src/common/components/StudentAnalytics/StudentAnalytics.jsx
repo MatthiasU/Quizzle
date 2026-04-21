@@ -1,145 +1,54 @@
 import React, {useState} from 'react';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {
-    faCheck,
-    faTimes,
-    faSort,
-    faExclamationTriangle
-} from '@fortawesome/free-solid-svg-icons';
 import {getCharacterEmoji} from '@/common/data/characters';
 import './styles.sass';
 
 const StudentAnalytics = ({analyticsData, isLiveQuiz}) => {
     const {studentAnalytics} = analyticsData;
-    const [sortBy, setSortBy] = useState('accuracy');
-    const [sortOrder, setSortOrder] = useState('desc');
+    const [sortBy, setSortBy] = useState(isLiveQuiz ? 'totalPoints' : 'accuracy');
 
-    const sortedStudents = [...studentAnalytics].sort((a, b) => {
-        const aValue = a[sortBy];
-        const bValue = b[sortBy];
+    const sorted = [...studentAnalytics].sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0));
 
-        if (sortOrder === 'asc') {
-            return aValue - bValue;
-        } else {
-            return bValue - aValue;
-        }
-    });
-
-    const handleSort = (field) => {
-        if (sortBy === field) {
-            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortBy(field);
-            setSortOrder('desc');
-        }
-    };
-
-    const getPerformanceLevel = (accuracy) => {
-        if (accuracy >= 80) return {level: 'excellent', color: 'green', text: 'Gut'};
-        if (accuracy >= 60) return {level: 'good', color: 'orange', text: 'OK'};
-        return {level: 'needs-improvement', color: 'red', text: 'Hilfe'};
-    };
-
-    const needsAttention = studentAnalytics.filter(s => s.needsAttention);
+    const accuracyLevel = (acc) => acc >= 80 ? 'green' : acc >= 60 ? 'orange' : 'red';
 
     return (
         <div className="student-analytics">
-            <div className="students-table">
-                <div className="table-header">
-                    <div className="col-student">Schüler</div>
-                    <div
-                        className="col-accuracy sortable"
-                        onClick={() => handleSort('accuracy')}
-                    >
-                        Genauigkeit
-                        <FontAwesomeIcon icon={faSort}/>
-                    </div>
-                    <div
-                        className="col-correct sortable"
-                        onClick={() => handleSort('correctAnswers')}
-                    >
-                        Richtig
-                        <FontAwesomeIcon icon={faSort}/>
-                    </div>
-                    <div className="col-incorrect">Falsch</div>
-                    {isLiveQuiz && (
-                        <div
-                            className="col-points sortable"
-                            onClick={() => handleSort('totalPoints')}
-                        >
-                            Punkte
-                            <FontAwesomeIcon icon={faSort}/>
-                        </div>
-                    )}
-                    <div className="col-status">Status</div>
-                </div>
+            <div className="sa-toolbar">
+                <button className={sortBy === 'accuracy' ? 'active' : ''} onClick={() => setSortBy('accuracy')}>Nach Genauigkeit</button>
+                <button className={sortBy === 'correctAnswers' ? 'active' : ''} onClick={() => setSortBy('correctAnswers')}>Nach Richtigen</button>
+                {isLiveQuiz && (
+                    <button className={sortBy === 'totalPoints' ? 'active' : ''} onClick={() => setSortBy('totalPoints')}>Nach Punkten</button>
+                )}
+            </div>
 
-                {sortedStudents.map((student) => {
-                    const performance = getPerformanceLevel(student.accuracy);
+            <div className="sa-list">
+                {sorted.map((student, idx) => {
+                    const level = accuracyLevel(student.accuracy);
                     return (
-                        <div key={student.id} className={`table-row ${performance.level}`}>
-                            <div className="col-student">
-                                <span className="student-character">
-                                    {getCharacterEmoji(student.character)}
-                                </span>
-                                <span className="student-name">{student.name}</span>
-                                {student.needsAttention && (
-                                    <FontAwesomeIcon
-                                        icon={faExclamationTriangle}
-                                        className="attention-icon"
-                                    />
-                                )}
-                            </div>
-                            <div className="col-accuracy">
-                                <div className="accuracy-bar">
-                                    <div
-                                        className={`accuracy-fill ${performance.level}`}
-                                        style={{width: `${student.accuracy}%`}}
-                                    />
-                                    <span className="accuracy-text">{student.accuracy}%</span>
+                        <div key={student.id} className="sa-row">
+                            <div className="sa-rank">{idx + 1}</div>
+                            <div className="sa-character">{getCharacterEmoji(student.character)}</div>
+                            <div className="sa-name">{student.name}</div>
+
+                            <div className="sa-bar-wrap">
+                                <div className="sa-bar">
+                                    <div className={`sa-bar-fill ${level}`} style={{width: `${student.accuracy}%`}}/>
                                 </div>
+                                <div className={`sa-accuracy ${level}`}>{student.accuracy}%</div>
                             </div>
-                            <div className="col-correct">
-                                <FontAwesomeIcon icon={faCheck} className="correct"/>
-                                {student.correctAnswers}
+
+                            <div className="sa-counts">
+                                <span className="correct">{student.correctAnswers}</span>
+                                <span className="sep">/</span>
+                                <span className="incorrect">{student.incorrectAnswers}</span>
                             </div>
-                            <div className="col-incorrect">
-                                <FontAwesomeIcon icon={faTimes} className="incorrect"/>
-                                {student.incorrectAnswers}
-                            </div>
+
                             {isLiveQuiz && (
-                                <div className="col-points">
-                                    {student.totalPoints}
-                                </div>
+                                <div className="sa-points">{student.totalPoints?.toLocaleString?.() ?? student.totalPoints}</div>
                             )}
-                            <div className={`col-status ${performance.level}`}>
-                                {performance.text}
-                            </div>
                         </div>
                     );
                 })}
             </div>
-
-            {needsAttention.length > 0 && (
-                <div className="attention-section">
-                    <h3>
-                        <FontAwesomeIcon icon={faExclamationTriangle}/>
-                        Benötigen Hilfe ({needsAttention.length})
-                    </h3>
-                    <div className="attention-list">
-                        {needsAttention.map(student => (
-                            <div key={student.id} className="attention-item">
-                                <span className="student-info">
-                                    {getCharacterEmoji(student.character)} {student.name}
-                                </span>
-                                <span className="student-stats">
-                                    {student.accuracy}%
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
