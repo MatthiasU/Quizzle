@@ -10,6 +10,22 @@
   z-index: -1
   pointer-events: none
 
+.background-container.host-bg
+  background-color: $primary
+
+  .host-bg-image
+    position: absolute
+    inset: 0
+    background-size: cover
+    background-position: center
+    background-repeat: no-repeat
+    transition: background-image 0.35s ease
+
+  .host-bg-overlay
+    position: absolute
+    inset: 0
+    background: linear-gradient(180deg, color-mix(in srgb, #{$primary} 25%, transparent) 0%, color-mix(in srgb, #{$primary} 45%, transparent) 100%)
+
 .circle-tl
   position: fixed
   top: -25rem

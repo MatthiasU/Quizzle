@@ -1,7 +1,22 @@
 import "./styles.sass";
 import {motion} from "framer-motion";
+import {useHostBackground} from "@/common/hooks/useHostBackground";
 
-export const Background = ({positionCircle}) => {
+export const Background = ({positionCircle, variant = 'default'}) => {
+    const [, , hostBg] = useHostBackground();
+
+    if (variant === 'host') {
+        return (
+            <div className="background-container host-bg">
+                <div
+                    className="host-bg-image"
+                    style={{backgroundImage: `url(${hostBg.image})`}}
+                />
+                <div className="host-bg-overlay"/>
+            </div>
+        );
+    }
+
     return (
         <div className="background-container">
             <div className="gradient-background"/>

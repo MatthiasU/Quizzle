@@ -1,0 +1,80 @@
+@use "@/common/styles/colors" as *
+
+.background-chooser
+  position: relative
+  display: inline-flex
+
+.bg-chooser-backdrop
+  position: fixed
+  inset: 0
+  background: rgba(0, 0, 0, 0.35)
+  z-index: 200
+
+.bg-chooser-panel
+  position: fixed
+  bottom: 5rem
+  left: 1rem
+  z-index: 201
+  background: white
+  color: #1a1a1a
+  padding: 1.25rem
+  border-radius: 0.75rem
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.12), 0 20px 48px rgba(0, 0, 0, 0.35)
+  width: 32rem
+  max-width: calc(100vw - 2rem)
+
+  h3
+    margin: 0 0 1rem
+    font-size: 1.2rem
+    font-weight: 800
+    color: $primary
+
+.bg-chooser-grid
+  display: grid
+  grid-template-columns: repeat(3, 1fr)
+  gap: 0.75rem
+
+.bg-chooser-tile
+  position: relative
+  display: flex
+  flex-direction: column
+  align-items: stretch
+  padding: 0
+  background: transparent
+  border: 3px solid transparent
+  border-radius: 0.5rem
+  cursor: pointer
+  overflow: hidden
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.12)
+
+  &:hover, &:focus-visible
+    transform: translateY(-2px)
+    border-color: color-mix(in srgb, #{$primary} 45%, transparent)
+
+  &.selected
+    background: $primary
+    border-color: $primary
+    box-shadow: 0 0 0 2px $primary, 0 4px 0 rgba(0, 0, 0, 0.15), 0 6px 14px rgba(0, 0, 0, 0.18)
+
+    .bg-chooser-label
+      background: $primary
+      color: white
+
+.bg-chooser-preview
+  width: 100%
+  aspect-ratio: 16 / 10
+  background-size: cover
+  background-position: center
+  background-color: $primary
+
+.bg-chooser-label
+  display: block
+  margin-top: -1px
+  padding: 0.4rem 0.5rem
+  font-size: 0.85rem
+  font-weight: 700
+  text-align: center
+  color: #1a1a1a
+  background: white
+  transition: background 0.12s ease, color 0.12s ease
