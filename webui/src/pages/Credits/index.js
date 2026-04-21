@@ -1,0 +1,1 @@
+export { Credits as default } from "./Credits.jsx";

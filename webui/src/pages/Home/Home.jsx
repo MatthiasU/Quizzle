@@ -204,6 +204,7 @@ export const Home = () => {
             <motion.div className="legal-area" initial={{opacity: 0, y: 50}} animate={{opacity: 1, y: 0}}>
                 <a href={imprint} target="_blank" rel="noreferrer">Impressum</a>
                 <a href={privacy} target="_blank" rel="noreferrer">Datenschutz</a>
+                <a href="/credits" onClick={(e) => { e.preventDefault(); navigate('/credits'); }}>Credits</a>
                 {version && <span className="version">v{version}</span>}
             </motion.div>
 
