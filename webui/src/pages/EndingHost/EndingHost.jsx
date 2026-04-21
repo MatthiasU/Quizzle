@@ -9,6 +9,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChartBar, faTrophy, faDownload} from "@fortawesome/free-solid-svg-icons";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import SoundRenderer from "@/common/components/SoundRenderer";
+import SoundControl from "@/common/components/SoundControl";
 import {exportLiveQuizToExcel} from "@/common/utils/ExcelExport";
 import toast from "react-hot-toast";
 
@@ -69,6 +70,9 @@ export const EndingHost = () => {
     return (
         <div className="ending-page">
             <SoundRenderer/>
+            <div className="ending-sound-control">
+                <SoundControl />
+            </div>
 
             <div className="view-toggle" role="tablist" aria-label="Ansicht wechseln">
                 {viewTabs.map(tab => (

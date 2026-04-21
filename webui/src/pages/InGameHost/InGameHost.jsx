@@ -7,17 +7,18 @@ import Answer from "@/pages/InGameHost/components/Answer";
 import "./styles.sass";
 import Question from "@/pages/InGameHost/components/Question";
 import Button from "@/common/components/Button";
-import {faForward} from "@fortawesome/free-solid-svg-icons";
+import {faForward, faUser} from "@fortawesome/free-solid-svg-icons";
 import Scoreboard from "@/pages/InGameHost/components/Scoreboard";
 import AnswerResults from "@/pages/InGameHost/components/AnswerResults";
 import CountdownTimer from "@/pages/InGameHost/components/CountdownTimer";
 import {DoublePointsAnimation} from "@/pages/InGameHost/components/DoublePointsAnimation";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import SoundRenderer from "@/common/components/SoundRenderer";
+import SoundControl from "@/common/components/SoundControl";
 import {QUESTION_TYPES} from "@/common/constants/QuestionTypes.js";
 
 export const InGameHost = () => {
-    const {isLoaded, pullNextQuestion, scoreboard, setScoreboard} = useContext(QuizContext);
+    const {isLoaded, pullNextQuestion, scoreboard, setScoreboard, playerCount, setPlayerCount} = useContext(QuizContext);
     const navigate = useNavigate();
     const soundManager = useSoundManager();
     const inGameMusicRef = useRef(null);
@@ -149,6 +150,7 @@ export const InGameHost = () => {
         socket.on("PLAYER_LEFT", (player) => {
             toast.error(`${player.name} hat das Spiel verlassen`);
             soundManager.playFeedback('PLAYER_LEFT');
+            setPlayerCount(count => Math.max(0, count - 1));
         });
 
         socket.on("ANSWERS_RECEIVED", (data) => {
@@ -181,6 +183,10 @@ export const InGameHost = () => {
     return (
         <div>
             <SoundRenderer />
+            <div className="ingame-sound-control">
+                <Button icon={faUser} text={playerCount} padding="0.5rem 0.8rem"/>
+                <SoundControl />
+            </div>
 
             <DoublePointsAnimation 
                 isVisible={showDoublePointsAnimation} 

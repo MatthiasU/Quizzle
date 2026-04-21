@@ -8,17 +8,18 @@ import {BrandingContext} from "@/common/contexts/Branding";
 import {motion} from "framer-motion";
 import Button from "@/common/components/Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faGamepad, faUser, faVolumeMute, faVolumeUp, faLock, faLockOpen, faTimes} from "@fortawesome/free-solid-svg-icons";
+import {faGamepad, faUser, faLock, faLockOpen, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {socket} from "@/common/utils/SocketUtil.js";
 import {getCharacterEmoji} from "@/common/data/characters";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import SoundRenderer from "@/common/components/SoundRenderer";
+import SoundControl from "@/common/components/SoundControl";
 import toast from "react-hot-toast";
 
 export const Host = () => {
     const navigate = useNavigate();
     const {setCirclePosition} = useOutletContext();
-    const {isLoaded, quizRaw, soundEnabled, toggleSound} = useContext(QuizContext);
+    const {isLoaded, quizRaw, setPlayerCount} = useContext(QuizContext);
     const {titleImg} = useContext(BrandingContext);
     const soundManager = useSoundManager();
     const [qrShown, setQrShown] = useState(false);
@@ -27,6 +28,10 @@ export const Host = () => {
     const [players, setPlayers] = useState([]);
     const [lobbyAmbientId, setLobbyAmbientId] = useState(null);
     const [roomLocked, setRoomLocked] = useState(false);
+
+    useEffect(() => {
+        setPlayerCount(players.filter(p => !p.disconnected).length);
+    }, [players, setPlayerCount]);
 
     const getJoinUrl = () => {
         return window.location.href.split("/host")[0]
@@ -207,12 +212,7 @@ export const Host = () => {
 
             <motion.div className="system-ui" initial={{opacity: 0, y: 100}} animate={{opacity: 1, y: 0}}>
                 <Button icon={faUser} text={players.length} padding="0.5rem 0.8rem"/>
-                <Button 
-                    icon={soundEnabled ? faVolumeUp : faVolumeMute} 
-                    padding="0.5rem 0.8rem"
-                    onClick={toggleSound}
-                    variant={soundEnabled ? "primary" : "secondary"}
-                />
+                <SoundControl />
             </motion.div>
             
             <SoundRenderer />

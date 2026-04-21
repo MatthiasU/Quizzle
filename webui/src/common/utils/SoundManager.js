@@ -33,6 +33,7 @@ const SOUNDS = {
 class SoundManager {
     constructor() {
         this.soundEnabled = this.loadSoundEnabledFromStorage();
+        this.masterVolume = this.loadMasterVolumeFromStorage();
         this.currentlyPlaying = new Map();
         this.volume = 50;
         this.listeners = new Set();
@@ -55,6 +56,14 @@ class SoundManager {
         return stored !== null ? JSON.parse(stored) : true;
     }
 
+    loadMasterVolumeFromStorage() {
+        const stored = localStorage.getItem('quizzle_master_volume');
+        if (stored === null) return 100;
+        const parsed = Number(stored);
+        if (Number.isNaN(parsed)) return 100;
+        return Math.max(0, Math.min(100, parsed));
+    }
+
     setSoundEnabled(enabled) {
         this.soundEnabled = enabled;
         localStorage.setItem('quizzle_sound_enabled', JSON.stringify(enabled));
@@ -66,8 +75,20 @@ class SoundManager {
         return this.soundEnabled;
     }
 
+    setMasterVolume(volume) {
+        const clamped = Math.max(0, Math.min(100, Number(volume) || 0));
+        this.masterVolume = clamped;
+        localStorage.setItem('quizzle_master_volume', String(clamped));
+        this.updateAllSoundsVolume();
+    }
+
+    getMasterVolume() {
+        return this.masterVolume;
+    }
+
     getEffectiveVolume(originalVolume) {
-        return this.soundEnabled ? originalVolume : 0;
+        if (!this.soundEnabled) return 0;
+        return originalVolume * (this.masterVolume / 100);
     }
 
     updateAllSoundsVolume() {

@@ -15,7 +15,15 @@ export const QuizProvider = ({children}) => {
     const [roomCode, setRoomCode] = useState(null);
     const [username, setUsername] = useState("");
     const [soundEnabled, setSoundEnabled] = useState(() => soundManager.getSoundEnabled());
+    const [masterVolume, setMasterVolumeState] = useState(() => soundManager.getMasterVolume());
+    const [playerCount, setPlayerCount] = useState(0);
     const [practiceUserData, setPracticeUserData] = useState(null);
+
+    const setMasterVolume = (volume) => {
+        const clamped = Math.max(0, Math.min(100, Number(volume) || 0));
+        setMasterVolumeState(clamped);
+        soundManager.setMasterVolume(clamped);
+    };
 
     useEffect(() => {
         const sessionData = getSessionData();
@@ -147,7 +155,7 @@ export const QuizProvider = ({children}) => {
     return (
         <QuizContext.Provider value={{isLoaded, loadQuizById, loadQuizByContent, quizRaw: quiz, pullNextQuestion,
             scoreboard, setScoreboard, roomCode, setRoomCode, username, setUsername, soundEnabled, setSoundEnabled, toggleSound,
-            practiceUserData, setPracticeUserData}}>
+            masterVolume, setMasterVolume, playerCount, setPlayerCount, practiceUserData, setPracticeUserData}}>
             {children}
         </QuizContext.Provider>
     );
