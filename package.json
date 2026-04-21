@@ -9,7 +9,7 @@
   },
   "name": "quizzle",
   "description": "A free, open source and self hosted quiz platform for schools",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "main": "index.js",
   "devDependencies": {
     "concurrently": "^9.2.1"
