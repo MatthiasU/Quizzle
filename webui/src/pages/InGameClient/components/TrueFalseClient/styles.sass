@@ -24,10 +24,14 @@
       filter: drop-shadow(0 0 1rem rgba(0, 0, 0, 0.3))
       
     &.true-option
-      background-color: $green
+      background: linear-gradient(135deg, color-mix(in srgb, $green 100%, white 20%), color-mix(in srgb, $green 100%, black 10%))
+      border: none
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)
       
     &.false-option
-      background-color: $red
+      background: linear-gradient(135deg, color-mix(in srgb, $red 100%, white 20%), color-mix(in srgb, $red 100%, black 10%))
+      border: none
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)
 
     span
       font-size: 2rem

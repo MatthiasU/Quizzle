@@ -25,10 +25,11 @@
     color: $background
     margin: 0 0 2rem 0
     text-align: center
-    background-color: $dark-gray
+    background: linear-gradient(135deg, color-mix(in srgb, $dark-gray 100%, white 15%), color-mix(in srgb, $dark-gray 100%, black 20%))
+    border: 1px solid rgba(255, 255, 255, 0.1)
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.07), 0 0.5rem 1.5rem 0.3rem rgba(0, 0, 0, 0.3)
     padding: 0.8rem 1.5rem
     border-radius: 1.5rem
-    box-shadow: 0 0.5rem 1.5rem 0.3rem rgba(0, 0, 0, 0.3)
 
   .vote-bars-section
     display: flex
@@ -54,15 +55,14 @@
         color: $background
         font-weight: bold
         font-size: 1.5rem
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5)
         margin: 0
-        background: linear-gradient(135deg, $dark-gray, color.adjust($dark-gray, $lightness: 10%))
+        background: linear-gradient(135deg, color-mix(in srgb, $dark-gray 100%, white 15%), color-mix(in srgb, $dark-gray 100%, black 20%))
         padding: 0.5rem 1rem
         border-radius: 1rem
         min-width: 3rem
         text-align: center
-        box-shadow: 0 0.5rem 1.2rem rgba(0, 0, 0, 0.3)
         border: 1px solid rgba(255, 255, 255, 0.1)
+        box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.07), 0 0.5rem 1.2rem rgba(0, 0, 0, 0.3)
 
       .vote-bar-container
         width: 3rem
@@ -126,7 +126,8 @@
       transition: all 0.3s ease
       margin: 0
       position: relative
-      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2)
+      border: 1px solid rgba(0, 0, 0, 0.15)
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2)
       box-sizing: border-box
       
       &.correct
@@ -202,7 +203,9 @@
     .correct-answer-item
       padding: 1rem 2rem
       border-radius: 1rem
-      background-color: $green
+      background: linear-gradient(135deg, color-mix(in srgb, $green 100%, white 20%), color-mix(in srgb, $green 100%, black 10%))
+      border: 1px solid rgba(0, 0, 0, 0.15)
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)
       color: $background
       text-align: center
       font-weight: bold
@@ -223,9 +226,10 @@
       gap: 1rem
       padding: 1rem
       border-radius: 1rem
-      background-color: $green
+      background: linear-gradient(135deg, color-mix(in srgb, $green 100%, white 20%), color-mix(in srgb, $green 100%, black 10%))
+      border: 1px solid rgba(0, 0, 0, 0.15)
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)
       color: $background
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15)
 
       .sequence-position
         display: flex
@@ -254,10 +258,11 @@
       color: $background
       text-align: center
       margin-bottom: 1rem
-      background-color: $dark-gray
+      background: linear-gradient(135deg, color-mix(in srgb, $dark-gray 100%, white 15%), color-mix(in srgb, $dark-gray 100%, black 20%))
+      border: 1px solid rgba(255, 255, 255, 0.1)
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.07), 0 0.3rem 1rem 0.2rem rgba(0, 0, 0, 0.3)
       padding: 0.8rem 1.5rem
       border-radius: 1rem
-      box-shadow: 0 0.3rem 1rem 0.2rem $dark-gray
 
     .text-answers-grid
       display: grid
@@ -272,12 +277,14 @@
         font-weight: bold
 
         &.correct
-          background-color: $green
-          border: 2px solid $green
+          background: linear-gradient(135deg, color-mix(in srgb, $green 100%, white 20%), color-mix(in srgb, $green 100%, black 10%))
+          border: 1px solid rgba(0, 0, 0, 0.15)
+          box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)
 
         &.incorrect
-          background-color: $red
-          border: 2px solid $red
+          background: linear-gradient(135deg, color-mix(in srgb, $red 100%, white 20%), color-mix(in srgb, $red 100%, black 10%))
+          border: 1px solid rgba(0, 0, 0, 0.15)
+          box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)
 
 .slider-results
   display: flex

@@ -6,6 +6,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import {useEffect} from "react";
 import {QUESTION_TYPES} from "@/common/constants/QuestionTypes.js";
+import {getAnswerColor, getAnswerGradient} from "@/common/utils/AnswerColorUtil.js";
 
 export const AnswerResults = ({question, answerData, showScoreboard}) => {
     const soundManager = useSoundManager();
@@ -18,29 +19,8 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
         return () => clearTimeout(timer);
     }, [soundManager]);
 
-    const getTrueFalseColor = (answer) => {
-        const content = answer.content?.toString().toLowerCase();
-        if (content === 'true' || content === 'wahr' || content === 'richtig') return "#1C945A";
-        return "#EC5555";
-    }
-
-    const getColorByIndex = (index) => {
-        switch (index) {
-            case 1:
-                return "#6547EE";
-            case 2:
-                return "#1C945A";
-            case 3:
-                return "#EC5555";
-            default:
-                return "#FFA500";
-        }
-    }
-
-    const getAnswerColor = (answer, index) => {
-        if (question.type === QUESTION_TYPES.TRUE_FALSE) return getTrueFalseColor(answer);
-        return getColorByIndex(index);
-    }
+    const getColor = (answer, index) => getAnswerColor(answer, index, question.type);
+    const getGradient = (answer, index) => getAnswerGradient(answer, index, question.type);
 
     const getTextSize = (content) => {
         if (content.length <= 10) {
@@ -225,7 +205,7 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
                             {answer.type === "text" && (
                                 <motion.div
                                     className="text-answer"
-                                    style={{backgroundColor: getAnswerColor(answer, index)}}
+                                    style={{background: getGradient(answer, index)}}
                                     initial={{scale: 0}}
                                     animate={{scale: 1}}
                                     transition={{duration: 0.2, delay: 1.8 + index * 0.05}}
@@ -257,7 +237,7 @@ export const AnswerResults = ({question, answerData, showScoreboard}) => {
                                         initial={{scale: 0}}
                                         animate={{scale: 1}}
                                         transition={{duration: 0.2, delay: 1.8 + index * 0.05}}
-                                        style={{border: `5px solid ${getAnswerColor(answer, index)}`}}
+                                        style={{border: `5px solid ${getColor(answer, index)}`}}
                                     />
                                     {isCorrect && (
                                         <motion.div
