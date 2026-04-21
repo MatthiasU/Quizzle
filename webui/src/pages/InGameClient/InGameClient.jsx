@@ -9,6 +9,7 @@ import {TrueFalseClient} from "./components/TrueFalseClient";
 import {TextInputClient} from "./components/TextInputClient";
 import {SequenceClient} from "./components/SequenceClient";
 import SliderClient from "./components/SliderClient";
+import ClientAnswerReview from "./components/ClientAnswerReview";
 import {jsonRequest, postRequest} from "@/common/utils/RequestUtil.js";
 import {generateUuid} from "@/common/utils/UuidUtil.js";
 import {QUESTION_TYPES, SLIDER_MARGIN_CONFIG} from "@/common/constants/QuestionTypes.js";
@@ -37,6 +38,7 @@ export const InGameClient = () => {
     const [selection, setSelection] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [answers, setAnswers] = useState([]);
+    const [answerLabels, setAnswerLabels] = useState([]);
     const [lastQuestionType, setLastQuestionType] = useState(null);
     const [userSubmittedAnswer, setUserSubmittedAnswer] = useState(null);
     const [sliderAnswerData, setSliderAnswerData] = useState(null);
@@ -80,6 +82,7 @@ export const InGameClient = () => {
 
         const onQuestion = (question) => {
             setAnswers([]);
+            setAnswerLabels([]);
             setSliderAnswerData(null);
             setSelection([]);
             setUserSubmittedAnswer(null);
@@ -121,8 +124,10 @@ export const InGameClient = () => {
             if (answer?.correctValue !== undefined) {
                 setSliderAnswerData(answer);
                 setAnswers([]);
+                setAnswerLabels([]);
             } else {
                 setAnswers(answer?.answers || []);
+                setAnswerLabels(Array.isArray(answer?.answerLabels) ? answer.answerLabels : []);
             }
             setCurrentQuestion(null);
         }
@@ -479,6 +484,33 @@ export const InGameClient = () => {
     };
 
     const submitAnswer = (answers) => {
+        const questionForSubmit = getCurrentQuestion();
+        const typeForSubmit = questionForSubmit?.type;
+
+        if (typeForSubmit === QUESTION_TYPES.TEXT) {
+            const textValue = Array.isArray(answers) ? (answers[0] || '') : answers;
+            setUserSubmittedAnswer(textValue);
+            setSelection([textValue]);
+        } else if (typeForSubmit === QUESTION_TYPES.SLIDER) {
+            setUserSubmittedAnswer(answers);
+            setSelection([answers]);
+        } else if (typeForSubmit === QUESTION_TYPES.SEQUENCE) {
+            setUserSubmittedAnswer(Array.isArray(answers) ? [...answers] : answers);
+            setSelection(Array.isArray(answers) ? [...answers] : []);
+        } else {
+            const indexArray = Array.isArray(answers) ? answers : [answers];
+            let answerCount = indexArray.length;
+            if (typeof questionForSubmit?.answers === 'number') {
+                answerCount = questionForSubmit.answers;
+            } else if (Array.isArray(questionForSubmit?.answers)) {
+                answerCount = questionForSubmit.answers.length;
+            }
+            const boolSelection = Array.from({length: answerCount}, (_, index) => indexArray.includes(index));
+            setUserSubmittedAnswer(indexArray);
+            setSelection(boolSelection);
+        }
+        if (typeForSubmit) setLastQuestionType(typeForSubmit);
+
         if (isPracticeMode) {
             return submitPracticeAnswer(answers);
         }
@@ -488,51 +520,13 @@ export const InGameClient = () => {
             return;
         }
 
-        if (currentQuestion.type === QUESTION_TYPES.TEXT) {
-            setSelection([answers]);
-            setUserSubmittedAnswer(answers);
-            setLastQuestionType(QUESTION_TYPES.TEXT);
-            socket.emit("SUBMIT_ANSWER", {answers}, (response) => {
-                if (!response.success) {
-                    toast.error(response.error || "Fehler beim Senden der Antwort");
-                    return;
-                }
-                setCurrentQuestion(null);
-            });
-        } else if (currentQuestion.type === QUESTION_TYPES.SLIDER) {
-            setSelection([answers]);
-            setUserSubmittedAnswer(answers);
-            setLastQuestionType(QUESTION_TYPES.SLIDER);
-            socket.emit("SUBMIT_ANSWER", {answers}, (response) => {
-                if (!response.success) {
-                    toast.error(response.error || "Fehler beim Senden der Antwort");
-                    return;
-                }
-                setCurrentQuestion(null);
-            });
-        } else if (currentQuestion.type === QUESTION_TYPES.SEQUENCE) {
-            setSelection(answers);
-            setUserSubmittedAnswer(answers);
-            setLastQuestionType(QUESTION_TYPES.SEQUENCE);
-            socket.emit("SUBMIT_ANSWER", {answers}, (response) => {
-                if (!response.success) {
-                    toast.error(response.error || "Fehler beim Senden der Antwort");
-                    return;
-                }
-                setCurrentQuestion(null);
-            });
-        } else {
-            let selection = Array.from({length: currentQuestion.answers}, (_, index) => answers.includes(index));
-            setSelection(selection);
-            setLastQuestionType(currentQuestion.type);
-            socket.emit("SUBMIT_ANSWER", {answers}, (response) => {
-                if (!response.success) {
-                    toast.error(response.error || "Fehler beim Senden der Antwort");
-                    return;
-                }
-                setCurrentQuestion(null);
-            });
-        }
+        socket.emit("SUBMIT_ANSWER", {answers}, (response) => {
+            if (!response.success) {
+                toast.error(response.error || "Fehler beim Senden der Antwort");
+                return;
+            }
+            setCurrentQuestion(null);
+        });
     }
 
     const getCorrectStatus = (selection, answers) => {
@@ -724,6 +718,12 @@ export const InGameClient = () => {
                                     {practiceQuestionResult?.result === 'correct' ? "Richtig!" :
                                      practiceQuestionResult?.result === 'partial' ? "Teilweise richtig!" : "Weiter so!"}
                                 </h2>
+                                <ClientAnswerReview
+                                    questionType={getPracticeQuestion()?.type}
+                                    selection={selection}
+                                    userSubmittedAnswer={userSubmittedAnswer}
+                                    practiceQuestion={getPracticeQuestion()}
+                                />
                                 <button className="practice-next-button" onClick={nextPracticeQuestion}>
                                     Nächste Frage
                                 </button>
@@ -747,6 +747,15 @@ export const InGameClient = () => {
                                     {pointsEarned > 0 && (
                                         <span className={`points-earned ${pointsColorClass}`}>+{pointsEarned}</span>
                                     )}
+
+                                    <ClientAnswerReview
+                                        questionType={lastQuestionType}
+                                        selection={selection}
+                                        userSubmittedAnswer={userSubmittedAnswer}
+                                        revealAnswers={answers}
+                                        answerLabels={answerLabels}
+                                        sliderAnswerData={sliderAnswerData}
+                                    />
 
                                     {streak >= 2 && (
                                         <div className="result-card streak-card">

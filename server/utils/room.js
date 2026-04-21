@@ -80,6 +80,9 @@ const generateAnswerData = (currentQuestion, currentAnswers, room) => {
         answers: Array.isArray(currentQuestion.answers)
             ? currentQuestion.answers.map(a => a.is_correct)
             : [],
+        answerLabels: Array.isArray(currentQuestion.answers)
+            ? currentQuestion.answers.map(a => (a && a.type !== 'image' ? a.content : null))
+            : [],
         voteCounts
     };
 };

@@ -1,0 +1,342 @@
+@use "@/common/styles/colors" as *
+
+.client-answer-review
+  display: flex
+  flex-direction: column
+  gap: 0.6rem
+  background-color: $background
+  border: 1px solid $border
+  border-radius: 0.75rem
+  padding: 0.9rem 1rem
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04)
+  text-align: left
+
+  .client-answer-review-header
+    display: flex
+    align-items: center
+    gap: 0.5rem
+    font-size: 0.85rem
+    font-weight: 700
+    text-transform: uppercase
+    letter-spacing: 0.04em
+    color: $gray
+
+    svg
+      width: 0.9rem
+      height: 0.9rem
+
+  .client-answer-review-body
+    display: flex
+    flex-direction: column
+    gap: 0.5rem
+
+  .review-mc-list
+    display: flex
+    flex-direction: column
+    gap: 0.4rem
+
+  .review-mc-item
+    display: flex
+    align-items: center
+    gap: 0.6rem
+    padding: 0.55rem 0.7rem
+    border-radius: 0.6rem
+    border: 1px solid $border
+    background-color: rgba(0, 0, 0, 0.015)
+    opacity: 0.55
+    transition: opacity 0.2s
+
+    &.review-mc-selected
+      opacity: 1
+      background-color: rgba(0, 0, 0, 0.03)
+      border-color: $primary
+
+    &.review-mc-correct
+      border-color: $green
+      background-color: rgba(28, 148, 90, 0.08)
+
+    &.review-mc-wrong
+      border-color: $red
+      background-color: rgba(236, 85, 85, 0.08)
+
+    .review-mc-index
+      display: flex
+      align-items: center
+      gap: 0.35rem
+      font-weight: 700
+      font-size: 0.9rem
+      color: $dark-gray
+      min-width: 2.2rem
+
+      svg
+        width: 0.9rem
+        height: 0.9rem
+
+    .review-mc-content
+      flex: 1
+      min-width: 0
+      display: flex
+      align-items: center
+
+      .review-mc-answer-text
+        font-size: 0.95rem
+        font-weight: 500
+        word-break: break-word
+
+      .review-mc-answer-image
+        max-height: 3rem
+        max-width: 100%
+        border-radius: 0.4rem
+
+      .review-mc-placeholder
+        font-size: 0.9rem
+        color: $gray
+        font-style: italic
+
+  .review-tf-list
+    display: grid
+    grid-template-columns: 1fr 1fr
+    gap: 0.5rem
+
+  .review-tf-item
+    display: flex
+    flex-direction: column
+    align-items: center
+    justify-content: center
+    gap: 0.4rem
+    padding: 0.9rem 0.5rem
+    border-radius: 0.6rem
+    border: 2px solid $border
+    background-color: rgba(0, 0, 0, 0.015)
+    opacity: 0.5
+
+    .review-tf-label
+      font-size: 1.1rem
+      font-weight: 700
+
+    &.review-tf-selected
+      opacity: 1
+
+    &.review-tf-correct
+      border-color: $green
+      background-color: rgba(28, 148, 90, 0.08)
+
+    &.review-tf-wrong
+      border-color: $red
+      background-color: rgba(236, 85, 85, 0.08)
+
+  .review-text-wrapper
+    display: flex
+    flex-direction: column
+    gap: 0.5rem
+
+  .review-text-box
+    display: flex
+    flex-direction: column
+    gap: 0.25rem
+    padding: 0.6rem 0.75rem
+    border-radius: 0.6rem
+    border: 1px solid $border
+    background-color: rgba(0, 0, 0, 0.015)
+
+    .review-text-label
+      font-size: 0.75rem
+      font-weight: 700
+      text-transform: uppercase
+      letter-spacing: 0.04em
+      color: $gray
+
+    .review-text-value
+      font-size: 1rem
+      font-weight: 600
+      word-break: break-word
+
+      em
+        font-weight: 400
+        color: $gray
+
+  .review-text-correct
+    border-color: $green
+    background-color: rgba(28, 148, 90, 0.08)
+
+  .review-text-correct-list
+    display: flex
+    flex-wrap: wrap
+    gap: 0.3rem
+
+  .review-text-pill
+    background-color: $green
+    color: white
+    font-size: 0.85rem
+    font-weight: 600
+    padding: 0.2rem 0.55rem
+    border-radius: 10rem
+
+  .review-slider-wrapper
+    display: flex
+    flex-direction: column
+    gap: 0.65rem
+
+  .review-slider-values
+    display: grid
+    grid-template-columns: 1fr 1fr
+    gap: 0.5rem
+
+  .review-slider-value-box
+    display: flex
+    flex-direction: column
+    align-items: center
+    gap: 0.2rem
+    padding: 0.55rem
+    border-radius: 0.6rem
+    border: 1px solid $border
+    background-color: rgba(0, 0, 0, 0.015)
+
+    .review-slider-label
+      font-size: 0.72rem
+      font-weight: 700
+      text-transform: uppercase
+      letter-spacing: 0.04em
+      color: $gray
+
+    .review-slider-number
+      font-size: 1.4rem
+      font-weight: 800
+      font-variant-numeric: tabular-nums
+
+  .review-slider-target
+    border-color: $green
+    background-color: rgba(28, 148, 90, 0.08)
+
+    .review-slider-number
+      color: $green
+
+  .review-slider-your .review-slider-number
+    color: $primary
+
+  .review-slider-track-wrapper
+    display: flex
+    flex-direction: column
+    gap: 0.25rem
+
+  .review-slider-track
+    position: relative
+    height: 0.55rem
+    background-color: $border
+    border-radius: 10rem
+    margin: 0.75rem 0
+
+  .review-slider-marker-user
+    position: absolute
+    top: 50%
+    width: 1rem
+    height: 1rem
+    border-radius: 50%
+    background-color: $primary
+    border: 2px solid white
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2)
+    transform: translate(-50%, -50%)
+
+  .review-slider-marker-correct
+    position: absolute
+    top: 50%
+    width: 1.4rem
+    height: 1.4rem
+    border-radius: 50%
+    background-color: $green
+    color: white
+    display: flex
+    align-items: center
+    justify-content: center
+    transform: translate(-50%, -50%)
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2)
+    z-index: 1
+
+    svg
+      width: 0.7rem
+      height: 0.7rem
+
+  .review-slider-scale
+    display: flex
+    justify-content: space-between
+    font-size: 0.75rem
+    color: $gray
+    font-variant-numeric: tabular-nums
+
+  .review-slider-distance
+    text-align: center
+    font-size: 0.85rem
+    color: $gray
+
+    strong
+      color: $dark-gray
+
+  .review-sequence-list
+    display: flex
+    flex-direction: column
+    gap: 0.4rem
+
+  .review-sequence-item
+    display: flex
+    align-items: center
+    gap: 0.6rem
+    padding: 0.55rem 0.7rem
+    border-radius: 0.6rem
+    border: 1px solid $border
+    background-color: rgba(0, 0, 0, 0.015)
+
+    .review-sequence-position
+      display: flex
+      align-items: center
+      justify-content: center
+      width: 1.8rem
+      height: 1.8rem
+      border-radius: 50%
+      background-color: $primary
+      color: white
+      font-weight: 700
+      flex-shrink: 0
+
+    .review-sequence-content
+      flex: 1
+      min-width: 0
+
+      .review-sequence-answer-text
+        font-size: 0.95rem
+        font-weight: 500
+        word-break: break-word
+
+      .review-sequence-answer-image
+        max-height: 3rem
+        max-width: 100%
+        border-radius: 0.4rem
+
+    .review-sequence-status
+      flex-shrink: 0
+
+      svg
+        width: 0.9rem
+        height: 0.9rem
+
+    &.review-sequence-correct
+      border-color: $green
+      background-color: rgba(28, 148, 90, 0.08)
+
+      .review-sequence-status
+        color: $green
+
+    &.review-sequence-wrong
+      border-color: $red
+      background-color: rgba(236, 85, 85, 0.08)
+
+      .review-sequence-status
+        color: $red
+
+      .review-sequence-position
+        background-color: $red
+
+  .review-sequence-empty
+    text-align: center
+    font-style: italic
+    color: $gray
+    padding: 0.75rem
