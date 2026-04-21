@@ -1,5 +1,5 @@
 import "./styles.sass";
-import {useMemo, useRef, useCallback} from "react";
+import {useMemo, useRef, useCallback, useState, useEffect} from "react";
 import {SLIDER_MARGIN_CONFIG} from "@/common/constants/QuestionTypes.js";
 
 const TICK_COUNT = 40;
@@ -26,12 +26,43 @@ export const SliderAnswers = ({answers, onChange}) => {
         onChange([next]);
     }, [config, onChange]);
 
+    const [minInput, setMinInput] = useState(String(config.min));
+    const [maxInput, setMaxInput] = useState(String(config.max));
+
+    useEffect(() => { setMinInput(String(config.min)); }, [config.min]);
+    useEffect(() => { setMaxInput(String(config.max)); }, [config.max]);
+
+    const commitMin = useCallback(() => {
+        const v = Number(minInput);
+        if (!Number.isFinite(v)) { setMinInput(String(config.min)); return; }
+        if (v === config.min) return;
+        if (v >= config.max) {
+            const prevRange = Math.max(1, config.max - config.min);
+            updateConfig({min: v, max: v + prevRange});
+        } else {
+            updateConfig({min: v});
+        }
+    }, [minInput, config.min, config.max, updateConfig]);
+
+    const commitMax = useCallback(() => {
+        const v = Number(maxInput);
+        if (!Number.isFinite(v)) { setMaxInput(String(config.max)); return; }
+        if (v === config.max) return;
+        if (v <= config.min) {
+            const prevRange = Math.max(1, config.max - config.min);
+            updateConfig({min: v - prevRange, max: v});
+        } else {
+            updateConfig({max: v});
+        }
+    }, [maxInput, config.min, config.max, updateConfig]);
+
     const marginConfig = SLIDER_MARGIN_CONFIG[config.answerMargin || 'medium'];
     const range = config.max - config.min;
     const marginFactor = marginConfig?.factor || 0.1;
     const marginValue = range > 0 ? range * marginFactor : 0;
-    const marginLow = Math.max(config.min, config.correctValue - marginValue);
-    const marginHigh = Math.min(config.max, config.correctValue + marginValue);
+    const isMaximum = config.answerMargin === 'maximum';
+    const marginLow = isMaximum ? config.min : Math.max(config.min, config.correctValue - marginValue);
+    const marginHigh = isMaximum ? config.max : Math.min(config.max, config.correctValue + marginValue);
     const step = computeStep(config.min, config.max);
 
     const snapToValue = useCallback((clientX) => {
@@ -89,11 +120,10 @@ export const SliderAnswers = ({answers, onChange}) => {
                     <span className="edge-label">Min.</span>
                     <input
                         type="number"
-                        value={config.min}
-                        onChange={(e) => {
-                            const v = Number(e.target.value);
-                            if (!isNaN(v) && v < config.max) updateConfig({min: v});
-                        }}
+                        value={minInput}
+                        onChange={(e) => setMinInput(e.target.value)}
+                        onBlur={commitMin}
+                        onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
                     />
                 </div>
 
@@ -113,11 +143,10 @@ export const SliderAnswers = ({answers, onChange}) => {
                     <span className="edge-label">Max.</span>
                     <input
                         type="number"
-                        value={config.max}
-                        onChange={(e) => {
-                            const v = Number(e.target.value);
-                            if (!isNaN(v) && v > config.min) updateConfig({max: v});
-                        }}
+                        value={maxInput}
+                        onChange={(e) => setMaxInput(e.target.value)}
+                        onBlur={commitMax}
+                        onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
                     />
                 </div>
             </div>
