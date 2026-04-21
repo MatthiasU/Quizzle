@@ -2,7 +2,8 @@ import "./styles.sass";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faForward, faHouse, faArrowUp, faArrowDown, faBolt, faTrophy} from "@fortawesome/free-solid-svg-icons";
 import Button from "@/common/components/Button";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
+import {LayoutGroup, motion} from "framer-motion";
 import {getCharacterEmoji} from "@/common/data/characters";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import AnimatedCounter from "@/pages/InGameHost/components/AnimatedCounter";
@@ -10,7 +11,6 @@ import AnimatedCounter from "@/pages/InGameHost/components/AnimatedCounter";
 export const Scoreboard = ({scoreboard, nextQuestion, isEnd}) => {
     const prevRanksRef = useRef({});
     const [animatedPlayers, setAnimatedPlayers] = useState([]);
-    const [reveal, setReveal] = useState(false);
     const [pointsAnimationPhase, setPointsAnimationPhase] = useState('initial');
     const soundManager = useSoundManager();
     const hasPlayedSoundRef = useRef(false);
@@ -43,10 +43,6 @@ export const Scoreboard = ({scoreboard, nextQuestion, isEnd}) => {
         hasPlayedSoundRef.current = false;
 
         timeouts.push(setTimeout(() => {
-            if (isMounted) setReveal(true);
-        }, 100));
-
-        timeouts.push(setTimeout(() => {
             if (isMounted) setPointsAnimationPhase('flying');
         }, 400));
 
@@ -71,7 +67,21 @@ export const Scoreboard = ({scoreboard, nextQuestion, isEnd}) => {
                     }
                 }, 120);
             }
-        }, 1000));
+        }, 700));
+
+        timeouts.push(setTimeout(() => {
+            if (!isMounted) return;
+            setPointsAnimationPhase('reordering');
+            const risers = withChanges
+                .filter(p => (p.positionChange || 0) > 0)
+                .sort((a, b) => Math.abs(a.positionChange) - Math.abs(b.positionChange));
+            risers.forEach((p, i) => {
+                const t = setTimeout(() => {
+                    if (isMounted) soundManager.playFeedback('POINTS_ADD');
+                }, Math.abs(p.positionChange) * 80 + i * 60);
+                timeouts.push(t);
+            });
+        }, 1500));
 
         const newRanks = {};
         sorted.forEach((player, i) => { newRanks[player.name] = i + 1; });
@@ -84,6 +94,17 @@ export const Scoreboard = ({scoreboard, nextQuestion, isEnd}) => {
         };
     }, [scoreboard]);
 
+    const displayPlayers = useMemo(() => {
+        const useNewOrder = pointsAnimationPhase === 'reordering';
+        return [...animatedPlayers].sort((a, b) => {
+            if (useNewOrder) return b.points - a.points;
+            const aPrev = a.previousPoints ?? a.points;
+            const bPrev = b.previousPoints ?? b.points;
+            if (bPrev !== aPrev) return bPrev - aPrev;
+            return a.name.localeCompare(b.name);
+        });
+    }, [animatedPlayers, pointsAnimationPhase]);
+
     return (
         <div className="scoreboard">
             <div className="top-area">
@@ -95,63 +116,92 @@ export const Scoreboard = ({scoreboard, nextQuestion, isEnd}) => {
             <h1>{isEnd ? "Endstand" : "Scoreboard"}</h1>
 
             <div className="scoreboard-players">
-                {animatedPlayers.map((player, index) => {
-                    const hasRoundPoints = (player.lastRoundPoints || 0) > 0;
-                    const showFlyingPoints = hasRoundPoints && pointsAnimationPhase === 'flying';
-                    const showCounting = pointsAnimationPhase === 'counting';
-                    const delayMs = index * 80;
-                    
-                    return (
-                        <div 
-                            key={player.name} 
-                            className={`scoreboard-player ${reveal ? 'scoreboard-player-reveal' : ''} ${index < 3 ? `scoreboard-top-${index + 1}` : ''}`}
-                            style={{ animationDelay: `${index * 0.08}s` }}
-                        >
-                            <div className="player-left">
-                                <span className={`player-rank ${index < 3 ? 'rank-podium' : ''}`}>
-                                    {index < 3 
-                                        ? <FontAwesomeIcon icon={faTrophy} className={`trophy-icon trophy-${index + 1}`} />
-                                        : `#${index + 1}`
-                                    }
-                                </span>
-                                <div className="player-character">
-                                    {getCharacterEmoji(player.character)}
+                <LayoutGroup>
+                    {displayPlayers.map((player, index) => {
+                        const hasRoundPoints = (player.lastRoundPoints || 0) > 0;
+                        const showFlyingPoints = hasRoundPoints && pointsAnimationPhase === 'flying';
+                        const showCounting = pointsAnimationPhase === 'counting' || pointsAnimationPhase === 'reordering';
+                        const delayMs = index * 80;
+                        const isReordering = pointsAnimationPhase === 'reordering';
+                        const moved = (player.positionChange || 0) !== 0;
+                        const rising = (player.positionChange || 0) > 0;
+                        const highlightClass = isReordering && moved
+                            ? (rising ? 'row-rising' : 'row-falling')
+                            : '';
+
+                        return (
+                            <motion.div
+                                key={player.name}
+                                layout
+                                initial={{ opacity: 0 }}
+                                animate={{
+                                    opacity: 1,
+                                    scale: isReordering && rising ? [1, 1.05, 1] : 1,
+                                }}
+                                transition={{
+                                    layout: {
+                                        type: "spring",
+                                        stiffness: 120,
+                                        damping: 16,
+                                        mass: 0.9,
+                                        delay: isReordering && moved ? Math.abs(player.positionChange) * 0.05 : 0,
+                                    },
+                                    opacity: { duration: 0.25, delay: index * 0.04 },
+                                    scale: { duration: 0.55, times: [0, 0.4, 1], ease: "easeInOut" },
+                                }}
+                                style={{
+                                    zIndex: isReordering && rising
+                                        ? 20 + Math.abs(player.positionChange)
+                                        : (isReordering && moved ? 2 : 1),
+                                }}
+                                className={`scoreboard-player ${index < 3 ? `scoreboard-top-${index + 1}` : ''} ${highlightClass}`}
+                            >
+                                <div className="player-left">
+                                    <span className={`player-rank ${index < 3 ? 'rank-podium' : ''}`}>
+                                        {index < 3
+                                            ? <FontAwesomeIcon icon={faTrophy} className={`trophy-icon trophy-${index + 1}`} />
+                                            : `#${index + 1}`
+                                        }
+                                    </span>
+                                    <div className="player-character">
+                                        {getCharacterEmoji(player.character)}
+                                    </div>
+                                    <div className="player-name-section">
+                                        <h2>{player.name}</h2>
+                                        {player.positionChange !== 0 && (
+                                            <span className={`position-change ${player.positionChange > 0 ? 'pos-up' : 'pos-down'}`}>
+                                                <FontAwesomeIcon icon={player.positionChange > 0 ? faArrowUp : faArrowDown} />
+                                                {Math.abs(player.positionChange)}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="player-name-section">
-                                    <h2>{player.name}</h2>
-                                    {player.positionChange !== 0 && (
-                                        <span className={`position-change ${player.positionChange > 0 ? 'pos-up' : 'pos-down'}`}>
-                                            <FontAwesomeIcon icon={player.positionChange > 0 ? faArrowUp : faArrowDown} />
-                                            {Math.abs(player.positionChange)}
+                                <div className="player-right">
+                                    {hasRoundPoints && (
+                                        <span
+                                            className={`round-points ${showFlyingPoints ? 'round-points-flying' : ''} ${showCounting ? 'round-points-merged' : ''}`}
+                                            style={{ animationDelay: `${delayMs}ms` }}
+                                        >
+                                            <FontAwesomeIcon icon={faBolt} />+{player.lastRoundPoints}
                                         </span>
                                     )}
+                                    <h2 className="total-points">
+                                        {showCounting ? (
+                                            <AnimatedCounter
+                                                value={player.points}
+                                                previousValue={player.previousPoints}
+                                                delay={delayMs}
+                                                duration={800}
+                                            />
+                                        ) : (
+                                            player.previousPoints
+                                        )}
+                                    </h2>
                                 </div>
-                            </div>
-                            <div className="player-right">
-                                {hasRoundPoints && (
-                                    <span 
-                                        className={`round-points ${showFlyingPoints ? 'round-points-flying' : ''} ${showCounting ? 'round-points-merged' : ''}`}
-                                        style={{ animationDelay: `${delayMs}ms` }}
-                                    >
-                                        <FontAwesomeIcon icon={faBolt} />+{player.lastRoundPoints}
-                                    </span>
-                                )}
-                                <h2 className="total-points">
-                                    {showCounting ? (
-                                        <AnimatedCounter 
-                                            value={player.points}
-                                            previousValue={player.previousPoints}
-                                            delay={delayMs}
-                                            duration={800}
-                                        />
-                                    ) : (
-                                        player.previousPoints
-                                    )}
-                                </h2>
-                            </div>
-                        </div>
-                    );
-                })}
+                            </motion.div>
+                        );
+                    })}
+                </LayoutGroup>
             </div>
         </div>
     )
