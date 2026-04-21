@@ -202,9 +202,6 @@ export const Host = () => {
                         >
                             <div className="player-character">{getCharacterEmoji(player.character)}</div>
                             <h3>{player.name}</h3>
-                            {player.disconnected && (
-                                <div className="disconnected-indicator" aria-label="Getrennt"></div>
-                            )}
                         </motion.div>
                     ))}
                 </div>

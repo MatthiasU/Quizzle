@@ -103,7 +103,6 @@ export const EndingHost = () => {
 
             {activeView === 'scoreboard' && (
                 <>
-                    <h1 className="ending-title">Top-Spieler!</h1>
                     <Podium
                         scoreboard={Object.values(scoreboard?.scoreboard || {})}
                         analytics={analyticsData}
