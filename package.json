@@ -4,6 +4,7 @@
     "express-rate-limit": "^7.2.0",
     "joi": "^17.12.3",
     "pako": "^2.1.0",
+    "pdf-parse": "^1.1.1",
     "socket.io": "^4.7.5"
   },
   "name": "quizzle",

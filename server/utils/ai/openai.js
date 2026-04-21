@@ -19,7 +19,7 @@ class OpenAIProvider extends AIProvider {
             .sort();
     }
 
-    async *generateStream(topic, questionCount) {
+    async *generateStream(options) {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -29,11 +29,11 @@ class OpenAIProvider extends AIProvider {
             body: JSON.stringify({
                 model: this.model,
                 messages: [
-                    { role: 'system', content: this.getSystemPrompt() },
-                    { role: 'user', content: this.getUserPrompt(topic, questionCount) }
+                    { role: 'system', content: this.getSystemPrompt(options) },
+                    { role: 'user', content: this.getUserPrompt(options) }
                 ],
                 stream: true,
-                temperature: 0.7
+                temperature: options?.mode === 'metadata' ? 0.5 : 0.7
             })
         });
 

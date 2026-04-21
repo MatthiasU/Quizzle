@@ -1,0 +1,398 @@
+@use "@/common/styles/colors" as *
+
+.ai-advanced-overlay
+  position: fixed
+  inset: 0
+  background: $modal-overlay
+  backdrop-filter: blur(4px)
+  display: flex
+  align-items: center
+  justify-content: center
+  z-index: 1200
+  padding: 1.5rem
+
+.ai-advanced-dialog
+  background: $background
+  border-radius: 1.5rem
+  box-shadow: 0 20px 40px $modal-shadow
+  border: 1px solid $modal-border
+  width: 100%
+  max-width: 640px
+  max-height: 90vh
+  display: flex
+  flex-direction: column
+  overflow: hidden
+
+.ai-ad-header
+  position: relative
+  display: flex
+  align-items: center
+  gap: 0.85rem
+  padding: 1rem 3rem 1rem 1.25rem
+
+  .ai-ad-icon
+    width: 2.25rem
+    height: 2.25rem
+    border-radius: 0.6rem
+    background: linear-gradient(135deg, color-mix(in srgb, $primary 100%, white 20%), color-mix(in srgb, $primary 100%, black 10%))
+    color: white
+    display: flex
+    align-items: center
+    justify-content: center
+    font-size: 0.95rem
+    box-shadow: 0 2px 6px color-mix(in srgb, $primary 30%, transparent 70%)
+    flex-shrink: 0
+
+  .ai-ad-title
+    display: flex
+    flex-direction: column
+    min-width: 0
+
+    h2
+      margin: 0
+      font-size: 1.05rem
+      font-weight: 700
+      color: $text
+      line-height: 1.2
+
+    p
+      margin: 0.1rem 0 0
+      font-size: 0.78rem
+      font-weight: 500
+      color: $gray
+      line-height: 1.3
+
+  .ai-ad-close
+    position: absolute
+    top: 50%
+    right: 0.75rem
+    transform: translateY(-50%)
+    background: transparent
+    border: 1px solid transparent
+    width: 2rem
+    height: 2rem
+    border-radius: 0.5rem
+    color: $gray
+    cursor: pointer
+    display: flex
+    align-items: center
+    justify-content: center
+    transition: all 0.15s
+
+    &:hover
+      background: $hover-bg
+      color: $text
+      border-color: $border
+
+.ai-ad-tabs
+  display: flex
+  gap: 0.4rem
+  padding: 0.75rem 1.25rem
+  border-top: 1px solid $border
+  border-bottom: 1px solid $border
+  background: color-mix(in srgb, $primary 3%, $background 97%)
+  overflow-x: auto
+
+  .ai-ad-tab
+    flex: 1
+    min-width: 6rem
+    display: flex
+    align-items: center
+    justify-content: center
+    gap: 0.5rem
+    padding: 0.7rem 0.8rem
+    border: 1px solid transparent
+    border-radius: 0.75rem
+    background: transparent
+    cursor: pointer
+    font-size: 0.85rem
+    font-weight: 600
+    color: $gray
+    transition: all 0.18s
+    font-family: 'Inter', sans-serif
+    white-space: nowrap
+
+    svg
+      font-size: 0.95rem
+
+    &:hover
+      background: $hover-bg
+      color: $text
+
+    &.active
+      background: color-mix(in srgb, $primary 12%, white 88%)
+      color: $primary
+      border-color: color-mix(in srgb, $primary 50%, $border 50%)
+
+.ai-ad-body
+  padding: 1.5rem 1.8rem
+  overflow-y: auto
+  flex: 1 1 auto
+  min-height: 0
+  display: flex
+  flex-direction: column
+  gap: 1.1rem
+  scrollbar-gutter: stable
+
+.ai-ad-section
+  display: flex
+  flex-direction: column
+  gap: 0.5rem
+
+.ai-ad-label
+  font-size: 0.85rem
+  font-weight: 600
+  color: $text
+
+.ai-ad-label-sm
+  display: flex
+  align-items: center
+  gap: 0.4rem
+  font-size: 0.78rem
+  font-weight: 600
+  color: $gray
+  margin-bottom: 0.35rem
+
+  svg
+    font-size: 0.75rem
+
+.ai-ad-hint
+  font-size: 0.78rem
+  color: $gray
+  line-height: 1.4
+
+.ai-ad-input,
+.ai-ad-textarea,
+.ai-ad-select
+  width: 100%
+  box-sizing: border-box
+  border: 2px solid $border
+  border-radius: 0.5rem
+  padding: 0.75rem 1rem
+  font-size: 0.9rem
+  font-family: 'Inter', sans-serif
+  background: white
+  color: $text
+  outline: none
+  transition: border-color 0.15s, box-shadow 0.15s
+
+  &:focus
+    border-color: $primary
+    box-shadow: 0 0 0 3px color-mix(in srgb, $primary 20%, transparent 80%)
+
+  &::placeholder
+    color: $gray
+
+.ai-ad-textarea
+  resize: vertical
+  min-height: 4.5rem
+  line-height: 1.5
+
+.ai-ad-select
+  cursor: pointer
+  appearance: none
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236B6B6B' d='M6 8L0 0h12z'/%3E%3C/svg%3E")
+  background-repeat: no-repeat
+  background-position: right 0.8rem center
+  padding-right: 2.2rem
+
+.ai-ad-row
+  display: flex
+  gap: 0.5rem
+  align-items: stretch
+
+  .ai-ad-input-grow
+    flex: 1
+
+  .ai-ad-lang
+    width: 8rem
+    flex-shrink: 0
+
+.ai-ad-dropzone
+  border: 2px dashed color-mix(in srgb, $primary 30%, $border 70%)
+  border-radius: 0.9rem
+  padding: 2rem 1rem
+  display: flex
+  align-items: center
+  justify-content: center
+  gap: 1rem
+  background: color-mix(in srgb, $primary 3%, white 97%)
+  cursor: pointer
+  transition: all 0.18s
+
+  &:hover,
+  &.active
+    border-color: color-mix(in srgb, $primary 50%, $border 50%)
+    background: color-mix(in srgb, $primary 8%, white 92%)
+
+  &.has-file
+    padding: 1rem
+    border-style: solid
+
+  .ai-ad-dropzone-icon
+    font-size: 1.8rem
+    color: $primary
+
+  .ai-ad-dropzone-text
+    display: flex
+    flex-direction: column
+    gap: 0.2rem
+
+    strong
+      color: $text
+      font-weight: 600
+      font-size: 0.9rem
+
+    span
+      color: $gray
+      font-size: 0.78rem
+
+.ai-ad-file
+  display: flex
+  align-items: center
+  gap: 0.9rem
+  width: 100%
+
+  .ai-ad-file-icon
+    font-size: 1.6rem
+    color: #EC5555
+    flex-shrink: 0
+
+  .ai-ad-file-info
+    flex: 1
+    min-width: 0
+    display: flex
+    flex-direction: column
+    gap: 0.15rem
+
+    .ai-ad-file-name
+      font-weight: 600
+      color: $text
+      font-size: 0.88rem
+      overflow: hidden
+      text-overflow: ellipsis
+      white-space: nowrap
+
+    .ai-ad-file-size
+      font-size: 0.75rem
+      color: $gray
+
+  .ai-ad-file-remove
+    background: transparent
+    border: none
+    width: 2rem
+    height: 2rem
+    border-radius: 0.5rem
+    color: $gray
+    cursor: pointer
+    display: flex
+    align-items: center
+    justify-content: center
+
+    &:hover
+      background: $hover-bg
+      color: $red
+
+.ai-ad-options
+  display: grid
+  grid-template-columns: 1fr 1fr
+  gap: 0.8rem
+  align-items: end
+
+  .ai-ad-option
+    display: flex
+    flex-direction: column
+    min-width: 0
+
+  .ai-ad-input-sm
+    min-height: 2.5rem
+
+  .ai-ad-select-full
+    width: 100%
+
+.ai-ad-toggle
+  display: flex
+  align-items: flex-start
+  gap: 0.8rem
+  padding: 0.9rem 1rem
+  border: 1.5px solid $border
+  border-radius: 0.8rem
+  cursor: pointer
+  transition: all 0.15s
+  background: color-mix(in srgb, $primary 2%, white 98%)
+
+  &:hover:not(.disabled)
+    border-color: color-mix(in srgb, $primary 40%, $border 60%)
+
+  &.disabled
+    opacity: 0.55
+    cursor: not-allowed
+
+  input[type="checkbox"]
+    position: absolute
+    opacity: 0
+    pointer-events: none
+
+  .ai-ad-toggle-slider
+    position: relative
+    width: 2.4rem
+    height: 1.35rem
+    border-radius: 1rem
+    background: $border
+    transition: background 0.2s
+    flex-shrink: 0
+    margin-top: 0.1rem
+
+    &::after
+      content: ""
+      position: absolute
+      top: 0.15rem
+      left: 0.15rem
+      width: 1.05rem
+      height: 1.05rem
+      border-radius: 50%
+      background: white
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2)
+      transition: transform 0.2s
+
+  input[type="checkbox"]:checked + .ai-ad-toggle-slider
+    background: $primary
+
+    &::after
+      transform: translateX(1.05rem)
+
+  .ai-ad-toggle-label
+    display: flex
+    flex-direction: column
+    gap: 0.2rem
+    min-width: 0
+
+    strong
+      color: $text
+      font-weight: 600
+      font-size: 0.85rem
+
+    span
+      color: $gray
+      font-size: 0.76rem
+      line-height: 1.4
+
+.ai-ad-footer
+  display: flex
+  gap: 0.6rem
+  justify-content: flex-end
+  padding: 1rem 1.8rem 1.3rem
+  border-top: 1px solid $border
+  background: color-mix(in srgb, $primary 2%, $background 98%)
+
+@media (max-width: 640px)
+  .ai-advanced-overlay
+    padding: 0
+
+  .ai-advanced-dialog
+    max-height: 100vh
+    border-radius: 0
+    max-width: 100%
+
+  .ai-ad-options
+    grid-template-columns: 1fr

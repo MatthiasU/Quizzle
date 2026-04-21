@@ -5,7 +5,17 @@ class AIProvider {
         this.baseUrl = config.baseUrl;
     }
 
-    getSystemPrompt() {
+    getSystemPrompt(options = {}) {
+        if (options.mode === 'metadata') return this.getMetadataSystemPrompt();
+        return this.getQuizSystemPrompt();
+    }
+
+    getUserPrompt(options = {}) {
+        if (options.mode === 'metadata') return this.getMetadataUserPrompt(options);
+        return this.getQuizUserPrompt(options);
+    }
+
+    getQuizSystemPrompt() {
         return `You are an expert quiz creator for Quizzle, an educational quiz platform. You generate quiz questions about a given topic.
 
 You MUST respond with valid JSON only - no markdown, no explanation, no wrapping.
@@ -25,6 +35,7 @@ Rules:
 - Include some easy, medium, and hard questions
 - All text should be in German
 - Research the topic thoroughly and ensure factual accuracy
+- If a context/source text is provided, base the questions strictly on the facts in that source. Do not invent information that contradicts or goes beyond the source.
 
 Respond with a JSON array where each element is a question object:
 {
@@ -49,11 +60,45 @@ For slider answers: [{"correctValue": 1945, "min": 1900, "max": 2000, "step": 1,
 Generate between 5 and 15 questions depending on how broad the topic is. Use your judgment on the right amount.`;
     }
 
-    getUserPrompt(topic, questionCount) {
+    getQuizUserPrompt(options) {
+        const { topic, questionCount, context, difficulty } = options;
         let prompt = `Erstelle ein Quiz über das folgende Thema: "${topic}"`;
+        if (difficulty && difficulty !== 'none') {
+            const map = { easy: 'einfach (für Einsteiger)', medium: 'mittel (fortgeschritten)', hard: 'schwer (anspruchsvoll)' };
+            prompt += `\n\nSchwierigkeitsgrad: ${map[difficulty] || difficulty}.`;
+        }
         if (questionCount) {
             prompt += `\n\nGeneriere genau ${questionCount} Fragen.`;
         }
+        if (context && context.trim().length > 0) {
+            const trimmed = context.trim().slice(0, 40000);
+            prompt += `\n\nNutze ausschließlich den folgenden Quelltext als Wissensgrundlage für die Fragen. Erfinde keine Fakten, die nicht aus dem Text ableitbar sind. Wenn der Text zu kurz ist, generiere lieber weniger, aber hochwertige Fragen.\n\n---BEGIN SOURCE---\n${trimmed}\n---END SOURCE---`;
+        }
+        return prompt;
+    }
+
+    getMetadataSystemPrompt() {
+        return `You generate metadata (title and description) for quizzes on Quizzle, a German educational quiz platform.
+
+You MUST respond with valid JSON only — no markdown, no explanation, no wrapping. The output must be exactly:
+{"title": "...", "description": "..."}
+
+Rules:
+- Language: German
+- "title": short, catchy quiz title (max 60 characters, no quotes, no trailing punctuation)
+- "description": one concise sentence summarising what the quiz covers (max 280 characters)
+- Do not include any other fields.`;
+    }
+
+    getMetadataUserPrompt(options) {
+        const { topic, context } = options;
+        let prompt = `Erstelle einen Quiz-Titel und eine Beschreibung`;
+        if (topic) prompt += ` für das Thema: "${topic}"`;
+        if (context && context.trim().length > 0) {
+            const trimmed = context.trim().slice(0, 20000);
+            prompt += `\n\nQuelle:\n---BEGIN SOURCE---\n${trimmed}\n---END SOURCE---`;
+        }
+        prompt += `\n\nAntworte ausschließlich mit einem JSON-Objekt der Form {"title": "...", "description": "..."}.`;
         return prompt;
     }
 
@@ -61,7 +106,7 @@ Generate between 5 and 15 questions depending on how broad the topic is. Use you
         return [];
     }
 
-    async *generateStream(topic, questionCount) {
+    async *generateStream(options) {
         throw new Error('generateStream must be implemented by provider');
     }
 
@@ -70,7 +115,7 @@ Generate between 5 and 15 questions depending on how broad the topic is. Use you
             const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
             const parsed = JSON.parse(cleaned);
             return Array.isArray(parsed) ? parsed : [parsed];
-        } catch (e) {
+        } catch {
             return null;
         }
     }

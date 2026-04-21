@@ -24,6 +24,7 @@ import QuestionEditor from "@/pages/QuizCreator/components/QuestionEditor";
 import AddQuestion from "@/pages/QuizCreator/components/AddQuestion";
 import QuestionSettings from "@/pages/QuizCreator/components/QuestionSettings";
 import AITopicPopover from "@/pages/QuizCreator/components/AITopicPopover";
+import AIAdvancedDialog from "@/pages/QuizCreator/components/AIAdvancedDialog";
 import toast from "react-hot-toast";
 import {putRequest, jsonRequest} from "@/common/utils/RequestUtil.js";
 import {useInputValidation, validationRules} from "@/common/hooks/useInputValidation";
@@ -45,6 +46,7 @@ export const QuizCreator = () => {
     const [errorToastId, setErrorToastId] = useState(null);
     const [aiAvailable, setAIAvailable] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [showAIAdvanced, setShowAIAdvanced] = useState(false);
 
     const initialQuizState = () => {
         const stored = localStorage.getItem("qq_questions");
@@ -143,7 +145,17 @@ export const QuizCreator = () => {
         setQuizDebounced(prev => ({...prev, title: newTitle}));
     }, [titleValidation, setQuizDebounced]);
 
-    const {generating: aiGenerating, generate: aiGenerate, stop: aiStop} = useAIGeneration({setQuestions, setActiveQuestion});
+    const {generating: aiGenerating, generate: aiGenerate, stop: aiStop} = useAIGeneration({
+        setQuestions,
+        setActiveQuestion,
+        setTitle: (newTitle) => {
+            titleValidation.setValue(newTitle);
+            setQuiz(prev => ({...prev, title: newTitle}));
+        },
+        setDescription: (desc) => {
+            setSettings(prev => ({...prev, description: desc}));
+        }
+    });
 
     const deleteQuestion = async (uuid) => {
         const questionToDelete = questions.find(q => q.uuid === uuid);
@@ -400,6 +412,7 @@ export const QuizCreator = () => {
                                 generating={aiGenerating}
                                 onGenerate={aiGenerate}
                                 onStop={aiStop}
+                                onOpenAdvanced={() => setShowAIAdvanced(true)}
                             />
                         )}
 
@@ -493,6 +506,13 @@ export const QuizCreator = () => {
                     <QuestionSettings key={`settings-${activeQuestion}`} question={questions.find(q => q.uuid === activeQuestion)} onChange={onChange} onCommit={onChangeWithSnapshot} defaultTimer={quizSettings.defaultTimer} />
                 )}
             </div>
+
+            <AIAdvancedDialog
+                isOpen={showAIAdvanced}
+                onClose={() => setShowAIAdvanced(false)}
+                onGenerate={aiGenerate}
+                hasExistingMetadata={Boolean((titleValidation.value || '').trim()) || Boolean((quizSettings.description || '').trim())}
+            />
         </div>
     )
 }

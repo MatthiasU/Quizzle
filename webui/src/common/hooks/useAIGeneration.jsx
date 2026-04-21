@@ -5,7 +5,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faWandMagicSparkles} from "@fortawesome/free-solid-svg-icons";
 import {imageCache} from "@/common/utils/ImageCacheUtil.js";
 
-export const useAIGeneration = ({setQuestions, setActiveQuestion}) => {
+export const useAIGeneration = ({setQuestions, setActiveQuestion, setTitle, setDescription}) => {
     const [generating, setGenerating] = useState(false);
     const abortRef = useRef(null);
 
@@ -16,14 +16,24 @@ export const useAIGeneration = ({setQuestions, setActiveQuestion}) => {
         }
     }, []);
 
-    const generate = useCallback(async (topic, questionCount) => {
-        if (!topic.trim() || generating) return;
+    const generate = useCallback(async (options) => {
+        const opts = typeof options === 'string'
+            ? {topic: options, questionCount: arguments[1]}
+            : (options || {});
+        const {topic, questionCount, context, difficulty, generateMetadata} = opts;
+
+        const hasTopic = typeof topic === 'string' && topic.trim().length >= 2;
+        const hasContext = typeof context === 'string' && context.trim().length >= 50;
+        if ((!hasTopic && !hasContext) || generating) return;
 
         setGenerating(true);
 
         const controller = new AbortController();
         abortRef.current = controller;
-        let isFirstQuestion = true;
+        let stage = 'Warte auf KI...';
+        let firstQuestionHandled = false;
+
+        const isEmptyQuestion = (q) => !q || (!q.title?.trim() && (!q.answers || q.answers.length === 0));
 
         const renderToast = (msg, count) => (
             <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
@@ -40,14 +50,23 @@ export const useAIGeneration = ({setQuestions, setActiveQuestion}) => {
             </div>
         );
 
-        const toastId = toast.loading(renderToast("KI generiert Fragen...", 0), {
+        const toastId = toast.loading(renderToast(stage, 0), {
             icon: <FontAwesomeIcon icon={faWandMagicSparkles} style={{color: '#8B5CF6'}}/>,
             duration: Infinity
         });
 
+        const updateToast = (msg, count) => toast.loading(renderToast(msg, count), {
+            id: toastId,
+            icon: <FontAwesomeIcon icon={faWandMagicSparkles} style={{color: '#8B5CF6'}}/>
+        });
+
         try {
-            const body = {topic: topic.trim()};
+            const body = {};
+            if (hasTopic) body.topic = topic.trim();
+            if (hasContext) body.context = context;
             if (questionCount && questionCount >= 1 && questionCount <= 50) body.questionCount = questionCount;
+            if (difficulty && difficulty !== 'none') body.difficulty = difficulty;
+            if (generateMetadata) body.generateMetadata = true;
 
             const response = await fetch("/api/ai/generate", {
                 method: "POST",
@@ -57,7 +76,7 @@ export const useAIGeneration = ({setQuestions, setActiveQuestion}) => {
             });
 
             if (!response.ok) {
-                const err = await response.json();
+                const err = await response.json().catch(() => ({}));
                 throw new Error(err.message || "Fehler bei der Generierung.");
             }
 
@@ -65,6 +84,8 @@ export const useAIGeneration = ({setQuestions, setActiveQuestion}) => {
             const decoder = new TextDecoder();
             let buffer = '';
             let count = 0;
+
+            updateToast(generateMetadata ? "KI erstellt Titel & Beschreibung..." : "KI generiert Fragen...", 0);
 
             while (true) {
                 const {done: readerDone, value} = await reader.read();
@@ -81,7 +102,17 @@ export const useAIGeneration = ({setQuestions, setActiveQuestion}) => {
                     try {
                         const event = JSON.parse(trimmed.slice(6));
 
-                        if (event.type === 'question') {
+                        if (event.type === 'status') {
+                            if (event.stage === 'metadata') {
+                                updateToast("KI erstellt Titel & Beschreibung...", count);
+                            } else if (event.stage === 'questions') {
+                                updateToast("KI generiert Fragen...", count);
+                            }
+                        } else if (event.type === 'metadata') {
+                            const {title: metaTitle, description: metaDesc} = event.data || {};
+                            if (metaTitle && setTitle) setTitle(metaTitle);
+                            if (metaDesc && setDescription) setDescription(metaDesc);
+                        } else if (event.type === 'question') {
                             const q = event.data;
                             const newQuestion = {
                                 uuid: q.uuid || generateUuid(),
@@ -91,21 +122,17 @@ export const useAIGeneration = ({setQuestions, setActiveQuestion}) => {
                             };
 
                             setQuestions(prev => {
-                                const hasContent = prev.length > 1 || prev[0]?.title !== "" || prev[0]?.answers?.length > 0;
-                                if (isFirstQuestion && !hasContent) {
-                                    isFirstQuestion = false;
+                                if (!firstQuestionHandled && prev.length > 0 && prev.every(isEmptyQuestion)) {
+                                    firstQuestionHandled = true;
                                     return [newQuestion];
                                 }
-                                isFirstQuestion = false;
+                                firstQuestionHandled = true;
                                 return [...prev, newQuestion];
                             });
 
                             setActiveQuestion(newQuestion.uuid);
                             count++;
-                            toast.loading(renderToast("KI generiert Fragen...", count), {
-                                id: toastId,
-                                icon: <FontAwesomeIcon icon={faWandMagicSparkles} style={{color: '#8B5CF6'}}/>
-                            });
+                            updateToast("KI generiert Fragen...", count);
                         } else if (event.type === 'image') {
                             const {uuid, b64_image} = event;
                             if (uuid && b64_image) {
@@ -133,10 +160,10 @@ export const useAIGeneration = ({setQuestions, setActiveQuestion}) => {
                 }
             }
 
-            toast.success(`${count} Frage${count !== 1 ? 'n' : ''} generiert!`, {id: toastId});
+            toast.success(`${count} Frage${count !== 1 ? 'n' : ''} generiert!`, {id: toastId, duration: 4000});
         } catch (e) {
             if (e.name !== 'AbortError') {
-                toast.error(e.message || "Fehler bei der KI-Generierung.", {id: toastId});
+                toast.error(e.message || "Fehler bei der KI-Generierung.", {id: toastId, duration: 4000});
             } else {
                 toast.dismiss(toastId);
             }
@@ -144,7 +171,7 @@ export const useAIGeneration = ({setQuestions, setActiveQuestion}) => {
 
         setGenerating(false);
         abortRef.current = null;
-    }, [generating, stop, setQuestions, setActiveQuestion]);
+    }, [generating, stop, setQuestions, setActiveQuestion, setTitle, setDescription]);
 
     return {generating, generate, stop};
 };

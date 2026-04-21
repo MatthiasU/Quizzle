@@ -18,7 +18,7 @@ class GoogleProvider extends AIProvider {
             .sort();
     }
 
-    async *generateStream(topic, questionCount) {
+    async *generateStream(options) {
         const url = `${this.baseUrl}/models/${this.model}:streamGenerateContent?alt=sse&key=${this.apiKey}`;
 
         const response = await fetch(url, {
@@ -26,11 +26,11 @@ class GoogleProvider extends AIProvider {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{
-                    parts: [{ text: `${this.getSystemPrompt()}\n\n${this.getUserPrompt(topic, questionCount)}` }]
+                    parts: [{ text: `${this.getSystemPrompt(options)}\n\n${this.getUserPrompt(options)}` }]
                 }],
                 generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 8192
+                    temperature: options?.mode === 'metadata' ? 0.5 : 0.7,
+                    maxOutputTokens: options?.mode === 'metadata' ? 1024 : 8192
                 }
             })
         });

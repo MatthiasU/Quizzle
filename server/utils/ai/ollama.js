@@ -14,18 +14,18 @@ class OllamaProvider extends AIProvider {
         return (data.models || []).map(m => m.name).sort();
     }
 
-    async *generateStream(topic, questionCount) {
+    async *generateStream(options) {
         const response = await fetch(`${this.baseUrl}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: this.model,
                 messages: [
-                    { role: 'system', content: this.getSystemPrompt() },
-                    { role: 'user', content: this.getUserPrompt(topic, questionCount) }
+                    { role: 'system', content: this.getSystemPrompt(options) },
+                    { role: 'user', content: this.getUserPrompt(options) }
                 ],
                 stream: true,
-                options: { temperature: 0.7 }
+                options: { temperature: options?.mode === 'metadata' ? 0.5 : 0.7 }
             })
         });
 

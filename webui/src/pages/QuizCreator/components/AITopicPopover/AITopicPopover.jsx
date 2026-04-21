@@ -1,24 +1,52 @@
-import {useState, useRef, useEffect} from "react";
+import {useState, useRef, useEffect, useLayoutEffect} from "react";
 import {AnimatePresence, motion} from "framer-motion";
+import {createPortal} from "react-dom";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faWandMagicSparkles, faSpinner} from "@fortawesome/free-solid-svg-icons";
+import {faWandMagicSparkles, faSpinner, faSliders} from "@fortawesome/free-solid-svg-icons";
+import Button from "@/common/components/Button";
 import "./styles.sass";
 
-export const AITopicPopover = ({generating, onGenerate, onStop}) => {
+export const AITopicPopover = ({generating, onGenerate, onStop, onOpenAdvanced}) => {
     const [showInput, setShowInput] = useState(false);
     const [topic, setTopic] = useState("");
     const [count, setCount] = useState("");
+    const [popoverStyle, setPopoverStyle] = useState({});
     const inputRef = useRef(null);
+    const containerRef = useRef(null);
     const popoverRef = useRef(null);
 
+    const updatePosition = () => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        setPopoverStyle({
+            position: 'fixed',
+            top: rect.bottom + 8,
+            left: rect.left,
+            zIndex: 1100
+        });
+    };
+
+    useLayoutEffect(() => {
+        if (showInput) updatePosition();
+    }, [showInput]);
+
     useEffect(() => {
+        if (!showInput) return;
         const handleClickOutside = (e) => {
-            if (popoverRef.current && !popoverRef.current.contains(e.target) && !generating) {
-                setShowInput(false);
-            }
+            if (generating) return;
+            if (containerRef.current?.contains(e.target)) return;
+            if (popoverRef.current?.contains(e.target)) return;
+            setShowInput(false);
         };
-        if (showInput) document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        const handleReposition = () => updatePosition();
+        document.addEventListener('mousedown', handleClickOutside);
+        window.addEventListener('scroll', handleReposition, true);
+        window.addEventListener('resize', handleReposition);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            window.removeEventListener('scroll', handleReposition, true);
+            window.removeEventListener('resize', handleReposition);
+        };
     }, [showInput, generating]);
 
     useEffect(() => {
@@ -27,8 +55,8 @@ export const AITopicPopover = ({generating, onGenerate, onStop}) => {
 
     const handleGenerate = () => {
         if (!topic.trim()) return;
-        const parsedCount = count ? parseInt(count, 10) : undefined;
-        onGenerate(topic.trim(), parsedCount);
+        const parsedCount = count ? Number.parseInt(count, 10) : undefined;
+        onGenerate({topic: topic.trim(), questionCount: parsedCount});
         setShowInput(false);
         setTopic("");
         setCount("");
@@ -42,25 +70,26 @@ export const AITopicPopover = ({generating, onGenerate, onStop}) => {
         }
     };
 
-    return (
-        <div className="ai-generate-container" ref={popoverRef}>
-            <div
-                className={`action-button ai-generate ${generating ? 'generating' : ''}`}
-                onClick={handleButtonClick}
-                title={generating ? "Generierung abbrechen" : "Quiz mit KI generieren"}
-            >
-                <FontAwesomeIcon icon={generating ? faSpinner : faWandMagicSparkles} spin={generating} />
-            </div>
+    const handleAdvanced = () => {
+        setShowInput(false);
+        setTopic("");
+        setCount("");
+        onOpenAdvanced?.();
+    };
 
-            <AnimatePresence>
-                {showInput && (
-                    <motion.div
-                        className="ai-topic-popover"
-                        initial={{opacity: 0, y: -8, scale: 0.95}}
-                        animate={{opacity: 1, y: 0, scale: 1}}
-                        exit={{opacity: 0, y: -8, scale: 0.95}}
-                        transition={{duration: 0.15}}
-                    >
+    const popover = (
+        <AnimatePresence>
+            {showInput && (
+                <motion.div
+                    ref={popoverRef}
+                    className="ai-topic-popover"
+                    style={popoverStyle}
+                    initial={{opacity: 0, y: -8, scale: 0.95}}
+                    animate={{opacity: 1, y: 0, scale: 1}}
+                    exit={{opacity: 0, y: -8, scale: 0.95}}
+                    transition={{duration: 0.15}}
+                >
+                    <div className="ai-topic-row">
                         <input
                             ref={inputRef}
                             className="ai-topic-input"
@@ -81,16 +110,37 @@ export const AITopicPopover = ({generating, onGenerate, onStop}) => {
                             min={1}
                             max={50}
                         />
-                        <button
-                            className="ai-topic-go"
+                        {onOpenAdvanced && (
+                            <Button
+                                onClick={handleAdvanced}
+                                type="secondary compact"
+                                icon={faSliders}
+                                ariaLabel="Erweiterte Optionen: PDF, URL, Wikipedia"
+                            />
+                        )}
+                        <Button
                             onClick={handleGenerate}
+                            type="primary compact"
+                            icon={faWandMagicSparkles}
                             disabled={!topic.trim()}
-                        >
-                            <FontAwesomeIcon icon={faWandMagicSparkles} />
-                        </button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                            ariaLabel="Quiz generieren"
+                        />
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+
+    return (
+        <div className="ai-generate-container" ref={containerRef}>
+            <div
+                className={`action-button ai-generate ${generating ? 'generating' : ''}`}
+                onClick={handleButtonClick}
+                title={generating ? "Generierung abbrechen" : "Quiz mit KI generieren"}
+            >
+                <FontAwesomeIcon icon={generating ? faSpinner : faWandMagicSparkles} spin={generating}/>
+            </div>
+            {createPortal(popover, document.body)}
         </div>
     );
 };

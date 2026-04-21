@@ -1,6 +1,7 @@
 const rateLimit = require('express-rate-limit');
 const app = require('express').Router();
 const { isConfigured, getProvider, getSupportedProviders } = require('../utils/ai');
+const { extractFromUrl, extractFromWikipedia, extractFromPdf } = require('../utils/ai/extract');
 const { generateUuid } = require('../utils/random');
 const { requireAuth } = require('../middleware/auth');
 const { getConfig } = require('../utils/file');
@@ -8,6 +9,12 @@ const { getConfig } = require('../utils/file');
 const limiter = rateLimit({
     windowMs: 1 * 60 * 1000,
     limit: 10,
+    message: { message: "Zu viele Anfragen. Bitte versuche es später erneut." }
+});
+
+const extractLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    limit: 15,
     message: { message: "Zu viele Anfragen. Bitte versuche es später erneut." }
 });
 
@@ -52,29 +59,120 @@ const fetchQuestionImage = async (questionTitle) => {
     }
 };
 
-app.post('/generate', requireAuth, limiter, async (req, res) => {
+app.post('/extract', requireAuth, extractLimiter, async (req, res) => {
     if (!isConfigured()) {
         return res.status(503).json({ message: "KI ist nicht konfiguriert." });
     }
 
-    const { topic, questionCount } = req.body;
-
-    if (!topic || typeof topic !== 'string' || topic.trim().length < 2) {
-        return res.status(400).json({ message: "Ein gültiges Thema ist erforderlich." });
+    const { type, url, query, lang, pdfBase64 } = req.body || {};
+    if (!type || !['url', 'wikipedia', 'pdf'].includes(type)) {
+        return res.status(400).json({ message: "Unbekannter Extraktionstyp." });
     }
 
-    if (topic.trim().length > 200) {
-        return res.status(400).json({ message: "Thema darf maximal 200 Zeichen lang sein." });
+    try {
+        let result;
+        if (type === 'url') {
+            if (!url || typeof url !== 'string') return res.status(400).json({ message: "URL ist erforderlich." });
+            result = await extractFromUrl(url);
+        } else if (type === 'wikipedia') {
+            if (!query || typeof query !== 'string') return res.status(400).json({ message: "Suchbegriff ist erforderlich." });
+            result = await extractFromWikipedia(query, lang || 'de');
+        } else {
+            if (!pdfBase64 || typeof pdfBase64 !== 'string') return res.status(400).json({ message: "PDF-Daten fehlen." });
+            result = await extractFromPdf(pdfBase64);
+        }
+        return res.json({
+            title: result.title || '',
+            source: result.source || '',
+            text: result.text,
+            length: result.text.length
+        });
+    } catch (error) {
+        return res.status(400).json({ message: error.message || "Extraktion fehlgeschlagen." });
     }
+});
 
+const generateMetadataOnce = async (provider, options) => {
+    let fullText = '';
+    const stream = provider.generateStream({ ...options, mode: 'metadata' });
+    for await (const chunk of stream) {
+        fullText += chunk;
+    }
+    const cleaned = fullText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const start = cleaned.indexOf('{');
+    const end = cleaned.lastIndexOf('}');
+    if (start === -1 || end === -1) return null;
+    try {
+        const obj = JSON.parse(cleaned.slice(start, end + 1));
+        return {
+            title: typeof obj.title === 'string' ? obj.title.trim().slice(0, 60) : '',
+            description: typeof obj.description === 'string' ? obj.description.trim().slice(0, 300) : ''
+        };
+    } catch {
+        return null;
+    }
+};
+
+const extractQuestionsFromText = (fullText) => {
+    const questions = [];
+    try {
+        const cleaned = fullText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        const parsed = JSON.parse(cleaned);
+        if (Array.isArray(parsed)) return parsed;
+    } catch {}
+
+    const cleaned = fullText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    let depth = 0;
+    let start = -1;
+
+    for (let i = 0; i < cleaned.length; i++) {
+        const ch = cleaned[i];
+        if (ch === '{' && depth === 0) {
+            start = i;
+            depth = 1;
+        } else if (ch === '{') {
+            depth++;
+        } else if (ch === '}') {
+            depth--;
+            if (depth === 0 && start !== -1) {
+                try {
+                    const obj = JSON.parse(cleaned.slice(start, i + 1));
+                    if (obj.title && obj.type && obj.answers) questions.push(obj);
+                } catch {}
+                start = -1;
+            }
+        }
+    }
+    return questions;
+};
+
+const validateGenerateRequest = (body) => {
+    const { topic, questionCount, context, difficulty } = body;
+    const hasTopic = typeof topic === 'string' && topic.trim().length >= 2;
+    const hasContext = typeof context === 'string' && context.trim().length >= 50;
+
+    if (!hasTopic && !hasContext) return { error: "Ein Thema oder ein Kontext ist erforderlich." };
+    if (hasTopic && topic.trim().length > 400) return { error: "Thema darf maximal 400 Zeichen lang sein." };
+    if (hasContext && context.length > 80000) return { error: "Kontext ist zu groß." };
     if (questionCount !== undefined && (typeof questionCount !== 'number' || questionCount < 1 || questionCount > 50)) {
-        return res.status(400).json({ message: "Fragenanzahl muss zwischen 1 und 50 liegen." });
+        return { error: "Fragenanzahl muss zwischen 1 und 50 liegen." };
     }
+    if (difficulty !== undefined && difficulty !== null && !['none', 'easy', 'medium', 'hard'].includes(difficulty)) {
+        return { error: "Ungültige Schwierigkeit." };
+    }
+    return { hasTopic, hasContext };
+};
+
+app.post('/generate', requireAuth, limiter, async (req, res) => {
+    if (!isConfigured()) return res.status(503).json({ message: "KI ist nicht konfiguriert." });
+
+    const body = req.body || {};
+    const { topic, questionCount, context, difficulty, generateMetadata } = body;
+    const validation = validateGenerateRequest(body);
+    if (validation.error) return res.status(400).json({ message: validation.error });
 
     const provider = getProvider();
-    if (!provider) {
-        return res.status(503).json({ message: "KI-Anbieter nicht verfügbar." });
-    }
+    if (!provider) return res.status(503).json({ message: "KI-Anbieter nicht verfügbar." });
 
     res.writeHead(200, {
         'Content-Type': 'text/event-stream',
@@ -83,89 +181,72 @@ app.post('/generate', requireAuth, limiter, async (req, res) => {
         'X-Accel-Buffering': 'no'
     });
 
+    const effectiveTopic = validation.hasTopic ? topic.trim() : 'Quiz aus bereitgestelltem Quelltext';
+    const effectiveContext = validation.hasContext ? context : undefined;
+    const effectiveDifficulty = difficulty && difficulty !== 'none' ? difficulty : undefined;
+
+    const sendEvent = (evt) => res.write(`data: ${JSON.stringify(evt)}\n\n`);
+
     let fullText = '';
     let sentQuestions = 0;
+    const imagePromises = [];
 
-    const tryExtractQuestions = () => {
-        const questions = [];
-        let searchText = fullText;
+    const sendQuestion = (question) => {
+        question.uuid = generateUuid();
+        const imageQuery = question.imageQuery;
+        delete question.imageQuery;
+        sendEvent({ type: 'question', data: question });
 
-        try {
-            const cleaned = searchText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-            const parsed = JSON.parse(cleaned);
-            if (Array.isArray(parsed)) return parsed;
-        } catch (e) {}
-
-        const cleaned = searchText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-        let depth = 0;
-        let start = -1;
-
-        for (let i = 0; i < cleaned.length; i++) {
-            const ch = cleaned[i];
-            if (ch === '{' && depth === 0) {
-                start = i;
-                depth = 1;
-            } else if (ch === '{') {
-                depth++;
-            } else if (ch === '}') {
-                depth--;
-                if (depth === 0 && start !== -1) {
-                    try {
-                        const obj = JSON.parse(cleaned.slice(start, i + 1));
-                        if (obj.title && obj.type && obj.answers) {
-                            questions.push(obj);
-                        }
-                    } catch (e) {}
-                    start = -1;
-                }
-            }
-        }
-
-        return questions;
+        const uuid = question.uuid;
+        imagePromises.push(
+            fetchQuestionImage(imageQuery || question.title).then(b64 => {
+                if (b64) sendEvent({ type: 'image', uuid, b64_image: b64 });
+            }).catch(() => {})
+        );
     };
 
     try {
-        const stream = provider.generateStream(topic.trim(), questionCount);
-        const imagePromises = [];
+        if (generateMetadata) {
+            sendEvent({ type: 'status', stage: 'metadata' });
+            try {
+                const meta = await generateMetadataOnce(provider, { topic: effectiveTopic, context: effectiveContext });
+                if (meta && (meta.title || meta.description)) {
+                    sendEvent({ type: 'metadata', data: meta });
+                }
+            } catch (e) {
+                console.warn('Metadata generation failed:', e.message);
+            }
+        }
 
-        const sendQuestion = (question) => {
-            question.uuid = generateUuid();
-            const imageQuery = question.imageQuery;
-            delete question.imageQuery;
-            res.write(`data: ${JSON.stringify({ type: 'question', data: question })}\n\n`);
+        sendEvent({ type: 'status', stage: 'questions' });
 
-            const uuid = question.uuid;
-            imagePromises.push(
-                fetchQuestionImage(imageQuery || question.title).then(b64 => {
-                    if (b64) {
-                        res.write(`data: ${JSON.stringify({ type: 'image', uuid, b64_image: b64 })}\n\n`);
-                    }
-                }).catch(() => {})
-            );
-        };
+        const stream = provider.generateStream({
+            topic: effectiveTopic,
+            questionCount,
+            context: effectiveContext,
+            difficulty: effectiveDifficulty
+        });
 
         for await (const chunk of stream) {
             fullText += chunk;
-
-            const questions = tryExtractQuestions();
+            const questions = extractQuestionsFromText(fullText);
             while (sentQuestions < questions.length) {
                 sendQuestion(questions[sentQuestions]);
                 sentQuestions++;
             }
         }
 
-        const finalQuestions = tryExtractQuestions();
+        const finalQuestions = extractQuestionsFromText(fullText);
         while (sentQuestions < finalQuestions.length) {
             sendQuestion(finalQuestions[sentQuestions]);
             sentQuestions++;
         }
 
         await Promise.allSettled(imagePromises);
-
-        res.write(`data: ${JSON.stringify({ type: 'done', total: sentQuestions })}\n\n`);
+        sendEvent({ type: 'done', total: sentQuestions });
     } catch (error) {
         console.error('AI generation error:', error);
-        res.write(`data: ${JSON.stringify({ type: 'error', message: error.message || 'Fehler bei der Generierung.' })}\n\n`);
+        sendEvent({ type: 'error', message: error.message || 'Fehler bei der Generierung.' });
     }
 
     res.end();

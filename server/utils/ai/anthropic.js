@@ -21,7 +21,7 @@ class AnthropicProvider extends AIProvider {
             .sort();
     }
 
-    async *generateStream(topic, questionCount) {
+    async *generateStream(options) {
         const response = await fetch(`${this.baseUrl}/messages`, {
             method: 'POST',
             headers: {
@@ -31,13 +31,13 @@ class AnthropicProvider extends AIProvider {
             },
             body: JSON.stringify({
                 model: this.model,
-                max_tokens: 8192,
-                system: this.getSystemPrompt(),
+                max_tokens: options?.mode === 'metadata' ? 1024 : 8192,
+                system: this.getSystemPrompt(options),
                 messages: [
-                    { role: 'user', content: this.getUserPrompt(topic, questionCount) }
+                    { role: 'user', content: this.getUserPrompt(options) }
                 ],
                 stream: true,
-                temperature: 0.7
+                temperature: options?.mode === 'metadata' ? 0.5 : 0.7
             })
         });
 
