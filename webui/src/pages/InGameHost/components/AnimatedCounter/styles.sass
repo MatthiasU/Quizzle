@@ -1,3 +1,4 @@
+@use "sass:color"
 @use "@/common/styles/colors" as *
 
 .animated-counter
@@ -25,7 +26,7 @@
     text-shadow: 0 0 0 transparent
   30%
     text-shadow: 0 0 8px rgba($green, 0.6), 0 0 16px rgba($green, 0.3)
-    color: lighten($green, 20%)
+    color: color.adjust($green, $lightness: 20%)
   100%
     text-shadow: 0 0 0 transparent
     color: inherit

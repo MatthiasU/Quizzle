@@ -1,3 +1,4 @@
+@use "sass:color"
 @use "@/common/styles/colors" as *
 
 .slider-client
@@ -125,7 +126,7 @@
         transform: translateY(0)
 
     &:hover:not(:disabled)
-        background: darken(#6547EE, 10%)
+        background: color.adjust(#6547EE, $lightness: -10%)
         transform: translateY(-2px)
         box-shadow: 0 4px 16px rgba(101, 71, 238, 0.4)
 
