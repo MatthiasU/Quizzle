@@ -188,6 +188,11 @@ const SequenceReview = ({userSubmittedAnswer, revealAnswers, practiceQuestion}) 
         ? practiceQuestion.answers
         : (Array.isArray(revealAnswers) ? revealAnswers : []);
 
+    const findAnswer = (originalIndex) => {
+        const byOriginal = answerSource.find(a => a && a.originalIndex === originalIndex);
+        return byOriginal || answerSource[originalIndex];
+    };
+
     if (order.length === 0) {
         return (
             <div className="review-sequence-empty">Keine Reihenfolge abgegeben</div>
@@ -197,7 +202,7 @@ const SequenceReview = ({userSubmittedAnswer, revealAnswers, practiceQuestion}) 
     return (
         <div className="review-sequence-list">
             {order.map((originalIndex, position) => {
-                const answer = answerSource[originalIndex];
+                const answer = findAnswer(originalIndex);
                 const isCorrectSpot = originalIndex === position;
                 return (
                     <div

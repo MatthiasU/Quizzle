@@ -76,12 +76,15 @@ const generateAnswerData = (currentQuestion, currentAnswers, room) => {
         }
     });
 
+    const historyEntry = room.questionHistory[room.questionHistory.length - 1];
+    const fullAnswers = Array.isArray(historyEntry?.answers) ? historyEntry.answers : null;
+
     return {
         answers: Array.isArray(currentQuestion.answers)
             ? currentQuestion.answers.map(a => a.is_correct)
             : [],
-        answerLabels: Array.isArray(currentQuestion.answers)
-            ? currentQuestion.answers.map(a => (a && a.type !== 'image' ? a.content : null))
+        answerLabels: fullAnswers
+            ? fullAnswers.map(a => (a && a.type !== 'image' ? a.content : null))
             : [],
         voteCounts
     };
