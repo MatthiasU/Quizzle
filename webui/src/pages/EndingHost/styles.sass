@@ -12,6 +12,11 @@
   background: transparent
   position: relative
 
+  &.ending-page--scoreboard
+    height: 100vh
+    min-height: 0
+    overflow: hidden
+
   .view-toggle
     position: absolute
     top: 2rem
@@ -78,6 +83,60 @@
     p
       font-size: 1.1rem
       line-height: 1.6
+
+  .ending-home-button
+    position: fixed
+    top: 2rem
+    right: 2rem
+    z-index: 20
+
+  .ending-rest-list
+    position: absolute
+    top: 7rem
+    bottom: 31rem
+    left: 50%
+    transform: translateX(-50%)
+    width: 44rem
+    max-width: 92vw
+    display: flex
+    flex-direction: column
+    gap: 0.4rem
+    overflow-y: auto
+    z-index: 1
+
+  .ending-rest-row
+    display: grid
+    grid-template-columns: 2.5rem 2rem 1fr auto
+    align-items: center
+    gap: 0.75rem
+    padding: 0.6rem 1.1rem
+    background: white
+    color: $text
+    border-radius: 0.5rem
+    font-weight: 700
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.12)
+
+    .ending-rest-rank
+      font-size: 1.05rem
+      font-weight: 900
+      color: $primary
+      font-variant-numeric: tabular-nums
+
+    .ending-rest-character
+      font-size: 1.4rem
+      text-align: center
+
+    .ending-rest-name
+      font-size: 1.05rem
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .ending-rest-points
+      font-size: 1.05rem
+      font-weight: 900
+      font-variant-numeric: tabular-nums
+      color: $primary
 
 @media (max-width: 768px)
   .ending-page

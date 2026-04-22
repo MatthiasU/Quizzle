@@ -2,16 +2,16 @@ import "./styles.sass";
 import {useContext, useEffect, useState} from "react";
 import {QuizContext} from "@/common/contexts/Quiz";
 import {useNavigate} from "react-router-dom";
-import Scoreboard from "@/pages/InGameHost/components/Scoreboard/index.js";
 import Podium from "@/pages/EndingHost/components/Podium";
 import AnalyticsTabs from "@/common/components/AnalyticsTabs";
 import Button from "@/common/components/Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faChartBar, faTrophy, faDownload} from "@fortawesome/free-solid-svg-icons";
+import {faChartBar, faTrophy, faDownload, faHouse} from "@fortawesome/free-solid-svg-icons";
 import {useSoundManager} from "@/common/utils/SoundManager.js";
 import SoundRenderer from "@/common/components/SoundRenderer";
 import SoundControl from "@/common/components/SoundControl";
 import {exportLiveQuizToExcel} from "@/common/utils/ExcelExport";
+import {getCharacterEmoji} from "@/common/data/characters";
 import toast from "react-hot-toast";
 
 export const EndingHost = () => {
@@ -69,7 +69,7 @@ export const EndingHost = () => {
     ];
 
     return (
-        <div className="ending-page">
+        <div className={`ending-page ${activeView === 'scoreboard' ? 'ending-page--scoreboard' : ''}`}>
             <SoundRenderer/>
             <div className="ending-sound-control">
                 <SoundControl />
@@ -103,17 +103,32 @@ export const EndingHost = () => {
 
             {activeView === 'scoreboard' && (
                 <>
+                    <div className="ending-home-button">
+                        <Button onClick={() => location.reload()} text="Startseite"
+                                padding="1rem 1.5rem" icon={faHouse}/>
+                    </div>
+                    {(() => {
+                        const sorted = Object.values(scoreboard?.scoreboard || {})
+                            .sort((a, b) => b.points - a.points);
+                        const rest = sorted.slice(3);
+                        if (rest.length === 0) return null;
+                        return (
+                            <div className="ending-rest-list">
+                                {rest.map((player, i) => (
+                                    <div key={player.name} className="ending-rest-row">
+                                        <span className="ending-rest-rank">{i + 4}</span>
+                                        <span className="ending-rest-character">{getCharacterEmoji(player.character)}</span>
+                                        <span className="ending-rest-name">{player.name}</span>
+                                        <span className="ending-rest-points">{player.points.toLocaleString()}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        );
+                    })()}
                     <Podium
                         scoreboard={Object.values(scoreboard?.scoreboard || {})}
                         analytics={analyticsData}
                         totalQuestions={analyticsData?.questionAnalytics?.length}
-                    />
-                    <Scoreboard
-                        isEnd
-                        hideTop3
-                        nextQuestion={() => {
-                        }}
-                        scoreboard={Object.values(scoreboard?.scoreboard || {})}
                     />
                 </>
             )}
