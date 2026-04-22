@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="docs/docs/public/quizzle-title.png" alt="Quizzle Logo" width="400"/>
+  <img src="landing/public/quizzle-title.png" alt="Quizzle Logo" width="400"/>
   
-  **Die kostenlose, open-source Quiz-Plattform für Schulen**
+  **Eine kostenlose Open-Source-Quizplattform für Schulen**
   
   *Self-hosted • Datenschutz-konform • Keine monatlichen Kosten*
   
@@ -13,20 +13,21 @@
 
 ---
 
-## 🚀 Was ist Quizzle?
+## Was ist Quizzle?
 
-Quizzle ist nur selbst hostbar, kostenlos und ohne Datenschutz-Sorgen! 
+Quizzle ist eine self-hosted Quizplattform für Unterricht und Lernen.
+Ihr könnt Live-Quizze im Klassenraum durchführen oder Übungsquizze zur Vorbereitung bereitstellen.
 
-- **🎮 Live-Quizze** - Schüler joinen per QR-Code, keine Accounts nötig
-- **📚 Übungsquizze** - Für selbständige Vorbereitung auf Klausuren  
-- **🏠 Self-hosted** - Läuft auf deinem Server, deine Daten bleiben bei dir
-- **💰 Kostenlos** - Open Source, keine Limitierungen, keine Abo-Fallen
-- **📱 Mobile-friendly** - Funktioniert perfekt auf allen Geräten
+- **Live-Quizze** - Schüler treten per QR-Code bei, ohne Konto
+- **Übungsquizze** - Für die selbstständige Vorbereitung
+- **Self-hosted** - Läuft auf eurem Server, die Daten bleiben bei euch
+- **Kostenlos** - Open Source ohne Abo-Modell
+- **Mobil nutzbar** - Funktioniert auf Smartphone, Tablet und Desktop
 
-## ⚡ Schnellstart mit Docker
+## Schnellstart mit Docker
 
 ```bash
-# docker-compose.yml erstellen
+# docker-compose.yml anlegen
 version: '3.8'
 services:
   quizzle:
@@ -39,11 +40,11 @@ services:
       - TZ=Europe/Berlin
     restart: unless-stopped
 
-# Starten
+# starten
 docker-compose up -d
 ```
 
-## 🛠️ Entwicklung
+## Entwicklung
 
 ```bash
 # Repository klonen
@@ -60,15 +61,15 @@ yarn install
 yarn run dev
 ```
 
-## 🤝 Beitragen
+## Beitragen
 
-Contributions sind willkommen! 
+Contributions sind willkommen!
 
-- 🐛 **Bug Reports** - [Issues erstellen](https://github.com/gnmyt/Quizzle/issues)
-- 💡 **Feature Requests** - Ideen einreichen
-- 🔀 **Pull Requests** - Code beitragen
+- **Fehler melden** - [Issue erstellen](https://github.com/gnmyt/Quizzle/issues)
+- **Features vorschlagen** - Ideen einreichen
+- **Code beitragen** - Pull Request öffnen
 
-## 📄 Lizenz
+## Lizenz
 
 Dieses Projekt steht unter der [MIT Lizenz](LICENSE).
 
