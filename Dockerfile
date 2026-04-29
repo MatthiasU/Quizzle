@@ -31,8 +31,6 @@ COPY --from=build /quizzle/package.json /quizzle/package.json
 
 RUN bun install --production --frozen-lockfile
 
-VOLUME ["/quizzle/data"]
-
 EXPOSE 6412
 
 CMD ["bun", "run", "server/index.js"]
